@@ -1,0 +1,318 @@
+<UserControl x:Class="Dyagnoz_Latest.DeviceCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:local="clr-namespace:Dyagnoz_Latest"
+             mc:Ignorable="d" 
+             d:DesignWidth="320"
+             SnapsToDevicePixels="True">
+
+    <UserControl.Resources>
+        <!-- Colors matching system theme -->
+        <SolidColorBrush x:Key="CardBg" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="HeaderBg" Color="#1E293B"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#E5E7EB"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#1A1A2E"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#6B7280"/>
+        <SolidColorBrush x:Key="TextMuted" Color="#9CA3AF"/>
+        <SolidColorBrush x:Key="BrandGreen" Color="#7FB679"/>
+        <SolidColorBrush x:Key="BrandPurple" Color="#53427D"/>
+        <SolidColorBrush x:Key="StatusOk" Color="#10B981"/>
+        <SolidColorBrush x:Key="StatusWarn" Color="#F59E0B"/>
+        <SolidColorBrush x:Key="StatusBad" Color="#EF4444"/>
+
+        <!-- Separator Style -->
+        <Style x:Key="Separator" TargetType="Border">
+            <Setter Property="Height" Value="1"/>
+            <Setter Property="Background" Value="#E5E7EB"/>
+            <Setter Property="Margin" Value="0,8,0,8"/>
+        </Style>
+
+        <!-- Small Label -->
+        <Style x:Key="LabelSmall" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="9"/>
+            <Setter Property="Foreground" Value="{StaticResource TextMuted}"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+        </Style>
+
+        <!-- Value Text -->
+        <Style x:Key="ValueText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+        </Style>
+
+        <!-- Status Badge Style -->
+        <Style x:Key="StatusBadge" TargetType="Border">
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="Background" Value="#F3F4F6"/>
+        </Style>
+
+        <!-- Control Button -->
+        <Style x:Key="ControlBtn" TargetType="Button">
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Background" Value="#F3F4F6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}" 
+                                CornerRadius="4"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#E5E7EB"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- Main Card -->
+    <Border x:Name="MainCardBorder" Background="{StaticResource CardBg}" 
+            BorderBrush="{StaticResource BorderColor}" 
+            BorderThickness="1" 
+            CornerRadius="6"
+            Width="255"
+            SnapsToDevicePixels="True">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header - Clickable to toggle checkbox -->
+            <Border Grid.Row="0" Background="{StaticResource HeaderBg}" CornerRadius="6,6,0,0" Padding="10,8"
+                    MouseDown="Header_MouseDown" Cursor="Hand">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <CheckBox x:Name="DeviceCheckbox" 
+                              Grid.Column="0" 
+                              VerticalAlignment="Center"
+                              Margin="0,0,8,0"/>
+                    
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock x:Name="DeviceNameText" 
+                                   Text="" 
+                                   FontSize="12" 
+                                   FontWeight="SemiBold" 
+                                   Foreground="White"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="portNumberText" 
+                                       Text="Port" 
+                                       FontSize="10" 
+                                       Foreground="#94A3B8"/>
+                            <TextBlock x:Name="IosVersionText" 
+                                       Text="" 
+                                       FontSize="10" 
+                                       Foreground="#94A3B8"
+                                       Margin="8,0,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Border x:Name="StatusBadge" Grid.Column="2" 
+                            Background="#10B981" 
+                            CornerRadius="3" 
+                            Padding="6,2"
+                            VerticalAlignment="Center">
+                        <TextBlock x:Name="StatusText" 
+                                   Text="Ready" 
+                                   FontSize="9" 
+                                   Foreground="White" 
+                                   FontWeight="Medium"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Content -->
+            <StackPanel Grid.Row="1" Margin="10,10,10,10">
+                
+                <!-- Model & Serial -->
+                <Grid Margin="0,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="MODEL" Style="{StaticResource LabelSmall}"/>
+                        <TextBlock x:Name="ModelText" Text="" Style="{StaticResource ValueText}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="SERIAL" Style="{StaticResource LabelSmall}"/>
+                        <TextBlock x:Name="SerialText" Text="" Style="{StaticResource ValueText}" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Region & Color -->
+                <Grid Margin="0,6,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="REGION" Style="{StaticResource LabelSmall}"/>
+                        <TextBlock x:Name="RegionText" Text="" Style="{StaticResource ValueText}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="COLOR" Style="{StaticResource LabelSmall}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse x:Name="ColorDot" Width="10" Height="10" Fill="Transparent" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock x:Name="ColorText" Text="" Style="{StaticResource ValueText}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Battery Info -->
+                <Grid Margin="0,6,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="BATTERY" Style="{StaticResource LabelSmall}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="BatteryPercentText" Text="" Style="{StaticResource ValueText}"/>
+                            <materialDesign:PackIcon Kind="BatteryHigh" Width="14" Height="14" Foreground="#10B981" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="CYCLES" Style="{StaticResource LabelSmall}"/>
+                        <TextBlock x:Name="BatteryCycleText" Text="" Style="{StaticResource ValueText}"/>
+                    </StackPanel>
+                </Grid>
+
+                <Border Style="{StaticResource Separator}"/>
+
+                <!-- IMEI -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="IMEI 1" Style="{StaticResource LabelSmall}"/>
+                        <TextBlock x:Name="Imei1Text" Text="" Style="{StaticResource ValueText}" FontSize="10"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="IMEI 2" Style="{StaticResource LabelSmall}"/>
+                        <TextBlock x:Name="Imei2Text" Text="" Style="{StaticResource ValueText}" FontSize="10"/>
+                    </StackPanel>
+                </Grid>
+
+                <Border Style="{StaticResource Separator}"/>
+
+                <!-- Status Grid: iCloud, FMI, MDM, SIMlock -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                        <TextBlock Text="iCloud" Style="{StaticResource LabelSmall}" HorizontalAlignment="Center"/>
+                        <Border x:Name="IcloudBadge" Background="#F3F4F6" CornerRadius="3" Padding="4,2" Margin="0,2,0,0">
+                            <TextBlock x:Name="IcloudText" Text="—" FontSize="9" Foreground="#9CA3AF" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                        <TextBlock Text="FMI" Style="{StaticResource LabelSmall}" HorizontalAlignment="Center"/>
+                        <Border x:Name="FmiBadge" Background="#F3F4F6" CornerRadius="3" Padding="4,2" Margin="0,2,0,0">
+                            <TextBlock x:Name="FmiText" Text="—" FontSize="9" Foreground="#9CA3AF" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                        <TextBlock Text="MDM" Style="{StaticResource LabelSmall}" HorizontalAlignment="Center"/>
+                        <Border x:Name="MdmBadge" Background="#F3F4F6" CornerRadius="3" Padding="4,2" Margin="0,2,0,0">
+                            <TextBlock x:Name="MdmText" Text="—" FontSize="9" Foreground="#9CA3AF" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="3" HorizontalAlignment="Center">
+                        <TextBlock Text="SIM" Style="{StaticResource LabelSmall}" HorizontalAlignment="Center"/>
+                        <Border x:Name="SimlockBadge" Background="#F3F4F6" CornerRadius="3" Padding="4,2" Margin="0,2,0,0">
+                            <TextBlock x:Name="SimlockText" Text="—" FontSize="9" Foreground="#9CA3AF" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+                
+                <Border Style="{StaticResource Separator}"/>
+
+                <!-- Components Row -->
+                <StackPanel>
+                    <TextBlock Text="COMPONENTS" Style="{StaticResource LabelSmall}" Margin="0,0,0,4"/>
+                    <WrapPanel x:Name="ComponentsPanel" Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Border x:Name="ValScreen" Width="28" Height="28" Background="#F3F4F6" CornerRadius="4" Margin="2" ToolTip="Screen">
+                            <materialDesign:PackIcon Kind="Cellphone" Width="16" Height="16" Foreground="#9CA3AF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border x:Name="ValBattery" Width="28" Height="28" Background="#F3F4F6" CornerRadius="4" Margin="2" ToolTip="Battery">
+                            <materialDesign:PackIcon Kind="Battery" Width="16" Height="16" Foreground="#9CA3AF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border x:Name="ValCamera" Width="28" Height="28" Background="#F3F4F6" CornerRadius="4" Margin="2" ToolTip="Camera">
+                            <materialDesign:PackIcon Kind="Camera" Width="16" Height="16" Foreground="#9CA3AF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border x:Name="ValFaceId" Width="28" Height="28" Background="#F3F4F6" CornerRadius="4" Margin="2" ToolTip="Face ID">
+                            <materialDesign:PackIcon Kind="FaceRecognition" Width="16" Height="16" Foreground="#9CA3AF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border x:Name="ValNfc" Width="28" Height="28" Background="#F3F4F6" CornerRadius="4" Margin="2" ToolTip="NFC">
+                            <materialDesign:PackIcon Kind="Nfc" Width="16" Height="16" Foreground="#9CA3AF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </WrapPanel>
+                </StackPanel>
+
+                <Border Style="{StaticResource Separator}"/>
+
+                <!-- Control Row -->
+                <WrapPanel HorizontalAlignment="Center">
+                    <Button x:Name="ViewBtn" Style="{StaticResource ControlBtn}" ToolTip="View" Click="ViewBtn_Click">
+                        <materialDesign:PackIcon Kind="Eye" Width="14" Height="14" Foreground="#6B7280"/>
+                    </Button>
+                    <Button x:Name="PrintBtn" Style="{StaticResource ControlBtn}" ToolTip="Print" Click="PrintBtn_Click">
+                        <materialDesign:PackIcon Kind="Printer" Width="14" Height="14" Foreground="#6B7280"/>
+                    </Button>
+                    <Button x:Name="CommentBtn" Style="{StaticResource ControlBtn}" ToolTip="Comments" Click="CommentBtn_Click">
+                        <materialDesign:PackIcon Kind="CommentText" Width="14" Height="14" Foreground="#6B7280"/>
+                    </Button>
+                    <Button x:Name="WifiBtn" Style="{StaticResource ControlBtn}" ToolTip="Push WiFi" Click="WifiBtn_Click">
+                        <materialDesign:PackIcon Kind="Wifi" Width="14" Height="14" Foreground="#6B7280"/>
+                    </Button>
+                    <Button x:Name="AppBtn" Style="{StaticResource ControlBtn}" ToolTip="Install App" Click="AppBtn_Click" Visibility="Collapsed">
+                        <materialDesign:PackIcon Kind="Apps" Width="14" Height="14" Foreground="#6B7280"/>
+                    </Button>
+                    <Button x:Name="RebootBtn" Style="{StaticResource ControlBtn}" ToolTip="Reboot" Click="RebootBtn_Click">
+                        <materialDesign:PackIcon Kind="Restart" Width="14" Height="14" Foreground="#6B7280"/>
+                    </Button>
+                    <Button x:Name="ShutdownBtn" Style="{StaticResource ControlBtn}" ToolTip="Shutdown" Click="ShutdownBtn_Click">
+                        <materialDesign:PackIcon Kind="Power" Width="14" Height="14" Foreground="#6B7280"/>
+                    </Button>
+                    <Button x:Name="WipeBtn" Style="{StaticResource ControlBtn}" ToolTip="Wipe" Click="WipeBtn_Click">
+                        <materialDesign:PackIcon Kind="DeleteForever" Width="14" Height="14" Foreground="#EF4444"/>
+                    </Button>
+                </WrapPanel>
+
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>
+
