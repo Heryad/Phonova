@@ -487,11 +487,47 @@ namespace Dyagnoz_Latest
                         ct: ct);
                     if (wifiRemovalOutcome == StepOutcome.Success)
                     {
-                        await Dispatcher.InvokeAsync(() =>
+                        await Dispatcher.InvokeAsync(async () =>
                         {
                             StatusText.Text = "Finished";
                             SaveDeviceToDatabase();
-                            PrintLabel();
+
+                            // Load Automation Settings
+                            bool autoPrint = true;
+                            bool autoWipe = false;
+                            bool autoShutdown = false;
+
+                            try
+                            {
+                                string configPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Dyagnoz", "GlobalSettings.json");
+                                if (System.IO.File.Exists(configPath))
+                                {
+                                    string json = System.IO.File.ReadAllText(configPath);
+                                    using (var doc = JsonDocument.Parse(json))
+                                    {
+                                        var root = doc.RootElement;
+                                        if (root.TryGetProperty("AutoPrint", out var p)) autoPrint = p.GetBoolean();
+                                        if (root.TryGetProperty("AutoWipe", out var w)) autoWipe = w.GetBoolean();
+                                        if (root.TryGetProperty("AutoShutdown", out var s)) autoShutdown = s.GetBoolean();
+                                    }
+                                }
+                            }
+                            catch { }
+
+                            if (autoPrint) PrintLabel();
+                            
+                            if (autoWipe)
+                            {
+                                StatusText.Text = "Auto Wiping...";
+                                await Task.Run(() => _iosCommander.WipeDevice(udid));
+                                StatusText.Text = "Wiped";
+                            }
+                            else if (autoShutdown)
+                            {
+                                StatusText.Text = "Auto Shutting down...";
+                                await Task.Run(() => _iosCommander.ShutdownDevice(udid));
+                                StatusText.Text = "Off";
+                            }
                         });
                         Debug.WriteLine($"[Port {port}] Wifi Removed complete.");
 

@@ -521,23 +521,56 @@
                                 <TextBlock Text="Test Flow Automation" Style="{StaticResource SectionTitle}"/>
                                 <Border Style="{StaticResource CardStyle}">
                                     <StackPanel>
-                                        <Grid Margin="0,0,0,16"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                            <StackPanel><TextBlock Text="Auto Wipe" FontWeight="SemiBold"/><TextBlock Text="Automatically wipe device after test" Foreground="{StaticResource TextSecondary}" FontSize="12"/></StackPanel>
-                                            <ToggleButton Grid.Column="1" Style="{StaticResource ToggleStyle}"/></Grid>
+                                        <Grid Margin="0,0,0,16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="Auto Wipe" FontWeight="SemiBold"/>
+                                                <TextBlock Text="Automatically wipe device after test" Foreground="{StaticResource TextSecondary}" FontSize="12"/>
+                                            </StackPanel>
+                                            <ToggleButton x:Name="AutoWipeToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Checked="AutoWipeToggle_Checked"/>
+                                        </Grid>
                                         <Border Height="1" Background="{StaticResource BorderColor}" Margin="0,0,0,16"/>
-                                        <Grid Margin="0,0,0,16"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                            <StackPanel><TextBlock Text="Auto Print" FontWeight="SemiBold"/><TextBlock Text="Print report automatically after test" Foreground="{StaticResource TextSecondary}" FontSize="12"/></StackPanel>
-                                            <ToggleButton Grid.Column="1" Style="{StaticResource ToggleStyle}" IsChecked="True"/></Grid>
+                                        <Grid Margin="0,0,0,16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="Auto Print" FontWeight="SemiBold"/>
+                                                <TextBlock Text="Print report automatically after test" Foreground="{StaticResource TextSecondary}" FontSize="12"/>
+                                            </StackPanel>
+                                            <ToggleButton x:Name="AutoPrintToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" IsChecked="True"/>
+                                        </Grid>
                                         <Border Height="1" Background="{StaticResource BorderColor}" Margin="0,0,0,16"/>
-                                        <Grid Margin="0,0,0,16"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                            <StackPanel><TextBlock Text="Auto Shutdown" FontWeight="SemiBold"/><TextBlock Text="Shutdown device after testing" Foreground="{StaticResource TextSecondary}" FontSize="12"/></StackPanel>
-                                            <ToggleButton Grid.Column="1" Style="{StaticResource ToggleStyle}"/></Grid>
+                                        <Grid Margin="0,0,0,16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="Auto Shutdown" FontWeight="SemiBold"/>
+                                                <TextBlock Text="Shutdown device after testing" Foreground="{StaticResource TextSecondary}" FontSize="12"/>
+                                            </StackPanel>
+                                            <ToggleButton x:Name="AutoShutdownToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Checked="AutoShutdownToggle_Checked"/>
+                                        </Grid>
                                         <Border Height="1" Background="{StaticResource BorderColor}" Margin="0,0,0,16"/>
-                                        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                            <StackPanel><TextBlock Text="Auto Install App" FontWeight="SemiBold"/><TextBlock Text="Install diagnostic app automatically" Foreground="{StaticResource TextSecondary}" FontSize="12"/></StackPanel>
-                                            <ToggleButton Grid.Column="1" Style="{StaticResource ToggleStyle}"/></Grid>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="Auto Install App" FontWeight="SemiBold"/>
+                                                <TextBlock Text="Install diagnostic app automatically" Foreground="{StaticResource TextSecondary}" FontSize="12"/>
+                                            </StackPanel>
+                                            <ToggleButton x:Name="AutoInstallToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}"/>
+                                        </Grid>
                                     </StackPanel>
                                 </Border>
+                                <Button Content="Save Flow Settings" Style="{StaticResource ActionBtn}" Margin="0,0,0,0" Click="SaveTestFlow_Click" HorizontalAlignment="Left" />
                             </StackPanel>
 
                             <!-- License Panel -->

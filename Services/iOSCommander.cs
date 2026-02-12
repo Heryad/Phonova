@@ -315,5 +315,18 @@ namespace Dyagnoz_Latest.Services
             }
             catch { }
         }
+
+        public static void StopAllProcesses()
+        {
+            try
+            {
+                var udids = RunningProcess.Keys.ToList();
+                foreach (var udid in udids)
+                {
+                    StopProcessFor(udid);
+                }
+            }
+            catch { }
+        }
     }
 }

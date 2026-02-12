@@ -42,6 +42,9 @@ namespace Dyagnoz_Latest
         {
             await DeviceDetector.StopAsync();
             
+            // Kill any background processes (like syslog) before closing
+            iOSCommander.StopAllProcesses();
+
             DeviceDetector.Dispose();
             PortMapper.Dispose();
             PrintService.Dispose();

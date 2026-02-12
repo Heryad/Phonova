@@ -25,6 +25,63 @@ namespace Dyagnoz_Latest
             LoadAndEnsureTestProfile();
             LoadTestListUI();
             LoadCommentsTable();
+            LoadTestFlowSettings();
+        }
+
+        private void LoadTestFlowSettings()
+        {
+            try
+            {
+                string filePath = System.IO.Path.Combine(_configPath, "GlobalSettings.json");
+                if (System.IO.File.Exists(filePath))
+                {
+                    string json = System.IO.File.ReadAllText(filePath);
+                    using (var doc = System.Text.Json.JsonDocument.Parse(json))
+                    {
+                        var root = doc.RootElement;
+                        if (root.TryGetProperty("AutoWipe", out var wipe)) AutoWipeToggle.IsChecked = wipe.GetBoolean();
+                        if (root.TryGetProperty("AutoPrint", out var print)) AutoPrintToggle.IsChecked = print.GetBoolean();
+                        if (root.TryGetProperty("AutoShutdown", out var shutdown)) AutoShutdownToggle.IsChecked = shutdown.GetBoolean();
+                        if (root.TryGetProperty("AutoInstall", out var install)) AutoInstallToggle.IsChecked = install.GetBoolean();
+                    }
+                }
+            }
+            catch { }
+        }
+
+        private void AutoWipeToggle_Checked(object sender, RoutedEventArgs e)
+        {
+            if (AutoShutdownToggle != null)
+                AutoShutdownToggle.IsChecked = false;
+        }
+
+        private void AutoShutdownToggle_Checked(object sender, RoutedEventArgs e)
+        {
+            if (AutoWipeToggle != null)
+                AutoWipeToggle.IsChecked = false;
+        }
+
+        private async void SaveTestFlow_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var settings = new Dictionary<string, bool>
+                {
+                    { "AutoWipe", AutoWipeToggle.IsChecked ?? false },
+                    { "AutoPrint", AutoPrintToggle.IsChecked ?? false },
+                    { "AutoShutdown", AutoShutdownToggle.IsChecked ?? false },
+                    { "AutoInstall", AutoInstallToggle.IsChecked ?? false }
+                };
+
+                string filePath = System.IO.Path.Combine(_configPath, "GlobalSettings.json");
+                string json = System.Text.Json.JsonSerializer.Serialize(settings);
+                await System.IO.File.WriteAllTextAsync(filePath, json);
+                MessageBox.Show("Test Flow settings saved!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving flow settings: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void LoadAndEnsureTestProfile()
