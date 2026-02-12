@@ -14,9 +14,16 @@ namespace Dyagnoz_Latest
         private Dictionary<int, TextBlock> portStatusLabels = new Dictionary<int, TextBlock>();
         
         // Colors
-        private readonly SolidColorBrush ConnectedColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981"));
-        private readonly SolidColorBrush MappedColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3B82F6"));
-        private readonly SolidColorBrush UnmappedColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#9CA3AF"));
+        private readonly SolidColorBrush ConnectedColor = CreateFrozenBrush("#10B981");
+        private readonly SolidColorBrush MappedColor = CreateFrozenBrush("#3B82F6");
+        private readonly SolidColorBrush UnmappedColor = CreateFrozenBrush("#9CA3AF");
+
+        private static SolidColorBrush CreateFrozenBrush(string hex)
+        {
+            var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
+            brush.Freeze();
+            return brush;
+        }
 
         public PortMapWindow()
         {
@@ -59,20 +66,20 @@ namespace Dyagnoz_Latest
              UpdateButtonState(App.PortMapper.IsLearningMode);
         }
 
-        private async void RefreshPortStatus()
+        private void RefreshPortStatus()
         {
-            var mappings = await App.PortMapper.GetAllMappingsAsync();
-            var portStatus = new Dictionary<int, bool>(); // Port -> IsConnected
+            var mappings = App.PortMapper.GetAllMappings();
 
             // Reset visuals first
-            foreach(var tile in portTiles.Values) tile.Background = UnmappedColor;
-            foreach(var lbl in portStatusLabels.Values) lbl.Text = "—";
+            foreach (var tile in portTiles.Values) tile.Background = UnmappedColor;
+            foreach (var lbl in portStatusLabels.Values) lbl.Text = "—";
 
             // Apply mappings
             foreach (var m in mappings)
             {
                 if (portTiles.ContainsKey(m.LogicalPort))
                 {
+                    // Prioritize Mapped Color (Blue) as requested
                     portTiles[m.LogicalPort].Background = MappedColor;
                     portStatusLabels[m.LogicalPort].Text = "✓";
                 }
@@ -83,10 +90,9 @@ namespace Dyagnoz_Latest
 
         private void OnMappingUpdated(object? sender, EventArgs e)
         {
-            // Must run on UI thread
-            Dispatcher.Invoke(RefreshPortStatus);
+            // Use BeginInvoke to avoid blocking the background thread that might be holding a lock
+            Dispatcher.BeginInvoke(new Action(RefreshPortStatus));
         }
-
         private void OnLearningModeChanged(object? sender, bool isLearning)
         {
              Dispatcher.Invoke(() => UpdateButtonState(isLearning));
@@ -101,7 +107,11 @@ namespace Dyagnoz_Latest
                 if (assignedPort.HasValue)
                 {
                     Dispatcher.Invoke(() => 
-                        UpdateStatus($"Mapped Port {assignedPort} successfully!", true));
+                    {
+                        UpdateStatus($"Mapped Port {assignedPort} successfully!", true);
+                        // Force a refresh to ensure UI catches up
+                        RefreshPortStatus();
+                    });                    
                 }
             }
         }

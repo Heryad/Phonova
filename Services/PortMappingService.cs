@@ -122,6 +122,17 @@ namespace Dyagnoz_Latest.Services
                 }
 
                 _hubInfo = config.HubInfo ?? new HubInfo();
+                
+                // CRITICAL FIX: Update _nextPortNumber based on loaded mappings
+                if (config.Mappings.Any())
+                {
+                    _nextPortNumber = config.Mappings.Max(m => m.LogicalPort) + 1;
+                }
+                else
+                {
+                    _nextPortNumber = 1;
+                }
+
                 RaiseMappingUpdated();
 
                 return true;
@@ -331,12 +342,16 @@ namespace Dyagnoz_Latest.Services
             return Task.FromResult(false);
         }
 
-        public Task<List<PortMappingEntry>> GetAllMappingsAsync()
+        public List<PortMappingEntry> GetAllMappings()
         {
-            var copy = _mappingsByLocation.Values
+            return _mappingsByLocation.Values
                 .OrderBy(m => m.LogicalPort)
                 .ToList();
-            return Task.FromResult(copy);
+        }
+
+        public Task<List<PortMappingEntry>> GetAllMappingsAsync()
+        {
+            return Task.FromResult(GetAllMappings());
         }
 
         #endregion
