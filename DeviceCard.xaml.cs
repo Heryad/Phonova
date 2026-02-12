@@ -768,7 +768,7 @@ namespace Dyagnoz_Latest
         {
             if (string.IsNullOrWhiteSpace(val)) return true;
             var lower = val.ToLower();
-            if (lower.Contains("unknown") || lower.Contains("non-genuine")) return false;
+            if (lower.Contains("unknown") || lower.Contains("non-genuine") || lower.Contains("not")) return false;
             return lower.Contains("original") || lower.Contains("orignal") || lower.Contains("genuine") || lower.Contains("authorized");
         }
 
@@ -1582,6 +1582,30 @@ namespace Dyagnoz_Latest
 
         private async Task<bool> PrintLabel()
         {
+            var failedTests = new List<string>();
+            if (FaceIdStatus == "Fail") failedTests.Add("FaceID");
+            if (LcdStatus == "Fail") failedTests.Add("LCD");
+            if (BatteryStatus == "Fail") failedTests.Add("Battery");
+            if (CameraStatus == "Fail") failedTests.Add("Camera");
+
+            foreach (var test in SyslogTestResults)
+            {
+                if (test.Value != "0")
+                {
+                    failedTests.Add(test.Key);
+                }
+            }
+
+            string failedMessage = string.Join(", ", failedTests);
+            string commentsMessage = string.Join(", ", DeviceComments);
+            string finalMessage = failedMessage;
+
+            if (!string.IsNullOrEmpty(commentsMessage))
+            {
+                if (!string.IsNullOrEmpty(finalMessage)) finalMessage += " - ";
+                finalMessage += commentsMessage;
+            }
+
             var labelData = new DeviceLabelData
             {
                 DeviceName = DeviceNameText.Text,
@@ -1598,8 +1622,8 @@ namespace Dyagnoz_Latest
                 Imei = Imei1Text.Text,
                 SerialNumber = SerialText.Text,
                 Date = DateTime.Now.ToString("yyyy-MM-dd"),
-                Messages = $"{StatusText.Text} - FaceID: {FaceIdStatus}, LCD: {LcdStatus}, Battery: {BatteryStatus}, Camera: {CameraStatus}",
-                Comments = string.Join(", ", DeviceComments)
+                Messages = finalMessage,
+                Comments = commentsMessage
             };
 
             try
