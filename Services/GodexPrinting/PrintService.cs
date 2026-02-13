@@ -16,6 +16,7 @@ namespace Dyagnoz.Services.Printing
         GodexPrinter godexPrinter = new GodexPrinter();
         private string? _cachedTemplate;
         private bool _disposed;
+        private readonly System.Threading.SemaphoreSlim _printSemaphore = new System.Threading.SemaphoreSlim(1, 1);
 
         public event EventHandler<string>? PrintError;
         public event EventHandler<string>? PrintSuccess;
@@ -96,25 +97,34 @@ namespace Dyagnoz.Services.Printing
                 System.Diagnostics.Debug.WriteLine($"[PRINT SERVICE] Template loaded ({template.Length} chars).");
 
                 // Build replacements
+                // Helper to sanitize EZPL inputs (commas break command structure)
+                string Sanitize(string? input)
+                {
+                    if (string.IsNullOrEmpty(input)) return "";
+                    // Replace comma with space to prevent command truncation
+                    // Replace newlines to prevent command splitting
+                    return input.Replace(",", " ").Replace("\r", "").Replace("\n", "").Trim();
+                }
+
                 var replacements = new Dictionary<string, string>
                 {
-                    { "{DEVICE_NAME}", data.DeviceName ?? "" },
-                    { "{STORAGE}", data.Storage ?? "" },
-                    { "{MODEL_NUMBER}", data.ModelNumber ?? "" },
-                    { "{ICLOUD_STATE}", data.ICloudState ?? "" },
-                    { "{FMI_STATE}", data.FmiState ?? "" },
-                    { "{SIM_STATE}", "Unlocked" },
-                    { "{MDM_STATE}", data.MdmState ?? "" },
-                    { "{COLOR}", data.Color ?? "" },
-                    { "{IOS_VERSION}", data.IosVersion ?? "" },
-                    { "{BATTERY}", data.Battery ?? "" },
-                    { "{PORT}", data.Port ?? "" },
-                    { "{IMEI}", data.Imei ?? "" },
-                    { "{SERIAL_NUMBER}", data.SerialNumber ?? "" },
-                    { "{DATE}", data.Date ?? "" },
-                    { "{MESSAGES}", data.Messages ?? "" },
-                    { "{COMMENTS}", data.Comments ?? ""},
-                    { "{GRADE}", data.Grade ?? "" }
+                    { "{DEVICE_NAME}", Sanitize(data.DeviceName) },
+                    { "{STORAGE}", Sanitize(data.Storage) },
+                    { "{MODEL_NUMBER}", Sanitize(data.ModelNumber) },
+                    { "{ICLOUD_STATE}", Sanitize(data.ICloudState) },
+                    { "{FMI_STATE}", Sanitize(data.FmiState) },
+                    { "{SIM_STATE}", "Unlocked" }, // Hardcoded value, safe
+                    { "{MDM_STATE}", Sanitize(data.MdmState) },
+                    { "{COLOR}", Sanitize(data.Color) },
+                    { "{IOS_VERSION}", Sanitize(data.IosVersion) },
+                    { "{BATTERY}", Sanitize(data.Battery) },
+                    { "{PORT}", Sanitize(data.Port) },
+                    { "{IMEI}", Sanitize(data.Imei) },
+                    { "{SERIAL_NUMBER}", Sanitize(data.SerialNumber) },
+                    { "{DATE}", Sanitize(data.Date) },
+                    { "{MESSAGES}", Sanitize(data.Messages) },
+                    { "{COMMENTS}", Sanitize(data.Comments) },
+                    { "{GRADE}", Sanitize(data.Grade) }
                 };
 
                 // Replace placeholders
@@ -130,9 +140,21 @@ namespace Dyagnoz.Services.Printing
                 System.Diagnostics.Debug.WriteLine(labelData);
                 System.Diagnostics.Debug.WriteLine("--------------------------------------------------");
 
-                // Send to printer
-                System.Diagnostics.Debug.WriteLine("[PRINT SERVICE] Sending command to GodexPrinter.Command.Send...");
-                int result = godexPrinter.Command.Send(labelData);
+                // Send to printer - ASYNC SEMAPHORE
+                await _printSemaphore.WaitAsync();
+                int result = 0;
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine("[PRINT SERVICE] Sending command to GodexPrinter.Command.Send...");
+                    // Add a small delay to ensure printer buffer is clear
+                    await Task.Delay(100);
+                    result = godexPrinter.Command.Send(labelData);
+                }
+                finally
+                {
+                    _printSemaphore.Release();
+                }
+
                 System.Diagnostics.Debug.WriteLine($"[PRINT SERVICE] Printer Command Result: {result}");
 
                 PrintSuccess?.Invoke(this, $"Label printed for {data.SerialNumber}");

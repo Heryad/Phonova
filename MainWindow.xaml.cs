@@ -16,6 +16,7 @@ namespace Dyagnoz_Latest
     {
         private const int DashboardCardCount = 20;
         private readonly Dictionary<int, DeviceCard> _portCards = new();
+        private readonly iOSCommander _iosCommander = new();
 
         public MainWindow()
         {
@@ -119,9 +120,58 @@ namespace Dyagnoz_Latest
 
         private void SelectAllBtn_Click(object sender, RoutedEventArgs e) { }
         private void PrintAllBtn_Click(object sender, RoutedEventArgs e) { }
-        private void RebootAllBtn_Click(object sender, RoutedEventArgs e) { }
-        private void ShutdownAllBtn_Click(object sender, RoutedEventArgs e) { }
-        private void WipeAllBtn_Click(object sender, RoutedEventArgs e) { }
+        
+        private async void RebootAllBtn_Click(object sender, RoutedEventArgs e) 
+        {
+            var selectedUdids = GetSelectedUdids();
+            if (!selectedUdids.Any()) return;
+
+            await ProcessInBatches(selectedUdids, udid => _iosCommander.RebootDevice(udid));
+        }
+
+        private async void ShutdownAllBtn_Click(object sender, RoutedEventArgs e) 
+        {
+            var selectedUdids = GetSelectedUdids();
+            if (!selectedUdids.Any()) return;
+
+            await ProcessInBatches(selectedUdids, udid => _iosCommander.ShutdownDevice(udid));
+        }
+
+        private async void WipeAllBtn_Click(object sender, RoutedEventArgs e) 
+        {
+            var selectedUdids = GetSelectedUdids();
+            if (!selectedUdids.Any()) return;
+
+            var result = MessageBox.Show($"Are you sure you want to WIPE {selectedUdids.Count()} devices? This cannot be undone.", 
+                "Confirm Wipe", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            
+            if (result == MessageBoxResult.Yes)
+            {
+                await ProcessInBatches(selectedUdids, udid => _iosCommander.WipeDevice(udid));
+            }
+        }
+
+        private IEnumerable<string> GetSelectedUdids()
+        {
+            return _portCards.Values
+                .Where(c => c.IsSelected && !string.IsNullOrEmpty(c.DeviceId) && c.DeviceId != "Unknown UDID")
+                .Select(c => c.DeviceId);
+        }
+
+        private async Task ProcessInBatches(IEnumerable<string> udids, Func<string, string> action)
+        {
+            var udidList = udids.ToList();
+            int batchSize = 3;
+
+            for (int i = 0; i < udidList.Count; i += batchSize)
+            {
+                var batch = udidList.Skip(i).Take(batchSize);
+                var tasks = batch.Select(udid => Task.Run(() => action(udid)));
+                await Task.WhenAll(tasks);
+            }
+            
+            MessageBox.Show("Operation completed for selected devices.", "Done", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
         private void RestoreAllBtn_Click(object sender, RoutedEventArgs e) { }
         private void DisconnectAllBtn_Click(object sender, RoutedEventArgs e) { }
         private void InstallAppBtn_Click(object sender, RoutedEventArgs e) { }

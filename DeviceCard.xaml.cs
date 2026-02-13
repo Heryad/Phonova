@@ -98,7 +98,8 @@ namespace Dyagnoz_Latest
             portNumberText.Text = $"Port: {portNumber}";
 
             // Per-card pipeline (keeps concurrent devices isolated).
-            SetControlsEnabled(true);
+            SetControlsEnabled(false);
+            isAlreadyPrinted = false;
             _pipelineCts = new CancellationTokenSource();
             _ = ProcessDevicePipelineAsync(DeviceId, DeviceLocationPath, PortNumber, _pipelineCts.Token);
 
@@ -141,6 +142,7 @@ namespace Dyagnoz_Latest
             FmiStatus = "—";
             SyslogTestResults.Clear();
             DeviceComments.Clear();
+            isAlreadyPrinted = false;
 
             MainCardBorder.Background = (SolidColorBrush)FindResource("CardBg");
 
@@ -458,7 +460,7 @@ namespace Dyagnoz_Latest
                 //Step 12: Push Test Configuration Profile (if exists)
                 var testConfigOutcome = await RunWithRetryAsync(
                     stepName: "App Config",
-                    maxAttempts: 3,
+                    maxAttempts: 2,
                     retryDelayMs: 100,
                     step: (token) => PushTestConfigurationProfileStepAsync(udid, token),
                     ct: ct);
@@ -468,6 +470,8 @@ namespace Dyagnoz_Latest
                 }
 
                 SetControlsEnabled(true);
+                SaveDeviceToDatabase();
+
 
                 // Step 13: Syslog Process to catch results
                 var syslogOutcome = await RunWithRetryAsync(
@@ -490,10 +494,8 @@ namespace Dyagnoz_Latest
                         await Dispatcher.InvokeAsync(async () =>
                         {
                             StatusText.Text = "Finished";
-                            SaveDeviceToDatabase();
-
                             // Load Automation Settings
-                            bool autoPrint = true;
+                            bool autoPrint = false;
                             bool autoWipe = false;
                             bool autoShutdown = false;
 
@@ -514,7 +516,7 @@ namespace Dyagnoz_Latest
                             }
                             catch { }
 
-                            if (autoPrint) PrintLabel();
+                            if (autoPrint) await PrintLabel();
                             
                             if (autoWipe)
                             {
@@ -1062,7 +1064,7 @@ namespace Dyagnoz_Latest
         private async Task<StepOutcome> PushTestConfigurationProfileStepAsync(string udid, CancellationToken ct)
         {
             //We will wait 5-7 seconds before pushing the test configuration profile to give the device enough time to settle
-            Thread.Sleep(3000);
+            await Task.Delay(2200, ct).ConfigureAwait(false);
             // iOSCommander is synchronous; run off the UI thread.
             var result = await Task.Run(() =>
             {
@@ -1669,11 +1671,6 @@ namespace Dyagnoz_Latest
                 {
                     isPrintSuccess = await App.PrintService.PrintDeviceLabelAsync(labelData);
                     isAlreadyPrinted = isPrintSuccess;
-                }
-
-                if (!isPrintSuccess)
-                {
-                    //MessageBox.Show("Failed to print label. Please check the printer connection.", "Print Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
                 return isPrintSuccess;
             }

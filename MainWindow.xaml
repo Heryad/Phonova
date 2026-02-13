@@ -141,11 +141,23 @@
                     <Button x:Name="SettingsBtn2" Style="{StaticResource IconBtn}" ToolTip="Settings" Click="SettingsBtn_Click">
                         <materialDesign:PackIcon Kind="Cog" Width="18" Height="18"/>
                     </Button>
+
+                    <Border Width="1" Background="#475569" Height="20" Margin="6,0"/>
+
+                    <Button x:Name="RebootBatchBtn" Style="{StaticResource IconBtn}" ToolTip="Reboot Selected" Click="RebootAllBtn_Click">
+                        <materialDesign:PackIcon Kind="Restart" Width="18" Height="18"/>
+                    </Button>
+                    <Button x:Name="ShutdownBatchBtn" Style="{StaticResource IconBtn}" ToolTip="Shutdown Selected" Click="ShutdownAllBtn_Click">
+                        <materialDesign:PackIcon Kind="Power" Width="18" Height="18"/>
+                    </Button>
+                    <Button x:Name="WipeBatchBtn" Style="{StaticResource RedIconBtn}" ToolTip="Wipe Selected" Click="WipeAllBtn_Click">
+                        <materialDesign:PackIcon Kind="DeleteForever" Width="18" Height="18"/>
+                    </Button>
                 </StackPanel>
 
                 <!-- Right Side - Dashboard & Window Controls -->
                 <StackPanel Grid.Column="3" Orientation="Horizontal">
-                    <Button x:Name="SettingsBtn" Style="{StaticResource GreenIconBtn}" Width="128" Padding="16,0" ToolTip="Portmap" Click="SettingsBtn_Click">
+                    <Button x:Name="SettingsBtn" Style="{StaticResource GreenIconBtn}" Width="128" Padding="16,0" ToolTip="Settings" Click="SettingsBtn_Click">
                         <StackPanel Orientation="Horizontal" Margin="4,0">
                             <materialDesign:PackIcon Kind="Gear" Width="16" Height="16" VerticalAlignment="Center"/>
                             <TextBlock Text="Settings" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center"/>
