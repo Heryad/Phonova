@@ -25,7 +25,7 @@ namespace Dyagnoz_Latest
             SetImei(device.Imei ?? "-", "-");
             SetIosVersion(device.IosVersion ?? "-");
             SetBattery(device.BatteryHealth ?? "-", device.BatteryCycles ?? "-");
-            SetRegion("-"); 
+            SetRegion(device.Region ?? "-"); 
             SetColor(device.Color ?? "-", device.ProductType, device.EnclosureCode);
             SetLockStatus(device.IcloudStatus ?? "-", device.FmiStatus ?? "-", device.MdmStatus ?? "-", device.SimStatus ?? "-");
             

@@ -199,7 +199,7 @@ namespace Dyagnoz_Latest.Services
                 return "Fail";
             }
 
-            string jsonContent = await File.ReadAllTextAsync(testConfigPath);
+            string jsonContent = File.ReadAllText(testConfigPath);
             string base64Config = Convert.ToBase64String(Encoding.UTF8.GetBytes(jsonContent));
 
             string result = LaunchExternalExecutable(toolboxPath + IDEVICE_INFO, $"--udid={deviceUDID} fsync --app={BUNDLE_ID} push --srcPath=\"{base64Config}\" --dstPath=\"/Documents/CustomTestList.json\"");

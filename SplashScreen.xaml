@@ -70,165 +70,214 @@
     <!-- Main Container -->
     <Border x:Name="MainContainer" CornerRadius="8" Opacity="0" SnapsToDevicePixels="True">
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="280"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            <!-- Splash Content -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="280"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-            <!-- Left Panel - Dark Sidebar -->
-            <Border Grid.Column="0" Background="#1E293B" CornerRadius="8,0,0,8">
-                <Grid>
-                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="30">
-                        <!-- Logo -->
-                        <svgc:SvgViewbox Source="Assets/logo.svg" 
-                               Height="56" Width="200" 
-                               Stretch="Uniform" 
-                               HorizontalAlignment="Center"/>
-
-                        <!-- Divider -->
-                        <Border Height="1" 
-                                Background="White" 
-                                Opacity="0.15" 
-                                Margin="0,30,0,30"
-                                Width="140"/>
-
-                        <!-- Loading Spinner -->
-                        <Grid HorizontalAlignment="Center">
-                            <Ellipse Width="44" Height="44" 
-                                     Stroke="#33FFFFFF" StrokeThickness="3"/>
-                            <Path Stroke="#7FB679" StrokeThickness="3"
-                                  StrokeStartLineCap="Round"
-                                  StrokeEndLineCap="Round"
-                                  Data="M 22,0 A 22,22 0 0 1 44,22"
-                                  RenderTransformOrigin="0.5,0.5"
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center"
-                                  Width="44" Height="44">
-                                <Path.RenderTransform>
-                                    <RotateTransform x:Name="SpinnerRotate" Angle="0"/>
-                                </Path.RenderTransform>
-                            </Path>
-                        </Grid>
-
-                        <!-- Loading Dots -->
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
-                            <Ellipse x:Name="Dot1" Width="6" Height="6" Fill="#7FB679" Margin="3,0" Opacity="0.3"/>
-                            <Ellipse x:Name="Dot2" Width="6" Height="6" Fill="#7FB679" Margin="3,0" Opacity="0.3"/>
-                            <Ellipse x:Name="Dot3" Width="6" Height="6" Fill="#7FB679" Margin="3,0" Opacity="0.3"/>
-                        </StackPanel>
-                    </StackPanel>
-
-                    <!-- Version at Bottom -->
-                    <TextBlock Text="v1.0.0.124" 
-                               FontSize="10"
-                               Foreground="White"
-                               Opacity="0.4"
-                               VerticalAlignment="Bottom"
-                               HorizontalAlignment="Center"
-                               Margin="0,0,0,16"/>
-                </Grid>
-            </Border>
-
-            <!-- Right Panel - Light Content -->
-            <Border Grid.Column="1" Background="#F5F6F8" CornerRadius="0,8,8,0">
-                <Grid>
-                    <!-- Content Card -->
-                    <Border Background="White"
-                            CornerRadius="6"
-                            BorderBrush="#E5E7EB"
-                            BorderThickness="1"
-                            Margin="32"
-                            Padding="28"
-                            VerticalAlignment="Center"
-                            SnapsToDevicePixels="True">
-
-                        <StackPanel>
-                            <!-- Header -->
-                            <TextBlock Text="Initializing System" 
-                                       FontSize="20"
-                                       FontWeight="SemiBold"
-                                       Foreground="#1A1A2E"
-                                       FontFamily="Segoe UI"
-                                       Margin="0,0,0,6"/>
-
-                            <TextBlock Text="Please wait while we prepare your workspace" 
-                                       FontSize="13"
-                                       Foreground="#6B7280"
-                                       FontFamily="Segoe UI"
-                                       Margin="0,0,0,28"/>
-
-                            <!-- Progress Bar -->
-                            <Grid Height="6" Margin="0,0,0,12">
-                                <!-- Track -->
-                                <Border CornerRadius="3" Background="#E5E7EB"/>
-                                
-                                <!-- Progress Indicator -->
-                                <Border x:Name="ProgressIndicator" 
-                                        CornerRadius="3" 
-                                        Width="0" 
-                                        HorizontalAlignment="Left"
-                                        Background="#7FB679"/>
-                            </Grid>
-
-                            <!-- Status Text -->
-                            <TextBlock x:Name="StatusText" 
-                                       Text="Loading components..." 
-                                       FontSize="12" 
-                                       Foreground="#6B7280"
-                                       FontFamily="Segoe UI"/>
+                <!-- Left Panel - Dark Sidebar -->
+                <Border Grid.Column="0" Background="#1E293B" CornerRadius="8,0,0,8">
+                    <Grid>
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="30">
+                            <!-- Logo -->
+                            <svgc:SvgViewbox Source="Assets/logo.svg" 
+                                   Height="56" Width="200" 
+                                   Stretch="Uniform" 
+                                   HorizontalAlignment="Center"/>
 
                             <!-- Divider -->
                             <Border Height="1" 
-                                    Background="#E5E7EB" 
-                                    Margin="0,24,0,20"/>
+                                    Background="White" 
+                                    Opacity="0.15" 
+                                    Margin="0,30,0,30"
+                                    Width="140"/>
 
-                            <!-- Checklist -->
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                    <Ellipse Width="6" Height="6" 
-                                             Fill="#7FB679"
-                                             VerticalAlignment="Center"
-                                             Margin="0,0,10,0"/>
-                                    <TextBlock Text="Core modules loaded" 
-                                               Foreground="#6B7280"
-                                               FontSize="12"
-                                               VerticalAlignment="Center"/>
-                                </StackPanel>
+                            <!-- Loading Spinner -->
+                            <Grid HorizontalAlignment="Center">
+                                <Ellipse Width="44" Height="44" 
+                                         Stroke="#33FFFFFF" StrokeThickness="3"/>
+                                <Path Stroke="#7FB679" StrokeThickness="3"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"
+                                      Data="M 22,0 A 22,22 0 0 1 44,22"
+                                      RenderTransformOrigin="0.5,0.5"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Width="44" Height="44">
+                                    <Path.RenderTransform>
+                                        <RotateTransform x:Name="SpinnerRotate" Angle="0"/>
+                                    </Path.RenderTransform>
+                                </Path>
+                            </Grid>
 
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                    <Ellipse Width="6" Height="6" 
-                                             Fill="#7FB679"
-                                             VerticalAlignment="Center"
-                                             Margin="0,0,10,0"/>
-                                    <TextBlock Text="Connecting to server" 
-                                               Foreground="#6B7280"
-                                               FontSize="12"
-                                               VerticalAlignment="Center"/>
-                                </StackPanel>
-
-                                <StackPanel Orientation="Horizontal">
-                                    <Ellipse Width="6" Height="6" 
-                                             Fill="#D1D5DB"
-                                             VerticalAlignment="Center"
-                                             Margin="0,0,10,0"/>
-                                    <TextBlock Text="Preparing interface" 
-                                               Foreground="#9CA3AF"
-                                               FontSize="12"
-                                               VerticalAlignment="Center"/>
-                                </StackPanel>
+                            <!-- Loading Dots -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                                <Ellipse x:Name="Dot1" Width="6" Height="6" Fill="#7FB679" Margin="3,0" Opacity="0.3"/>
+                                <Ellipse x:Name="Dot2" Width="6" Height="6" Fill="#7FB679" Margin="3,0" Opacity="0.3"/>
+                                <Ellipse x:Name="Dot3" Width="6" Height="6" Fill="#7FB679" Margin="3,0" Opacity="0.3"/>
                             </StackPanel>
                         </StackPanel>
-                    </Border>
 
-                    <!-- Copyright at Bottom -->
-                    <TextBlock Text="© 2024 Dyagnoz. All rights reserved." 
-                               FontSize="10"
-                               Foreground="#9CA3AF"
-                               VerticalAlignment="Bottom"
-                               HorizontalAlignment="Center"
-                               Margin="0,0,0,14"/>
-                </Grid>
-            </Border>
+                        <!-- Version at Bottom -->
+                        <TextBlock Text="v1.0.0.124" 
+                                   FontSize="10"
+                                   Foreground="White"
+                                   Opacity="0.4"
+                                   VerticalAlignment="Bottom"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,16"/>
+                    </Grid>
+                </Border>
+
+                <!-- Right Panel - Light Content -->
+                <Border Grid.Column="1" Background="#F5F6F8" CornerRadius="0,8,8,0">
+                    <Grid>
+                        <!-- Content Card -->
+                        <Border Background="White"
+                                CornerRadius="6"
+                                BorderBrush="#E5E7EB"
+                                BorderThickness="1"
+                                Margin="32"
+                                Padding="28"
+                                VerticalAlignment="Center"
+                                SnapsToDevicePixels="True">
+
+                            <StackPanel>
+                                <!-- Header -->
+                                <TextBlock Text="Initializing System" 
+                                           FontSize="20"
+                                           FontWeight="SemiBold"
+                                           Foreground="#1A1A2E"
+                                           FontFamily="Segoe UI"
+                                           Margin="0,0,0,6"/>
+
+                                <TextBlock Text="Please wait while we prepare your workspace" 
+                                           FontSize="13"
+                                           Foreground="#6B7280"
+                                           FontFamily="Segoe UI"
+                                           Margin="0,0,0,28"/>
+
+                                <!-- Progress Bar -->
+                                <Grid Height="6" Margin="0,0,0,12">
+                                    <!-- Track -->
+                                    <Border CornerRadius="3" Background="#E5E7EB"/>
+                                    
+                                    <!-- Progress Indicator -->
+                                    <Border x:Name="ProgressIndicator" 
+                                            CornerRadius="3" 
+                                            Width="0" 
+                                            HorizontalAlignment="Left"
+                                            Background="#7FB679"/>
+                                </Grid>
+
+                                <!-- Status Text -->
+                                <TextBlock x:Name="StatusText" 
+                                           Text="Loading components..." 
+                                           FontSize="12" 
+                                           Foreground="#6B7280"
+                                           FontFamily="Segoe UI"/>
+
+                                <!-- Divider -->
+                                <Border Height="1" 
+                                        Background="#E5E7EB" 
+                                        Margin="0,24,0,20"/>
+
+                                <!-- Checklist -->
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                        <Ellipse Width="6" Height="6" 
+                                                 Fill="#7FB679"
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,10,0"/>
+                                        <TextBlock Text="Core modules loaded" 
+                                                   Foreground="#6B7280"
+                                                   FontSize="12"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                        <Ellipse Width="6" Height="6" 
+                                                 Fill="#7FB679"
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,10,0"/>
+                                        <TextBlock Text="Connecting to server" 
+                                                   Foreground="#6B7280"
+                                                   FontSize="12"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <Ellipse Width="6" Height="6" 
+                                                 Fill="#D1D5DB"
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,10,0"/>
+                                        <TextBlock Text="Preparing interface" 
+                                                   Foreground="#9CA3AF"
+                                                   FontSize="12"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Copyright at Bottom -->
+                        <TextBlock Text="© 2024 Dyagnoz. All rights reserved." 
+                                   FontSize="10"
+                                   Foreground="#9CA3AF"
+                                   VerticalAlignment="Bottom"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,14"/>
+                    </Grid>
+                </Border>
+            </Grid>
+            
+            <!-- Duplicate Instance Overlay -->
+            <Grid x:Name="DuplicateOverlay" Visibility="Collapsed" Panel.ZIndex="9999">
+                <Border Background="#F9FAFB" CornerRadius="8"/>
+                <Border Padding="40" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <StackPanel>
+                        <Border Background="#FEE2E2" Width="80" Height="80" CornerRadius="40" Margin="0,0,0,24">
+                            <Path Data="M1 1L19 19M19 1L1 19" Stroke="#EF4444" StrokeThickness="3" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        
+                        <TextBlock Text="APP ALREADY RUNNING" FontSize="12" FontWeight="Bold" Foreground="#EF4444" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                        <TextBlock Text="Multiple Instances Detected" FontSize="24" FontWeight="SemiBold" Foreground="#1A1A2E" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                        <TextBlock Text="Dyagnoz is already running on this machine. Please close the other instance before launching again." FontSize="14" Foreground="#6B7280" TextAlignment="Center" TextWrapping="Wrap" Width="400" Margin="0,0,0,32"/>
+                        
+                        <Button x:Name="ExitDuplicateBtn" 
+                                Content="Exit Application" 
+                                Width="200" Height="48"
+                                Background="#EF4444"
+                                Foreground="White"
+                                FontWeight="SemiBold"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                HorizontalAlignment="Center"
+                                Click="ExitDuplicateBtn_Click">
+                            <Button.Resources>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="border" Property="Background" Value="#DC2626"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </Grid>
     </Border>
 </Window>

@@ -12,6 +12,7 @@ namespace Dyagnoz_Latest
     {
         private Dictionary<int, Border> portTiles = new Dictionary<int, Border>();
         private Dictionary<int, TextBlock> portStatusLabels = new Dictionary<int, TextBlock>();
+        private bool _mappingChangedSinceOpen = false;
         
         // Colors
         private readonly SolidColorBrush ConnectedColor = CreateFrozenBrush("#10B981");
@@ -108,6 +109,7 @@ namespace Dyagnoz_Latest
                 {
                     Dispatcher.Invoke(() => 
                     {
+                        _mappingChangedSinceOpen = true;
                         UpdateStatus($"Mapped Port {assignedPort} successfully!", true);
                         // Force a refresh to ensure UI catches up
                         RefreshPortStatus();
@@ -183,6 +185,7 @@ namespace Dyagnoz_Latest
             if (result == MessageBoxResult.Yes)
             {
                 await App.PortMapper.ResetMappingAsync();
+                _mappingChangedSinceOpen = true;
                 UpdateStatus("All mappings reset.", false);
             }
         }
@@ -192,11 +195,27 @@ namespace Dyagnoz_Latest
             if (App.PortMapper.IsLearningMode)
             {
                 await App.PortMapper.StopLearningModeAsync();
+                if (_mappingChangedSinceOpen)
+                {
+                    RestartOverlay.Visibility = Visibility.Visible;
+                }
             }
             else
             {
                 await App.PortMapper.StartLearningModeAsync();
             }
+        }
+
+        private void RestartLater_Click(object sender, RoutedEventArgs e)
+        {
+            RestartOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void RestartNow_Click(object sender, RoutedEventArgs e)
+        {
+            var exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+            System.Diagnostics.Process.Start(exePath);
+            Application.Current.Shutdown();
         }
 
         protected override void OnClosed(EventArgs e)

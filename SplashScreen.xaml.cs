@@ -2,6 +2,8 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Animation;
+using System.Threading;
+using System.Diagnostics;
 
 namespace Dyagnoz_Latest
 {
@@ -19,10 +21,34 @@ namespace Dyagnoz_Latest
             "Almost ready..."
         };
 
+        private static Mutex _mutex;
+        private bool _isDuplicate;
+
         public SplashScreen()
         {
             InitializeComponent();
-            StartLoadingSequence();
+            CheckInstances();
+            if (!_isDuplicate)
+            {
+                StartLoadingSequence();
+            }
+        }
+
+        private void CheckInstances()
+        {
+            const string mutexName = "Global\\Dyagnoz-SingleInstance-Mutex";
+            _mutex = new Mutex(true, mutexName, out bool createdNew);
+
+            if (!createdNew)
+            {
+                _isDuplicate = true;
+                DuplicateOverlay.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void ExitDuplicateBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
         }
 
         private async void StartLoadingSequence()

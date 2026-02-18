@@ -102,231 +102,263 @@
         </Border.Effect>
 
         <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+            <!-- Main Content -->
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-            <!-- Header -->
-            <Border Grid.Row="0" Background="{StaticResource HeaderBg}" CornerRadius="12,12,0,0" Padding="20,16">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+                <!-- Header -->
+                <Border Grid.Row="0" Background="{StaticResource HeaderBg}" CornerRadius="12,12,0,0" Padding="20,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="PORT MAPPING" FontSize="10" Foreground="#94A3B8" FontWeight="Medium" Margin="0,0,0,4"/>
-                        <TextBlock Text="USB Hub Configuration" FontSize="18" Foreground="White" FontWeight="SemiBold"/>
-                    </StackPanel>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="PORT MAPPING" FontSize="10" Foreground="#94A3B8" FontWeight="Medium" Margin="0,0,0,4"/>
+                            <TextBlock Text="USB Hub Configuration" FontSize="18" Foreground="White" FontWeight="SemiBold"/>
+                        </StackPanel>
 
-                    <!-- Close Button -->
-                    <Button Grid.Column="1" 
-                            x:Name="CloseBtn"
-                            Width="36" Height="36"
-                            Background="#374151"
-                            BorderThickness="0"
-                            Cursor="Hand"
-                            VerticalAlignment="Top"
-                            Click="CloseBtn_Click">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6">
-                                    <materialDesign:PackIcon Kind="Close" Width="18" Height="18" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="border" Property="Background" Value="#EF4444"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
-                </Grid>
-            </Border>
-
-            <!-- Legend -->
-            <Border Grid.Row="1" Padding="20,12" BorderBrush="{StaticResource BorderColor}" BorderThickness="0,0,0,1">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <StackPanel Orientation="Horizontal" Margin="0,0,24,0">
-                        <Ellipse Width="12" Height="12" Fill="{StaticResource MappedColor}"/>
-                        <TextBlock Text="Mapped" FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <Ellipse Width="12" Height="12" Fill="{StaticResource UnmappedColor}"/>
-                        <TextBlock Text="Unmapped" FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-
-            <!-- Port Tiles Grid -->
-            <Border Grid.Row="2" Padding="20">
-                <WrapPanel x:Name="PortTilesPanel" HorizontalAlignment="Center" Orientation="Horizontal">
-                    <!-- Row 1: Ports 1-5 -->
-                    <Border x:Name="Port1" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="1" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port1Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-                    <Border x:Name="Port2" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="2" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port2Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-                    <Border x:Name="Port3" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="3" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port3Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-                    <Border x:Name="Port4" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="4" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port4Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-                    <Border x:Name="Port5" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="5" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port5Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Row 2: Ports 6-10 -->
-                    <Border x:Name="Port6" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="6" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port6Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-                    <Border x:Name="Port7" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="7" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port7Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-                    <Border x:Name="Port8" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="8" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port8Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-                    <Border x:Name="Port9" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="9" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port9Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-                    <Border x:Name="Port10" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="10" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port10Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Row 3: Ports 11-15 -->
-                    <Border x:Name="Port11" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="11" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port11Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-                    <Border x:Name="Port12" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="12" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port12Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-                    <Border x:Name="Port13" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="13" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port13Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-                    <Border x:Name="Port14" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="14" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port14Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-                    <Border x:Name="Port15" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="15" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port15Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Row 4: Ports 16-20 -->
-                    <Border x:Name="Port16" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="16" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port16Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-                    <Border x:Name="Port17" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="17" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port17Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-                    <Border x:Name="Port18" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="18" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port18Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-                    <Border x:Name="Port19" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="19" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port19Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-                    <Border x:Name="Port20" Style="{StaticResource PortTile}" Background="#9CA3AF">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="20" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="Port20Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
-                        </StackPanel>
-                    </Border>
-                </WrapPanel>
-            </Border>
-
-            <!-- Footer with Action Buttons -->
-            <Border Grid.Row="3" Padding="20,16" BorderBrush="{StaticResource BorderColor}" BorderThickness="0,1,0,0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Status Text -->
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <materialDesign:PackIcon x:Name="StatusIcon" Kind="Information" Width="18" Height="18" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="StatusText" Text="Ready to start learning" FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                    </StackPanel>
-
-                    <!-- Action Buttons -->
-                    <StackPanel Grid.Column="2" Orientation="Horizontal">
-                        <Button x:Name="ResetBtn" Style="{StaticResource SecondaryBtn}" Click="ResetBtn_Click" Margin="0,0,10,0">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="Refresh" Width="18" Height="18" VerticalAlignment="Center"/>
-                                <TextBlock Text="Reset" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                            </StackPanel>
+                        <!-- Close Button -->
+                        <Button Grid.Column="1" 
+                                x:Name="CloseBtn"
+                                Width="36" Height="36"
+                                Background="#374151"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                VerticalAlignment="Top"
+                                Click="CloseBtn_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6">
+                                        <materialDesign:PackIcon Kind="Close" Width="18" Height="18" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="#EF4444"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
                         </Button>
+                    </Grid>
+                </Border>
 
-                        <Button x:Name="StartLearningBtn" Style="{StaticResource ActionBtn}" Click="StartLearningBtn_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="Play" Width="18" Height="18" VerticalAlignment="Center"/>
-                                <TextBlock Text="Start Learning" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
+                <!-- Legend -->
+                <Border Grid.Row="1" Padding="20,12" BorderBrush="{StaticResource BorderColor}" BorderThickness="0,0,0,1">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,24,0">
+                            <Ellipse Width="12" Height="12" Fill="{StaticResource MappedColor}"/>
+                            <TextBlock Text="Mapped" FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="12" Height="12" Fill="{StaticResource UnmappedColor}"/>
+                            <TextBlock Text="Unmapped" FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
                     </StackPanel>
-                </Grid>
-            </Border>
+                </Border>
+
+                <!-- Port Tiles Grid -->
+                <Border Grid.Row="2" Padding="20">
+                    <WrapPanel x:Name="PortTilesPanel" HorizontalAlignment="Center" Orientation="Horizontal">
+                        <!-- Row 1: Ports 1-5 -->
+                        <Border x:Name="Port1" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="1" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port1Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="Port2" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="2" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port2Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="Port3" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="3" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port3Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="Port4" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="4" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port4Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="Port5" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="5" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port5Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Row 2: Ports 6-10 -->
+                        <Border x:Name="Port6" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="6" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port6Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="Port7" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="7" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port7Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="Port8" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="8" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port8Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="Port9" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="9" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port9Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="Port10" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="10" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port10Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Row 3: Ports 11-15 -->
+                        <Border x:Name="Port11" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="11" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port11Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="Port12" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="12" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port12Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="Port13" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="13" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port13Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="Port14" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="14" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port14Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="Port15" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="15" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port15Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Row 4: Ports 16-20 -->
+                        <Border x:Name="Port16" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="16" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port16Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="Port17" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="17" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port17Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="Port18" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="18" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port18Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="Port19" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="19" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port19Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="Port20" Style="{StaticResource PortTile}" Background="#9CA3AF">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="20" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="Port20Status" Text="—" FontSize="10" Foreground="White" HorizontalAlignment="Center" Opacity="0.8"/>
+                            </StackPanel>
+                        </Border>
+                    </WrapPanel>
+                </Border>
+
+                <!-- Footer with Action Buttons -->
+                <Border Grid.Row="3" Padding="20,16" BorderBrush="{StaticResource BorderColor}" BorderThickness="0,1,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Status Text -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <materialDesign:PackIcon x:Name="StatusIcon" Kind="Information" Width="18" Height="18" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="StatusText" Text="Ready to start learning" FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Action Buttons -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <Button x:Name="ResetBtn" Style="{StaticResource SecondaryBtn}" Click="ResetBtn_Click" Margin="0,0,10,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Refresh" Width="18" Height="18" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Reset" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button x:Name="StartLearningBtn" Style="{StaticResource ActionBtn}" Click="StartLearningBtn_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Play" Width="18" Height="18" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Start Learning" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Restart Overlay -->
+            <Grid x:Name="RestartOverlay" Visibility="Collapsed" Panel.ZIndex="1000">
+                <Border Background="#99000000" CornerRadius="12"/>
+                <Border Background="White" CornerRadius="16" Width="400" Height="220" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="40" ShadowDepth="0" Opacity="0.4" Color="#000000"/>
+                    </Border.Effect>
+                    <StackPanel Margin="30">
+                        <materialDesign:PackIcon Kind="InformationOutline" Width="50" Height="50" Foreground="{StaticResource BrandPurple}" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                        <TextBlock Text="RESTART REQUIRED" FontSize="10" Foreground="{StaticResource TextSecondary}" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Please restart the application for port changes to take full effect." FontSize="15" Foreground="{StaticResource TextPrimary}" FontWeight="SemiBold" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,24"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Style="{StaticResource SecondaryBtn}" Content="Later" Click="RestartLater_Click" Margin="0,0,6,0"/>
+                            <Button x:Name="RestartNowBtn" Grid.Column="1" Style="{StaticResource ActionBtn}" Click="RestartNow_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Restart" Width="18" Height="18" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Restart Now" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </Grid>
     </Border>
 </Window>

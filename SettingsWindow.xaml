@@ -204,12 +204,6 @@
                                 <TextBlock Text="Comments" Margin="12,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
-                        <Button x:Name="NavPrint" Style="{StaticResource NavBtn}" Click="NavPrint_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="Printer" Width="20" Height="20" VerticalAlignment="Center"/>
-                                <TextBlock Text="Print" Margin="12,0,0,0" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
                         <Button x:Name="NavWifi" Style="{StaticResource NavBtn}" Click="NavWifi_Click">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="Wifi" Width="20" Height="20" VerticalAlignment="Center"/>
@@ -317,6 +311,39 @@
                             <!-- Reports Panel -->
                             <StackPanel x:Name="PanelReports" Visibility="Collapsed">
                                 <TextBlock Text="Reports" Style="{StaticResource SectionTitle}"/>
+                                
+                                <!-- Reports Stats -->
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,8,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Total Matched" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="ReportStatTotal" Text="0" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="8,0,8,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Passed" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="ReportStatPassed" Text="0" FontSize="20" FontWeight="Bold" Foreground="#10B981"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Grid.Column="2" Style="{StaticResource CardStyle}" Margin="8,0,8,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Failed" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="ReportStatFailed" Text="0" FontSize="20" FontWeight="Bold" Foreground="#EF4444"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Grid.Column="3" Style="{StaticResource CardStyle}" Margin="8,0,0,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Pass Ratio" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="ReportStatRatio" Text="0%" FontSize="20" FontWeight="Bold" Foreground="{StaticResource BrandGreen}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
                                 <Border Style="{StaticResource CardStyle}">
                                     <StackPanel>
                                         <!-- Search and Filter Bar -->
@@ -325,6 +352,7 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="150"/>
                                                 <ColumnDefinition Width="150"/>
+                                                <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
@@ -343,10 +371,17 @@
                                                 </StackPanel>
                                             </Button>
                                             
-                                            <Button Grid.Column="4" Style="{StaticResource SecondaryBtn}" Click="ResetReportFilters_Click">
+                                            <Button Grid.Column="4" Style="{StaticResource SecondaryBtn}" Margin="0,0,8,0" Click="ResetReportFilters_Click">
                                                 <StackPanel Orientation="Horizontal">
                                                     <materialDesign:PackIcon Kind="Refresh" Width="16" Height="16" VerticalAlignment="Center"/>
                                                     <TextBlock Text="Reset" Margin="8,0,0,0"/>
+                                                </StackPanel>
+                                            </Button>
+
+                                            <Button Grid.Column="5" Style="{StaticResource ActionBtn}" Background="#334155" Click="ExportReports_Click">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="FileExport" Width="16" Height="16" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="Export" Margin="8,0,0,0"/>
                                                 </StackPanel>
                                             </Button>
                                         </Grid>
@@ -445,31 +480,7 @@
                                 </Border>
                             </StackPanel>
 
-                            <!-- Print Panel -->
-                            <StackPanel x:Name="PanelPrint" Visibility="Collapsed">
-                                <TextBlock Text="Print Settings" Style="{StaticResource SectionTitle}"/>
-                                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="320"/></Grid.ColumnDefinitions>
-                                    <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,16,0">
-                                        <StackPanel>
-                                            <TextBlock Text="Paper Size" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                                            <ComboBox SelectedIndex="0" Margin="0,0,0,16"><ComboBoxItem Content="A4"/><ComboBoxItem Content="Letter"/><ComboBoxItem Content="Label (4x6)"/></ComboBox>
-                                            <TextBlock Text="Orientation" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                                <RadioButton Content="Portrait" IsChecked="True" Margin="0,0,16,0"/>
-                                                <RadioButton Content="Landscape"/>
-                                            </StackPanel>
-                                            <TextBlock Text="Copies" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                                            <TextBox Text="1" Width="80" HorizontalAlignment="Left"/>
-                                        </StackPanel>
-                                    </Border>
-                                    <Border Grid.Column="1" Style="{StaticResource CardStyle}">
-                                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                            <materialDesign:PackIcon Kind="FileDocument" Width="64" Height="64" Foreground="#D1D5DB" HorizontalAlignment="Center"/>
-                                            <TextBlock Text="Print Preview" Foreground="{StaticResource TextSecondary}" Margin="0,12,0,0" HorizontalAlignment="Center"/>
-                                        </StackPanel>
-                                    </Border>
-                                </Grid>
-                            </StackPanel>
+
 
                             <!-- WiFi Panel -->
                             <StackPanel x:Name="PanelWifi" Visibility="Collapsed">
@@ -518,59 +529,81 @@
 
                             <!-- Test Flow Panel -->
                             <StackPanel x:Name="PanelTestFlow" Visibility="Collapsed">
-                                <TextBlock Text="Test Flow Automation" Style="{StaticResource SectionTitle}"/>
+                                <TextBlock Text="Test Flow &amp; Printing" Style="{StaticResource SectionTitle}"/>
+                                
+                                <!-- Test Flow Section -->
+                                <TextBlock Text="Test Flow" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,8"/>
                                 <Border Style="{StaticResource CardStyle}">
                                     <StackPanel>
                                         <Grid Margin="0,0,0,16">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel>
-                                                <TextBlock Text="Auto Wipe" FontWeight="SemiBold"/>
-                                                <TextBlock Text="Automatically wipe device after test" Foreground="{StaticResource TextSecondary}" FontSize="12"/>
-                                            </StackPanel>
-                                            <ToggleButton x:Name="AutoWipeToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Checked="AutoWipeToggle_Checked"/>
-                                        </Grid>
-                                        <Border Height="1" Background="{StaticResource BorderColor}" Margin="0,0,0,16"/>
-                                        <Grid Margin="0,0,0,16">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel>
-                                                <TextBlock Text="Auto Print" FontWeight="SemiBold"/>
-                                                <TextBlock Text="Print report automatically after test" Foreground="{StaticResource TextSecondary}" FontSize="12"/>
-                                            </StackPanel>
-                                            <ToggleButton x:Name="AutoPrintToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" IsChecked="True"/>
-                                        </Grid>
-                                        <Border Height="1" Background="{StaticResource BorderColor}" Margin="0,0,0,16"/>
-                                        <Grid Margin="0,0,0,16">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel>
-                                                <TextBlock Text="Auto Shutdown" FontWeight="SemiBold"/>
-                                                <TextBlock Text="Shutdown device after testing" Foreground="{StaticResource TextSecondary}" FontSize="12"/>
-                                            </StackPanel>
-                                            <ToggleButton x:Name="AutoShutdownToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Checked="AutoShutdownToggle_Checked"/>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <StackPanel><TextBlock Text="Full Test" FontWeight="SemiBold"/><TextBlock Text="Run complete diagnostic pipeline" Foreground="{StaticResource TextSecondary}" FontSize="12"/></StackPanel>
+                                            <ToggleButton x:Name="FullTestToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="FlowToggle_Click"/>
                                         </Grid>
                                         <Border Height="1" Background="{StaticResource BorderColor}" Margin="0,0,0,16"/>
                                         <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel>
-                                                <TextBlock Text="Auto Install App" FontWeight="SemiBold"/>
-                                                <TextBlock Text="Install diagnostic app automatically" Foreground="{StaticResource TextSecondary}" FontSize="12"/>
-                                            </StackPanel>
-                                            <ToggleButton x:Name="AutoInstallToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}"/>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <StackPanel><TextBlock Text="Activation Only" FontWeight="SemiBold"/><TextBlock Text="Skip diagnostics, only activate device" Foreground="{StaticResource TextSecondary}" FontSize="12"/></StackPanel>
+                                            <ToggleButton x:Name="ActivationOnlyToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="FlowToggle_Click"/>
                                         </Grid>
                                     </StackPanel>
                                 </Border>
-                                <Button Content="Save Flow Settings" Style="{StaticResource ActionBtn}" Margin="0,0,0,0" Click="SaveTestFlow_Click" HorizontalAlignment="Left" />
+
+                                <!-- Post Test Section -->
+                                <TextBlock Text="Post Test" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" Margin="0,8,0,8"/>
+                                <Border Style="{StaticResource CardStyle}">
+                                    <StackPanel>
+                                        <Grid Margin="0,0,0,16">
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <StackPanel><TextBlock Text="Print Label" FontWeight="SemiBold"/><TextBlock Text="Auto print label on success" Foreground="{StaticResource TextSecondary}" FontSize="12"/></StackPanel>
+                                            <ToggleButton x:Name="AutoPrintToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="SettingToggle_Click"/>
+                                        </Grid>
+                                        <Border Height="1" Background="{StaticResource BorderColor}" Margin="0,0,0,16"/>
+                                        <Grid Margin="0,0,0,16">
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <StackPanel><TextBlock Text="Wipe Device" FontWeight="SemiBold"/><TextBlock Text="Factory reset after processing" Foreground="{StaticResource TextSecondary}" FontSize="12"/></StackPanel>
+                                            <ToggleButton x:Name="AutoWipeToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="SettingToggle_Click"/>
+                                        </Grid>
+                                        <Border Height="1" Background="{StaticResource BorderColor}" Margin="0,0,0,16"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <StackPanel><TextBlock Text="Shutdown Device" FontWeight="SemiBold"/><TextBlock Text="Power off after processing" Foreground="{StaticResource TextSecondary}" FontSize="12"/></StackPanel>
+                                            <ToggleButton x:Name="AutoShutdownToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="SettingToggle_Click"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Print Settings Section -->
+                                <TextBlock Text="Print Settings" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" Margin="0,8,0,8"/>
+                                <Border Style="{StaticResource CardStyle}">
+                                    <StackPanel>
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <TextBlock Text="Print failed parts" VerticalAlignment="Center"/>
+                                            <ToggleButton x:Name="PrintFailedPartsToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="SettingToggle_Click"/>
+                                        </Grid>
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <TextBlock Text="Print part messages" VerticalAlignment="Center"/>
+                                            <ToggleButton x:Name="PrintPartMessagesToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="SettingToggle_Click"/>
+                                        </Grid>
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <TextBlock Text="Print customer name" VerticalAlignment="Center"/>
+                                            <ToggleButton x:Name="PrintCustomerNameToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="SettingToggle_Click"/>
+                                        </Grid>
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <TextBlock Text="Print tester name" VerticalAlignment="Center"/>
+                                            <ToggleButton x:Name="PrintTesterNameToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="SettingToggle_Click"/>
+                                        </Grid>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <TextBlock Text="Print port number" VerticalAlignment="Center"/>
+                                            <ToggleButton x:Name="PrintPortNumberToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="SettingToggle_Click"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
 
                             <!-- License Panel -->

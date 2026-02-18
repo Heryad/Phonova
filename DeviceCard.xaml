@@ -285,6 +285,9 @@
 
                 <!-- Control Row -->
                 <WrapPanel HorizontalAlignment="Center">
+                    <Button x:Name="PrintBtn" Style="{StaticResource ControlBtn}" ToolTip="Print Label" Click="PrintBtn_Click">
+                        <materialDesign:PackIcon Kind="Printer" Width="14" Height="14" Foreground="#6B7280"/>
+                    </Button>
                     <Button x:Name="ViewBtn" Style="{StaticResource ControlBtn}" ToolTip="View" Click="ViewBtn_Click">
                         <materialDesign:PackIcon Kind="Eye" Width="14" Height="14" Foreground="#6B7280"/>
                     </Button>

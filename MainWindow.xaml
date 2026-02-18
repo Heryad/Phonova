@@ -144,13 +144,13 @@
 
                     <Border Width="1" Background="#475569" Height="20" Margin="6,0"/>
 
-                    <Button x:Name="RebootBatchBtn" Style="{StaticResource IconBtn}" ToolTip="Reboot Selected" Click="RebootAllBtn_Click">
+                    <Button x:Name="RebootBatchBtn" Style="{StaticResource IconBtn}" ToolTip="Reboot Selected" Click="RebootAllBtn_Click" IsEnabled="False">
                         <materialDesign:PackIcon Kind="Restart" Width="18" Height="18"/>
                     </Button>
-                    <Button x:Name="ShutdownBatchBtn" Style="{StaticResource IconBtn}" ToolTip="Shutdown Selected" Click="ShutdownAllBtn_Click">
+                    <Button x:Name="ShutdownBatchBtn" Style="{StaticResource IconBtn}" ToolTip="Shutdown Selected" Click="ShutdownAllBtn_Click" IsEnabled="False">
                         <materialDesign:PackIcon Kind="Power" Width="18" Height="18"/>
                     </Button>
-                    <Button x:Name="WipeBatchBtn" Style="{StaticResource RedIconBtn}" ToolTip="Wipe Selected" Click="WipeAllBtn_Click">
+                    <Button x:Name="WipeBatchBtn" Style="{StaticResource RedIconBtn}" ToolTip="Wipe Selected" Click="WipeAllBtn_Click" IsEnabled="False">
                         <materialDesign:PackIcon Kind="DeleteForever" Width="18" Height="18"/>
                     </Button>
                 </StackPanel>

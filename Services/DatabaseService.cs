@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Text.Json;
-using Microsoft.Data.Sqlite;
+using System.Data.SQLite;
 
 namespace Dyagnoz_Latest.Services
 {
@@ -18,14 +18,14 @@ namespace Dyagnoz_Latest.Services
             if (!Directory.Exists(appData)) Directory.CreateDirectory(appData);
             
             _dbPath = Path.Combine(appData, "dyagnoz.db");
-            _connectionString = $"Data Source={_dbPath}";
+            _connectionString = $"Data Source={_dbPath};Version=3;";
             
             InitializeDatabase();
         }
 
         private void InitializeDatabase()
         {
-            using (var connection = new SqliteConnection(_connectionString))
+            using (var connection = new SQLiteConnection(_connectionString))
             {
                 connection.Open();
                 
@@ -49,6 +49,7 @@ namespace Dyagnoz_Latest.Services
                         app_tests TEXT,
                         comments TEXT,
                         ios_version TEXT,
+                        region TEXT,
                         date_time DATETIME
                     );";
 
@@ -60,12 +61,12 @@ namespace Dyagnoz_Latest.Services
                         date_time DATETIME
                     );";
 
-                using (var command = new SqliteCommand(createDevicesTable, connection))
+                using (var command = new SQLiteCommand(createDevicesTable, connection))
                 {
                     command.ExecuteNonQuery();
                 }
 
-                using (var command = new SqliteCommand(createCommentsTable, connection))
+                using (var command = new SQLiteCommand(createCommentsTable, connection))
                 {
                     command.ExecuteNonQuery();
                 }
@@ -74,19 +75,20 @@ namespace Dyagnoz_Latest.Services
                 AddColumnIfNotExists(connection, "processed_devices", "battery_health", "TEXT");
                 AddColumnIfNotExists(connection, "processed_devices", "battery_cycles", "TEXT");
                 AddColumnIfNotExists(connection, "processed_devices", "ios_version", "TEXT");
+                AddColumnIfNotExists(connection, "processed_devices", "region", "TEXT");
             }
         }
 
-        private void AddColumnIfNotExists(SqliteConnection connection, string tableName, string columnName, string columnType)
+        private void AddColumnIfNotExists(SQLiteConnection connection, string tableName, string columnName, string columnType)
         {
             try
             {
-                using (var command = new SqliteCommand($"ALTER TABLE {tableName} ADD COLUMN {columnName} {columnType};", connection))
+                using (var command = new SQLiteCommand($"ALTER TABLE {tableName} ADD COLUMN {columnName} {columnType};", connection))
                 {
                     command.ExecuteNonQuery();
                 }
             }
-            catch (SqliteException ex) when (ex.SqliteErrorCode == 1) // 1 is usually "duplicate column name" in this context
+            catch (SQLiteException ex)// 1 is usually "duplicate column name" in this context
             {
                 // Column likely already exists
             }
@@ -94,19 +96,19 @@ namespace Dyagnoz_Latest.Services
 
         public void SaveProcessedDevice(ProcessedDevice device)
         {
-            using (var connection = new SqliteConnection(_connectionString))
+            using (var connection = new SQLiteConnection(_connectionString))
             {
                 connection.Open();
                 string insertSql = @"
                     INSERT INTO processed_devices (
                         device_name, model, color, storage, serial, imei, 
-                        icloud, fmip, sim, mdm, battery_health, battery_cycles, kernel_tests, app_tests, comments, ios_version, date_time
+                        icloud, fmip, sim, mdm, battery_health, battery_cycles, kernel_tests, app_tests, comments, ios_version, region, date_time
                     ) VALUES (
                         @device_name, @model, @color, @storage, @serial, @imei, 
-                        @icloud, @fmip, @sim, @mdm, @battery_health, @battery_cycles, @kernel_tests, @app_tests, @comments, @ios_version, @date_time
+                        @icloud, @fmip, @sim, @mdm, @battery_health, @battery_cycles, @kernel_tests, @app_tests, @comments, @ios_version, @region, @date_time
                     );";
 
-                using (var command = new SqliteCommand(insertSql, connection))
+                using (var command = new SQLiteCommand(insertSql, connection))
                 {
                     command.Parameters.AddWithValue("@device_name", device.DeviceName ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@model", device.Model ?? (object)DBNull.Value);
@@ -124,6 +126,7 @@ namespace Dyagnoz_Latest.Services
                     command.Parameters.AddWithValue("@app_tests", JsonSerializer.Serialize(device.AppTests));
                     command.Parameters.AddWithValue("@comments", JsonSerializer.Serialize(device.Comments));
                     command.Parameters.AddWithValue("@ios_version", device.IosVersion ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@region", device.Region ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@date_time", DateTime.Now);
 
                     command.ExecuteNonQuery();
@@ -133,11 +136,11 @@ namespace Dyagnoz_Latest.Services
 
         public void AddCommentToLibrary(string title)
         {
-            using (var connection = new SqliteConnection(_connectionString))
+            using (var connection = new SQLiteConnection(_connectionString))
             {
                 connection.Open();
                 string insertSql = "INSERT OR IGNORE INTO comments (comment_title, date_time) VALUES (@title, @date);";
-                using (var command = new SqliteCommand(insertSql, connection))
+                using (var command = new SQLiteCommand(insertSql, connection))
                 {
                     command.Parameters.AddWithValue("@title", title);
                     command.Parameters.AddWithValue("@date", DateTime.Now);
@@ -149,7 +152,7 @@ namespace Dyagnoz_Latest.Services
         public List<ProcessedDevice> GetProcessedDevices(string? searchQuery = null, DateTime? startDate = null, DateTime? endDate = null)
         {
             var result = new List<ProcessedDevice>();
-            using (var connection = new SqliteConnection(_connectionString))
+            using (var connection = new SQLiteConnection(_connectionString))
             {
                 connection.Open();
                 string query = "SELECT * FROM processed_devices WHERE 1=1";
@@ -165,7 +168,7 @@ namespace Dyagnoz_Latest.Services
 
                 query += " ORDER BY date_time DESC";
 
-                using (var command = new SqliteCommand(query, connection))
+                using (var command = new SQLiteCommand(query, connection))
                 {
                     if (!string.IsNullOrWhiteSpace(searchQuery))
                         command.Parameters.AddWithValue("@search", $"%{searchQuery}%");
@@ -198,6 +201,7 @@ namespace Dyagnoz_Latest.Services
                                 AppTests = JsonSerializer.Deserialize<Dictionary<string, string>>(reader.GetString(reader.GetOrdinal("app_tests"))) ?? new(),
                                 Comments = JsonSerializer.Deserialize<List<string>>(reader.GetString(reader.GetOrdinal("comments"))) ?? new(),
                                 IosVersion = reader.IsDBNull(reader.GetOrdinal("ios_version")) ? null : reader.GetString(reader.GetOrdinal("ios_version")),
+                                Region = reader.IsDBNull(reader.GetOrdinal("region")) ? null : reader.GetString(reader.GetOrdinal("region")),
                                 DateTime = reader.GetDateTime(reader.GetOrdinal("date_time"))
                             });
                         }
@@ -209,11 +213,11 @@ namespace Dyagnoz_Latest.Services
 
         public void DeleteCommentFromLibrary(string title)
         {
-            using (var connection = new SqliteConnection(_connectionString))
+            using (var connection = new SQLiteConnection(_connectionString))
             {
                 connection.Open();
                 string deleteSql = "DELETE FROM comments WHERE comment_title = @title;";
-                using (var command = new SqliteCommand(deleteSql, connection))
+                using (var command = new SQLiteCommand(deleteSql, connection))
                 {
                     command.Parameters.AddWithValue("@title", title);
                     command.ExecuteNonQuery();
@@ -224,11 +228,11 @@ namespace Dyagnoz_Latest.Services
         public List<string> GetAllComments()
         {
             var result = new List<string>();
-            using (var connection = new SqliteConnection(_connectionString))
+            using (var connection = new SQLiteConnection(_connectionString))
             {
                 connection.Open();
                 string selectSql = "SELECT comment_title FROM comments ORDER BY comment_title ASC;";
-                using (var command = new SqliteCommand(selectSql, connection))
+                using (var command = new SQLiteCommand(selectSql, connection))
                 {
                     using (var reader = command.ExecuteReader())
                     {
@@ -260,6 +264,7 @@ namespace Dyagnoz_Latest.Services
         public string? ProductType { get; set; }
         public string? EnclosureCode { get; set; }
         public string? IosVersion { get; set; }
+        public string? Region { get; set; }
         public Dictionary<string, string> KernelTests { get; set; } = new();
         public Dictionary<string, string> AppTests { get; set; } = new();
         public List<string> Comments { get; set; } = new();

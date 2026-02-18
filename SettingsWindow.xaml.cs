@@ -21,45 +21,66 @@ namespace Dyagnoz_Latest
             _configPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Dyagnoz");
             if (!System.IO.Directory.Exists(_configPath)) System.IO.Directory.CreateDirectory(_configPath);
             _activeNavButton = NavDashboard;
-            LoadSavedProfiles();
+            
             LoadAndEnsureTestProfile();
             LoadTestListUI();
             LoadCommentsTable();
+            LoadSavedProfiles();
+            SyncSettingsToUi();
+            LoadDashboardStats();
         }
 
-        private void AutoWipeToggle_Checked(object sender, RoutedEventArgs e)
+        private void SyncSettingsToUi()
         {
-            if (AutoShutdownToggle != null)
+            var s = SettingsManager.Current;
+            FullTestToggle.IsChecked = s.FullTest;
+            ActivationOnlyToggle.IsChecked = s.ActivationOnly;
+            AutoPrintToggle.IsChecked = s.AutoPrint;
+            AutoWipeToggle.IsChecked = s.AutoWipe;
+            AutoShutdownToggle.IsChecked = s.AutoShutdown;
+            PrintFailedPartsToggle.IsChecked = s.PrintFailedParts;
+            PrintPartMessagesToggle.IsChecked = s.PrintPartMessages;
+            PrintCustomerNameToggle.IsChecked = s.PrintCustomerName;
+            PrintTesterNameToggle.IsChecked = s.PrintTesterName;
+            PrintPortNumberToggle.IsChecked = s.PrintPortNumber;
+        }
+
+        private void FlowToggle_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender == FullTestToggle && FullTestToggle.IsChecked == true)
+                ActivationOnlyToggle.IsChecked = false;
+            else if (sender == ActivationOnlyToggle && ActivationOnlyToggle.IsChecked == true)
+                FullTestToggle.IsChecked = false;
+
+            UpdateSettingsAndSave();
+        }
+
+        private void SettingToggle_Click(object sender, RoutedEventArgs e)
+        {
+            // Mutually exclusive Wipe/Shutdown
+            if (sender == AutoWipeToggle && AutoWipeToggle.IsChecked == true)
                 AutoShutdownToggle.IsChecked = false;
-        }
-
-        private void AutoShutdownToggle_Checked(object sender, RoutedEventArgs e)
-        {
-            if (AutoWipeToggle != null)
+            else if (sender == AutoShutdownToggle && AutoShutdownToggle.IsChecked == true)
                 AutoWipeToggle.IsChecked = false;
+
+            UpdateSettingsAndSave();
         }
 
-        private async void SaveTestFlow_Click(object sender, RoutedEventArgs e)
+        private void UpdateSettingsAndSave()
         {
-            try
-            {
-                var settings = new Dictionary<string, bool>
-                {
-                    { "AutoWipe", AutoWipeToggle.IsChecked ?? false },
-                    { "AutoPrint", AutoPrintToggle.IsChecked ?? false },
-                    { "AutoShutdown", AutoShutdownToggle.IsChecked ?? false },
-                    { "AutoInstall", AutoInstallToggle.IsChecked ?? false }
-                };
+            var s = SettingsManager.Current;
+            s.FullTest = FullTestToggle.IsChecked ?? false;
+            s.ActivationOnly = ActivationOnlyToggle.IsChecked ?? false;
+            s.AutoPrint = AutoPrintToggle.IsChecked ?? false;
+            s.AutoWipe = AutoWipeToggle.IsChecked ?? false;
+            s.AutoShutdown = AutoShutdownToggle.IsChecked ?? false;
+            s.PrintFailedParts = PrintFailedPartsToggle.IsChecked ?? false;
+            s.PrintPartMessages = PrintPartMessagesToggle.IsChecked ?? false;
+            s.PrintCustomerName = PrintCustomerNameToggle.IsChecked ?? false;
+            s.PrintTesterName = PrintTesterNameToggle.IsChecked ?? false;
+            s.PrintPortNumber = PrintPortNumberToggle.IsChecked ?? false;
 
-                string filePath = System.IO.Path.Combine(_configPath, "GlobalSettings.json");
-                string json = System.Text.Json.JsonSerializer.Serialize(settings);
-                await System.IO.File.WriteAllTextAsync(filePath, json);
-                MessageBox.Show("Test Flow settings saved!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error saving flow settings: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            SettingsManager.Save();
         }
 
         private void LoadAndEnsureTestProfile()
@@ -113,7 +134,7 @@ namespace Dyagnoz_Latest
                         var root = doc.RootElement;
                         if (root.TryGetProperty("Test", out var testProp))
                         {
-                            var parts = testProp.GetString()?.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            var parts = testProp.GetString()?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                             if (parts != null) foreach (var p in parts) enabledTests.Add(p.Trim());
                         }
 
@@ -276,7 +297,7 @@ namespace Dyagnoz_Latest
             {
                 string filePath = System.IO.Path.Combine(_configPath, "CustomTestList.json");
                 string outJson = System.Text.Json.JsonSerializer.Serialize(finalObj);
-                await System.IO.File.WriteAllTextAsync(filePath, outJson, System.Text.Encoding.UTF8);
+                System.IO.File.WriteAllText(filePath, outJson, System.Text.Encoding.UTF8);
                 MessageBox.Show("Configuration Saved!", "Success");
             }
             catch (Exception ex)
@@ -464,7 +485,7 @@ namespace Dyagnoz_Latest
 
                 string fileName = "wifi-sys.mobileconfig";
                 string filePath = System.IO.Path.Combine(_configPath, fileName);
-                await System.IO.File.WriteAllTextAsync(filePath, xml, System.Text.Encoding.UTF8);
+                System.IO.File.WriteAllText(filePath, xml, System.Text.Encoding.UTF8);
                 return true;
             }
             catch(Exception ex)
@@ -481,7 +502,7 @@ namespace Dyagnoz_Latest
             PanelReports.Visibility = Visibility.Collapsed;
             PanelTests.Visibility = Visibility.Collapsed;
             PanelComments.Visibility = Visibility.Collapsed;
-            PanelPrint.Visibility = Visibility.Collapsed;
+
             PanelWifi.Visibility = Visibility.Collapsed;
             PanelTestFlow.Visibility = Visibility.Collapsed;
             PanelLicense.Visibility = Visibility.Collapsed;
@@ -492,7 +513,7 @@ namespace Dyagnoz_Latest
             NavReports.Style = (Style)FindResource("NavBtn");
             NavTests.Style = (Style)FindResource("NavBtn");
             NavComments.Style = (Style)FindResource("NavBtn");
-            NavPrint.Style = (Style)FindResource("NavBtn");
+
             NavWifi.Style = (Style)FindResource("NavBtn");
             NavTestFlow.Style = (Style)FindResource("NavBtn");
             NavLicense.Style = (Style)FindResource("NavBtn");
@@ -505,7 +526,7 @@ namespace Dyagnoz_Latest
                 case "Reports": PanelReports.Visibility = Visibility.Visible; break;
                 case "Tests": PanelTests.Visibility = Visibility.Visible; break;
                 case "Comments": PanelComments.Visibility = Visibility.Visible; break;
-                case "Print": PanelPrint.Visibility = Visibility.Visible; break;
+
                 case "Wifi": PanelWifi.Visibility = Visibility.Visible; break;
                 case "TestFlow": PanelTestFlow.Visibility = Visibility.Visible; break;
                 case "License": PanelLicense.Visibility = Visibility.Visible; break;
@@ -524,7 +545,7 @@ namespace Dyagnoz_Latest
         private void NavReports_Click(object sender, RoutedEventArgs e) => ShowPanel("Reports", NavReports);
         private void NavTests_Click(object sender, RoutedEventArgs e) => ShowPanel("Tests", NavTests);
         private void NavComments_Click(object sender, RoutedEventArgs e) => ShowPanel("Comments", NavComments);
-        private void NavPrint_Click(object sender, RoutedEventArgs e) => ShowPanel("Print", NavPrint);
+
         private void NavWifi_Click(object sender, RoutedEventArgs e) => ShowPanel("Wifi", NavWifi);
         private void NavTestFlow_Click(object sender, RoutedEventArgs e) => ShowPanel("TestFlow", NavTestFlow);
         private void NavLicense_Click(object sender, RoutedEventArgs e) => ShowPanel("License", NavLicense);
@@ -609,8 +630,30 @@ namespace Dyagnoz_Latest
 
             var reports = App.Database.GetProcessedDevices(search, start, end);
 
+            int total = reports.Count;
+            int passed = 0;
+            int failed = 0;
+
             foreach (var report in reports)
             {
+                // Calculate if device passed
+                bool isPass = true;
+                foreach (var test in report.KernelTests.Values)
+                {
+                    if (test == "Fail" || test == "1") { isPass = false; break; }
+                }
+                if (isPass)
+                {
+                    foreach (var test in report.AppTests.Values)
+                    {
+                        if (test == "Fail" || test == "1" || test == "No") { isPass = false; break; }
+                    }
+                }
+
+                if (isPass) passed++;
+                else failed++;
+
+                // Build Table Row (keep existing logic)
                 var grid = new Grid { Margin = new Thickness(0, 0, 0, 1) };
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
@@ -642,10 +685,9 @@ namespace Dyagnoz_Latest
                 Grid.SetColumn(dateBorder, 3); grid.Children.Add(dateBorder);
 
                 // Status (Pass/Fail)
-                int failed = report.KernelTests.Count(x => x.Value != "Pass") + report.AppTests.Count(x => x.Value != "Pass");
                 var badge = new Border { CornerRadius = new CornerRadius(4), Padding = new Thickness(8, 2, 8, 2), VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
                 var badgeText = new TextBlock { FontWeight = FontWeights.Bold, FontSize = 11 };
-                if (failed == 0) { badge.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DEF7EC")); badgeText.Text = "PASS"; badgeText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#03543F")); }
+                if (isPass) { badge.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DEF7EC")); badgeText.Text = "PASS"; badgeText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#03543F")); }
                 else { badge.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FDE8E8")); badgeText.Text = "FAIL"; badgeText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#9B1C1C")); }
                 badge.Child = badgeText;
                 var badgeContainer = new Border { Background = Brushes.White }; badgeContainer.Child = badge;
@@ -668,6 +710,17 @@ namespace Dyagnoz_Latest
 
                 ReportsTablePanel.Children.Add(grid);
             }
+
+            // Update Report Stat Cards
+            ReportStatTotal.Text = total.ToString();
+            ReportStatPassed.Text = passed.ToString();
+            ReportStatFailed.Text = failed.ToString();
+            ReportStatRatio.Text = total > 0 ? $"{(int)((double)passed / total * 100)}%" : "0%";
+        }
+
+        private void ExportReports_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Export feature coming soon!", "Information");
         }
 
         private void SearchReports_Click(object sender, RoutedEventArgs e) => LoadReportsTable();
@@ -697,8 +750,162 @@ namespace Dyagnoz_Latest
         }
         
         // Dashboard analytics
-        private void LoadDashboardStats() { }
-        private void DrawBarChart(List<(string Name, int Pass, int Fail)> data) { }
-        private void DrawLineChart(List<KeyValuePair<DateTime, int>> data) { }
+        private void LoadDashboardStats()
+        {
+            try
+            {
+                var reports = App.Database.GetProcessedDevices();
+                int total = reports.Count;
+                int passed = 0;
+                int failed = 0;
+
+                foreach (var r in reports)
+                {
+                    bool isPass = true;
+                    // Check Kernel Tests
+                    foreach (var test in r.KernelTests.Values)
+                    {
+                        if (test == "Fail" || test == "1") { isPass = false; break; }
+                    }
+                    if (isPass)
+                    {
+                        // Check App Tests
+                        foreach (var test in r.AppTests.Values)
+                        {
+                            if (test == "Fail" || test == "1") { isPass = false; break; }
+                        }
+                    }
+
+                    if (isPass) passed++;
+                    else failed++;
+                }
+
+                StatTotalTests.Text = total.ToString();
+                StatPassed.Text = passed.ToString();
+                StatFailed.Text = failed.ToString();
+                StatSuccessRate.Text = total > 0 ? $"{(int)((double)passed / total * 100)}%" : "0%";
+
+                // Prepare Chart Data (Top 5 Devices)
+                var chartData = reports.Take(5).Select(r => {
+                    int p = r.KernelTests.Values.Count(v => v == "Pass" || v == "0") + r.AppTests.Values.Count(v => v == "Pass" || v == "0" || v == "Yes");
+                    int f = r.KernelTests.Values.Count(v => v == "Fail" || v == "1") + r.AppTests.Values.Count(v => v == "Fail" || v == "1" || v == "No");
+                    return (r.DeviceName ?? "Device", p, f);
+                }).ToList();
+
+                DrawBarChart(chartData);
+
+                var lineData = reports.GroupBy(r => r.DateTime.Date)
+                    .OrderBy(g => g.Key)
+                    .Take(7)
+                    .Select(g => new KeyValuePair<DateTime, int>(g.Key, g.Count()))
+                    .ToList();
+                
+                DrawLineChart(lineData);
+
+                ChartEmptyState.Visibility = total > 0 ? Visibility.Collapsed : Visibility.Visible;
+                LineChartEmptyState.Visibility = total > 0 ? Visibility.Collapsed : Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error loading dashboard: " + ex.Message);
+            }
+        }
+
+        private void DrawBarChart(List<(string Name, int Pass, int Fail)> data)
+        {
+            if (ChartCanvas == null) return;
+            ChartCanvas.Children.Clear();
+            if (data.Count == 0) return;
+
+            double width = ChartCanvas.ActualWidth > 0 ? ChartCanvas.ActualWidth : 500;
+            double height = 180; // Leave room for labels
+            double barWidth = (width / data.Count) * 0.5;
+            double spacing = (width / data.Count) * 0.5;
+            double maxVal = data.Max(x => x.Pass + x.Fail);
+            if (maxVal == 0) maxVal = 1;
+
+            for (int i = 0; i < data.Count; i++)
+            {
+                double x = (i * (barWidth + spacing)) + (spacing / 2);
+                double pHeight = (data[i].Pass / maxVal) * height;
+                double fHeight = (data[i].Fail / maxVal) * height;
+
+                // Pass Bar
+                var rPass = new System.Windows.Shapes.Rectangle { Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981")), Width = barWidth, Height = pHeight, RadiusX = 2, RadiusY = 2 };
+                Canvas.SetLeft(rPass, x);
+                Canvas.SetBottom(rPass, 25); // Leave space for X-axis label
+                ChartCanvas.Children.Add(rPass);
+
+                // Fail Bar (Stacked)
+                var rFail = new System.Windows.Shapes.Rectangle { Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444")), Width = barWidth, Height = fHeight, RadiusX = 2, RadiusY = 2 };
+                Canvas.SetLeft(rFail, x);
+                Canvas.SetBottom(rFail, 25 + pHeight);
+                ChartCanvas.Children.Add(rFail);
+
+                // Device Name Label
+                var lbl = new TextBlock { Text = data[i].Name, FontSize = 10, Foreground = Brushes.Gray, Width = barWidth + spacing, TextAlignment = TextAlignment.Center };
+                Canvas.SetLeft(lbl, x - (spacing / 4));
+                Canvas.SetBottom(lbl, 5);
+                ChartCanvas.Children.Add(lbl);
+
+                // Count Label (Top)
+                if (data[i].Pass + data[i].Fail > 0)
+                {
+                    var countLbl = new TextBlock { Text = (data[i].Pass + data[i].Fail).ToString(), FontSize = 9, FontWeight = FontWeights.Bold, Foreground = Brushes.DimGray, Width = barWidth, TextAlignment = TextAlignment.Center };
+                    Canvas.SetLeft(countLbl, x);
+                    Canvas.SetBottom(countLbl, 25 + pHeight + fHeight + 2);
+                    ChartCanvas.Children.Add(countLbl);
+                }
+            }
+        }
+
+        private void DrawLineChart(List<KeyValuePair<DateTime, int>> data)
+        {
+            if (LineChartCanvas == null) return;
+            LineChartCanvas.Children.Clear();
+            if (data.Count == 0) return;
+
+            double width = LineChartCanvas.ActualWidth > 0 ? LineChartCanvas.ActualWidth : 500;
+            double height = 120;
+            double spacing = data.Count > 1 ? width / (data.Count - 1) : width;
+            double maxVal = data.Max(x => x.Value);
+            if (maxVal == 0) maxVal = 1;
+
+            if (data.Count > 1)
+            {
+                var polyline = new System.Windows.Shapes.Polyline { Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#da5e0bff")), StrokeThickness = 2, StrokeLineJoin = PenLineJoin.Round };
+                for (int i = 0; i < data.Count; i++)
+                {
+                    double x = i * spacing;
+                    double y = height - ((data[i].Value / maxVal) * height);
+                    polyline.Points.Add(new Point(x, y + 10)); // +10 for padding
+                }
+                LineChartCanvas.Children.Add(polyline);
+            }
+
+            for (int i = 0; i < data.Count; i++)
+            {
+                double x = i * spacing;
+                double y = height - ((data[i].Value / maxVal) * height) + 10;
+
+                // Point Circle
+                var dot = new System.Windows.Shapes.Ellipse { Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#da5e0bff")), Width = 6, Height = 6 };
+                Canvas.SetLeft(dot, x - 3);
+                Canvas.SetTop(dot, y - 3);
+                LineChartCanvas.Children.Add(dot);
+
+                // Value Label
+                var valLbl = new TextBlock { Text = data[i].Value.ToString(), FontSize = 9, FontWeight = FontWeights.Bold, Foreground = Brushes.SlateGray };
+                Canvas.SetLeft(valLbl, x - 5);
+                Canvas.SetTop(valLbl, y - 18);
+                LineChartCanvas.Children.Add(valLbl);
+
+                // Date Label
+                var dateLbl = new TextBlock { Text = data[i].Key.ToString("MM/dd"), FontSize = 8, Foreground = Brushes.Gray };
+                Canvas.SetLeft(dateLbl, x - 10);
+                Canvas.SetBottom(dateLbl, -15);
+                LineChartCanvas.Children.Add(dateLbl);
+            }
+        }
     }
 }

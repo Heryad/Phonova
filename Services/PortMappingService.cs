@@ -98,7 +98,7 @@ namespace Dyagnoz_Latest.Services
             {
                 if (!File.Exists(_mappingFilePath)) return true;
 
-                var json = await File.ReadAllTextAsync(_mappingFilePath).ConfigureAwait(false);
+                var json = File.ReadAllText(_mappingFilePath);
                 if (string.IsNullOrWhiteSpace(json))
                 {
                     RaiseError("Mapping file is empty");
@@ -168,8 +168,9 @@ namespace Dyagnoz_Latest.Services
                 var json = JsonSerializer.Serialize(config, options);
 
                 var tempPath = _mappingFilePath + ".tmp";
-                await File.WriteAllTextAsync(tempPath, json).ConfigureAwait(false);
-                File.Move(tempPath, _mappingFilePath, overwrite: true);
+                File.WriteAllText(tempPath, json);
+                if (File.Exists(_mappingFilePath)) File.Delete(_mappingFilePath);
+                File.Move(tempPath, _mappingFilePath);
 
                 RaiseMappingUpdated();
                 return true;

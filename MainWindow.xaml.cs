@@ -109,8 +109,14 @@ namespace Dyagnoz_Latest
         {
             try
             {
-                var selected = _portCards.Values.Count(c => c.IsSelected);
-                SelectedCountText.Text = $"{selected} selected";
+                var selectedDevices = _portCards.Values.Where(c => c.IsSelected && !string.IsNullOrEmpty(c.DeviceId) && c.DeviceId != "Unknown UDID").ToList();
+                var count = selectedDevices.Count;
+                SelectedCountText.Text = $"{count} selected";
+
+                // Enable/Disable buttons based on whether any real device is selected
+                RebootBatchBtn.IsEnabled = count > 0;
+                ShutdownBatchBtn.IsEnabled = count > 0;
+                WipeBatchBtn.IsEnabled = count > 0;
             }
             catch
             {

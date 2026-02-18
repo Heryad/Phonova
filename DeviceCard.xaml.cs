@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Collections.Generic;
 using materialDesign = MaterialDesignThemes.Wpf;
 using System.Xml;
+using DevExpress.XtraReports.UI;
 
 namespace Dyagnoz_Latest
 {
@@ -230,6 +231,7 @@ namespace Dyagnoz_Latest
                 RebootBtn.IsEnabled = enabled;
                 ShutdownBtn.IsEnabled = enabled;
                 WipeBtn.IsEnabled = enabled;
+                PrintBtn.IsEnabled = enabled;
             });
         }
 
@@ -286,205 +288,74 @@ namespace Dyagnoz_Latest
                 // Info parsed successfully; apply friendly name/color to UI on the UI thread.
                 await Dispatcher.InvokeAsync(ApplyDeviceInfoToUi);
 
+                var s = SettingsManager.Current;
+
                 // Step 3: Check activation state and setup status
                 bool isActivated = string.Equals(ActivationState, "Activated", StringComparison.OrdinalIgnoreCase);
                 bool setupDone = string.Equals(SetupDone, "true", StringComparison.OrdinalIgnoreCase);
                 if (!isActivated)
                 {
-                    Debug.WriteLine($"[Port {port}] Device not activated (State: {ActivationState}, Acknowledged: {ActivationStateAcknowledged}). Running activation...");
-
-                    var activationOutcome = await RunWithRetryAsync(
-                        stepName: "Activation",
-                        maxAttempts: 3,
-                        retryDelayMs: 2000,
-                        step: (token) => ActivateDeviceStepAsync(udid, token),
-                        ct: ct);
-
+                    Debug.WriteLine($"[Port {port}] Device not activated. Running activation...");
+                    var activationOutcome = await RunWithRetryAsync("Activation", 3, 2000, (token) => ActivateDeviceStepAsync(udid, token), ct);
                     if (activationOutcome == StepOutcome.Success)
                     {
-                        Debug.WriteLine($"[Port {port}] Activation succeeded. Waiting 2 seconds before skip setup...");
                         await Task.Delay(2000, ct).ConfigureAwait(false);
-
-                        var skipSetupOutcome = await RunWithRetryAsync(
-                            stepName: "Setup",
-                            maxAttempts: 4,
-                            retryDelayMs: 2000,
-                            step: (token) => SkipSetupStepAsync(udid, token),
-                            ct: ct);
-
-                        if (skipSetupOutcome != StepOutcome.Success)
-                        {
-                            Debug.WriteLine($"[Port {port}] Skip setup did not succeed (outcome: {skipSetupOutcome}).");
-                        }
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"[Port {port}] Activation did not succeed (outcome: {activationOutcome}). Skipping setup skip.");
+                        await RunWithRetryAsync("Setup", 4, 2000, (token) => SkipSetupStepAsync(udid, token), ct);
                     }
                 }
                 else if (isActivated && !setupDone)
                 {
-                    Debug.WriteLine($"[Port {port}] Device activated but setup not done (SetupDone: {SetupDone}). Running skip setup...");
-
-                    var skipSetupOutcome = await RunWithRetryAsync(
-                        stepName: "Setup",
-                        maxAttempts: 4,
-                        retryDelayMs: 2000,
-                        step: (token) => SkipSetupStepAsync(udid, token),
-                        ct: ct);
-
-                    if (skipSetupOutcome != StepOutcome.Success)
-                    {
-                        Debug.WriteLine($"[Port {port}] Skip setup did not succeed (outcome: {skipSetupOutcome}).");
-                    }
+                    await RunWithRetryAsync("Setup", 4, 2000, (token) => SkipSetupStepAsync(udid, token), ct);
                 }
 
-                var mdmOutcome = await RunWithRetryAsync(
-                    stepName: "MDM",
-                    maxAttempts: 1,
-                    retryDelayMs: 0,
-                    step: (token) => GetDeviceMDMStatusAsync(udid, token),
-                    ct: ct);
-                if (mdmOutcome == StepOutcome.Success)
+                if (s.FullTest)
                 {
-                    Debug.WriteLine($"[Port {port}] MDM info retrieved: {MdmStatus}");
+                    // Step 4: MDM
+                    await RunWithRetryAsync("MDM", 1, 0, (token) => GetDeviceMDMStatusAsync(udid, token), ct);
                     await Dispatcher.InvokeAsync(ApplyDeviceInfoToUi);
-                }
 
-                // Step 5: Get battery info
-                var batteryOutcome = await RunWithRetryAsync(
-                    stepName: "Bat + Cycle",
-                    maxAttempts: 2,
-                    retryDelayMs: 2000,
-                    step: (token) => GetBatteryInfoStepAsync(udid, token),
-                    ct: ct);
-                if (batteryOutcome == StepOutcome.Success)
-                {
-                    Debug.WriteLine($"[Port {port}] Battery info retrieved: Health={BatteryHealth}%, Cycles={BatteryCycleCount}");
-                    await Dispatcher.InvokeAsync(() =>
-                    {
-                        if (BatteryHealth.HasValue)
-                            BatteryPercentText.Text = $"{BatteryHealth}%";
-                        if (BatteryCycleCount.HasValue)
-                            BatteryCycleText.Text = BatteryCycleCount.ToString();
-                    });
-                }
+                    // Step 5: Battery
+                    await RunWithRetryAsync("Bat + Cycle", 2, 2000, (token) => GetBatteryInfoStepAsync(udid, token), ct);
 
-                // Step 6: VPP Assignment
-                if (!string.IsNullOrEmpty(SerialNumber))
-                {
-                    var vppOutcome = await RunWithRetryAsync(
-                        stepName: "Scanning",
-                        maxAttempts: 2,
-                        retryDelayMs: 3000,
-                        step: (token) => AssignVPPStepAsync(SerialNumber, token),
-                        ct: ct);
+                    // Step 6: VPP
+                    if (!string.IsNullOrEmpty(SerialNumber))
+                        await RunWithRetryAsync("Scanning", 2, 3000, (token) => AssignVPPStepAsync(SerialNumber, token), ct);
 
-                    if (vppOutcome == StepOutcome.Success)
-                    {
-                        Debug.WriteLine($"[Port {port}] VPP Assignment succeeded for Serial: {SerialNumber}");
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"[Port {port}] VPP Assignment did not succeed (outcome: {vppOutcome}).");
-                    }
-                }
-
-                // Step 7: Pearl (FaceID) Validation
-                var pearlOutcome = await RunWithRetryAsync(
-                    stepName: "Kernel",
-                    maxAttempts: 2,
-                    retryDelayMs: 2000,
-                    step: (token) => GetPearlInfoStepAsync(udid, token),
-                    ct: ct);
-
-                if (pearlOutcome == StepOutcome.Success)
-                {
-                    Debug.WriteLine($"[Port {port}] Pearl Validation: {FaceIdStatus}");
+                    // Step 7/8/9: Diagnostics
+                    await RunWithRetryAsync("Kernel", 2, 2000, (token) => GetPearlInfoStepAsync(udid, token), ct);
+                    await RunWithRetryAsync("Kernel", 2, 2000, (token) => GetLcdInfoStepAsync(udid, token), ct);
+                    await RunWithRetryAsync("Kernel", 2, 2000, (token) => GetOemRInfoStepAsync(udid, token), ct);
                     await Dispatcher.InvokeAsync(ApplyDeviceInfoToUi);
-                }
 
-                // Step 8: LCD Validation
-                var lcdOutcome = await RunWithRetryAsync(
-                    stepName: "Kernel",
-                    maxAttempts: 2,
-                    retryDelayMs: 2000,
-                    step: (token) => GetLcdInfoStepAsync(udid, token),
-                    ct: ct);
+                    // Step 10: WiFi
+                    await RunWithRetryAsync("WiFi", 1, 0, (token) => PushWifiStepAsync(udid, token), ct);
 
-                if (lcdOutcome == StepOutcome.Success)
-                {
-                    Debug.WriteLine($"[Port {port}] LCD Validation: {LcdStatus}");
-                    await Dispatcher.InvokeAsync(ApplyDeviceInfoToUi);
-                }
-
-                // Step 9: OEM Parts Validation (Battery/Camera)
-                var oemOutcome = await RunWithRetryAsync(
-                    stepName: "Kernel",
-                    maxAttempts: 2,
-                    retryDelayMs: 2000,
-                    step: (token) => GetOemRInfoStepAsync(udid, token),
-                    ct: ct);
-
-                if (oemOutcome == StepOutcome.Success)
-                {
-                    Debug.WriteLine($"[Port {port}] OemR Validation complete.");
-                    await Dispatcher.InvokeAsync(ApplyDeviceInfoToUi);
-                }
-
-                // Step 10: WiFi Configuration
-                var wifiOutcome = await RunWithRetryAsync(
-                    stepName: "WiFi",
-                    maxAttempts: 1,
-                    retryDelayMs: 0,
-                    step: (token) => PushWifiStepAsync(udid, token),
-                    ct: ct);
-
-                if (wifiOutcome == StepOutcome.Success)
-                {
-                    Debug.WriteLine($"[Port {port}] WiFi Push complete.");
-                }
-
-                // Step 11: Check if App Installed & Install if not
-                var appInstalledOutcome = await RunWithRetryAsync(
-                    stepName: "Checking App",
-                    maxAttempts: 1,
-                    retryDelayMs: 0,
-                    step: (token) => CheckIfAppInstalledStepAsync(udid, token),
-                    ct: ct);
-                if (appInstalledOutcome == StepOutcome.Success)
-                {
-                    Debug.WriteLine($"[Port {port}] App Installed complete.");
-                }
-                else
-                {
-                    var installAppOutcome = await RunWithRetryAsync(
-                        stepName: "Installing App",
-                        maxAttempts: 1,
-                        retryDelayMs: 0,
-                        step: (token) => EnsureAppInstallationStepAsync(udid, token),
-                        ct: ct);
-
-                    if (installAppOutcome == StepOutcome.Success)
+                    // Step 11: App Installation
+                    var appInstalledOutcome = await RunWithRetryAsync("Checking App", 1, 0, (token) => CheckIfAppInstalledStepAsync(udid, token), ct);
+                    if (appInstalledOutcome != StepOutcome.Success)
                     {
-                        Debug.WriteLine($"[Port {port}] App Installed complete.");
+                        await RunWithRetryAsync("Installing App", 1, 0, (token) => EnsureAppInstallationStepAsync(udid, token), ct);
                     }
-                }
 
-                //Step 12: Push Test Configuration Profile (if exists)
-                var testConfigOutcome = await RunWithRetryAsync(
-                    stepName: "App Config",
-                    maxAttempts: 2,
-                    retryDelayMs: 100,
-                    step: (token) => PushTestConfigurationProfileStepAsync(udid, token),
-                    ct: ct);
-                if (testConfigOutcome == StepOutcome.Success)
-                {
-                    Debug.WriteLine($"[Port {port}] Test Configuration Profile Push complete.");
+                    // Step 12: App Config
+                    await RunWithRetryAsync("App Config", 2, 100, (token) => PushTestConfigurationProfileStepAsync(udid, token), ct);
                 }
 
                 SetControlsEnabled(true);
+                // Save point for partial/activation results
                 SaveDeviceToDatabase();
+
+                if (!s.FullTest)
+                {
+                    await Dispatcher.InvokeAsync(async () =>
+                    {
+                        StatusText.Text = "Finished";
+                        if (s.AutoPrint) PrintBtn_Click(null, null);
+                        if (s.AutoWipe) await Task.Run(() => _iosCommander.WipeDevice(udid));
+                        else if (s.AutoShutdown) await Task.Run(() => _iosCommander.ShutdownDevice(udid));
+                    });
+                    return;
+                }
 
 
                 // Step 13: Syslog Process to catch results
@@ -508,50 +379,24 @@ namespace Dyagnoz_Latest
                         await Dispatcher.InvokeAsync(async () =>
                         {
                             StatusText.Text = "Finished";
-                            // Load Automation Settings
-                            bool autoPrint = false;
-                            bool autoWipe = false;
-                            bool autoShutdown = false;
-
-                            try
+                            if (s.AutoPrint)
                             {
-                                string configPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Dyagnoz", "GlobalSettings.json");
-                                if (System.IO.File.Exists(configPath))
+                                if (!AreDetailsComplete())
                                 {
-                                    string json = System.IO.File.ReadAllText(configPath);
-                                    using (var doc = JsonDocument.Parse(json))
-                                    {
-                                        var root = doc.RootElement;
-                                        if (root.TryGetProperty("AutoPrint", out var p)) autoPrint = p.GetBoolean();
-                                        if (root.TryGetProperty("AutoWipe", out var w)) autoWipe = w.GetBoolean();
-                                        if (root.TryGetProperty("AutoShutdown", out var s)) autoShutdown = s.GetBoolean();
-                                    }
+                                    await RunWithRetryAsync("Info", 1, 0, (token) => GetDeviceInfoStepAsync(udid, token), ct);
+                                    await Dispatcher.InvokeAsync(ApplyDeviceInfoToUi);
                                 }
+                                PrintBtn_Click(null, null);
                             }
-                            catch { }
-                            
-                            if (autoWipe)
-                            {
-                                StatusText.Text = "Auto Wiping...";
-                                await Task.Run(() => _iosCommander.WipeDevice(udid));
-                                StatusText.Text = "Wiped";
-                            }
-                            else if (autoShutdown)
-                            {
-                                StatusText.Text = "Auto Shutting down...";
-                                await Task.Run(() => _iosCommander.ShutdownDevice(udid));
-                                StatusText.Text = "Off";
-                            }
-                        });
-                        Debug.WriteLine($"[Port {port}] Wifi Removed complete.");
 
+                            if (s.AutoWipe) await Task.Run(() => _iosCommander.WipeDevice(udid));
+                            else if (s.AutoShutdown) await Task.Run(() => _iosCommander.ShutdownDevice(udid));
+                        });
                     }
-                    Debug.WriteLine($"[Port {port}] Syslog results captured.");
+                    // Final save for full test results
+                    SaveDeviceToDatabase();
+                    Debug.WriteLine($"[Port {port}] Syslog results captured and saved.");
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                Debug.WriteLine($"[Port {port}] Pipeline canceled.");
             }
             catch (Exception ex)
             {
@@ -1147,6 +992,14 @@ namespace Dyagnoz_Latest
             }
         }
 
+    private bool AreDetailsComplete()
+    {
+        return !string.IsNullOrWhiteSpace(SerialNumber) &&
+               !string.IsNullOrWhiteSpace(InternationalMobileEquipmentIdentity) &&
+               !string.IsNullOrWhiteSpace(ProductType) &&
+               !string.IsNullOrWhiteSpace(ProductVersion);
+    }
+
         private void ParseAndStoreBatteryInfo(string rawBatteryInfo)
         {
             if (string.IsNullOrWhiteSpace(rawBatteryInfo))
@@ -1473,7 +1326,9 @@ namespace Dyagnoz_Latest
             foreach (var test in SyslogTestResults)
             {
                 total++;
-                if (test.Value == "0") passed++;
+                string v = test.Value?.Trim() ?? "";
+                if (v == "0" || v.Equals("Pass", StringComparison.OrdinalIgnoreCase) || v.Equals("Yes", StringComparison.OrdinalIgnoreCase)) 
+                    passed++;
             }
 
             if (total == 0) return;
@@ -1579,6 +1434,84 @@ namespace Dyagnoz_Latest
             OnSelectionChanged?.Invoke(this, EventArgs.Empty);
         }
 
+        private void PrintBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var friendlyName = Dyagnoz.Models.DeviceModelMap.GetShortDeviceName(ProductType);
+                var storageLabel = GetRoundedStorageLabel(TotalDiskCapacity);
+                string productTitle = !string.IsNullOrWhiteSpace(friendlyName) ? $"{friendlyName} {storageLabel}" : ProductType;
+
+                var s = Services.SettingsManager.Current;
+
+                string notes = DeviceComments != null ? string.Join(", ", DeviceComments) : "";
+
+                // Parse failed parts based on settings
+                if (s.PrintFailedParts)
+                {
+                    var failed = new System.Collections.Generic.List<string>();
+
+                    // Kernel Tests (Red/Green Icons)
+                    if (FaceIdStatus == "Fail" || FaceIdStatus == "Fixed") failed.Add("FaceID");
+                    if (LcdStatus == "Fail" || LcdStatus == "Fixed") failed.Add("LCD");
+                    if (BatteryStatus == "Fail" || BatteryStatus == "Fixed") failed.Add("Battery");
+                    if (CameraStatus == "Fail" || CameraStatus == "Fixed") failed.Add("Camera");
+
+                    // Syslog/App Tests
+                    if (SyslogTestResults != null)
+                    {
+                        foreach (var kv in SyslogTestResults)
+                        {
+                            string val = kv.Value?.Trim() ?? "";
+                            // 1 = Failure, 0 = Success in these syslogs
+                            if (val.Equals("Fail", StringComparison.OrdinalIgnoreCase) || 
+                                val.Equals("No", StringComparison.OrdinalIgnoreCase) ||
+                                val == "1") 
+                            {
+                                string cleanKey = kv.Key.Replace(" Button", "").Replace(" Mic", "Mic");
+                                failed.Add(cleanKey); // Just the name, no status message
+                            }
+                        }
+                    }
+
+                    if (failed.Count > 0)
+                    {
+                        string failedText = string.Join(", ", failed);
+                        if (string.IsNullOrEmpty(notes)) notes = failedText;
+                        else notes = notes.TrimEnd() + " | " + failedText;
+                    }
+                }
+
+                // Map Color and SIM Name
+                var displayColor = Dyagnoz.Models.DeviceColorMap.GetColorName(ProductType, DeviceEnclosureColor);
+                var displaySim = SIMStatus == "kCTSIMSupportSIMStatusReady" ? "Unlocked" : "Locked";
+
+                // Create the label report with merged data
+                var report = new HorizontalLabel(
+                    InternationalMobileEquipmentIdentity,
+                    SerialNumber,
+                    ModelText.Text,
+                    productTitle,
+                    displayColor,
+                    ProductVersion,
+                    BatteryHealth?.ToString() + "%",
+                    ICloudStatus,
+                    FmiStatus,
+                    MdmStatus,
+                    displaySim,
+                    PortNumber.ToString("D2"),
+                    notes
+                );
+                report.Print();
+
+                Debug.WriteLine($"[Print] Label printed for Serial: {SerialNumber}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error printing label: {ex.Message}", "Print Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void ViewBtn_Click(object sender, RoutedEventArgs e) 
         {
             try
@@ -1612,6 +1545,7 @@ namespace Dyagnoz_Latest
                     ProductType = ProductType,
                     EnclosureCode = DeviceEnclosureColor,
                     IosVersion = ProductVersion,
+                    Region = RegionInfo,
                     KernelTests = kernelTests,
                     AppTests = SyslogTestResults,
                     Comments = DeviceComments,
@@ -1722,6 +1656,8 @@ namespace Dyagnoz_Latest
                     BatteryCycles = BatteryCycleCount?.ToString(),
                     ProductType = ProductType,
                     EnclosureCode = DeviceEnclosureColor,
+                    IosVersion = ProductVersion,
+                    Region = RegionInfo,
                     KernelTests = kernelTests,
                     AppTests = SyslogTestResults,
                     Comments = DeviceComments,
