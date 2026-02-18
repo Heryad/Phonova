@@ -6,6 +6,9 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using Dyagnoz_Latest.Services;
 using MaterialDesignThemes.Wpf;
+using System.IO;
+using System.Text;
+using Microsoft.Win32;
 
 namespace Dyagnoz_Latest
 {
@@ -13,6 +16,7 @@ namespace Dyagnoz_Latest
     {
         private readonly string _configPath;
         private Button? _activeNavButton;
+        private List<ProcessedDevice> _lastFetchedReports = new();
 
 
         public SettingsWindow()
@@ -627,8 +631,9 @@ namespace Dyagnoz_Latest
 
             // Adjust end date to include the whole day
             if (end.HasValue) end = end.Value.Date.AddDays(1).AddTicks(-1);
-
-            var reports = App.Database.GetProcessedDevices(search, start, end);
+            
+            _lastFetchedReports = App.Database.GetProcessedDevices(search, start, end);
+            var reports = _lastFetchedReports;
 
             int total = reports.Count;
             int passed = 0;
@@ -720,7 +725,92 @@ namespace Dyagnoz_Latest
 
         private void ExportReports_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Export feature coming soon!", "Information");
+            if (_lastFetchedReports == null || _lastFetchedReports.Count == 0)
+            {
+                MessageBox.Show("No data to export. Please search first.", "Information");
+                return;
+            }
+
+            var sfd = new SaveFileDialog
+            {
+                Filter = "Excel CSV (*.csv)|*.csv",
+                FileName = $"Dyagnoz_Report_{DateTime.Now:yyyyMMdd_HHmm}.csv",
+                Title = "Export Detailed Reports to Excel"
+            };
+
+            if (sfd.ShowDialog() == true)
+            {
+                try
+                {
+                    var sb = new StringBuilder();
+                    // Professional Header
+                    sb.AppendLine("REPORT DATE,DEVICE NAME,MODEL,STORAGE,SERIAL NUMBER,IMEI,iOS,REGION,BATTERY %,CYCLES,OVERALL STATUS,KERNEL FAILURES,APP FAILURES,COMMENTS");
+
+                    foreach (var r in _lastFetchedReports)
+                    {
+                        var kernelFailures = new List<string>();
+                        var syslogFailures = new List<string>();
+                        bool isPass = true;
+
+                        // Check Kernel Tests
+                        foreach (var test in r.KernelTests)
+                        {
+                            bool failed = test.Value.Equals("Fail", StringComparison.OrdinalIgnoreCase) || 
+                                         test.Value.Equals("1") || 
+                                         test.Value.Equals("Replaced", StringComparison.OrdinalIgnoreCase);
+                            
+                            if (failed)
+                            {
+                                kernelFailures.Add(test.Key);
+                                isPass = false;
+                            }
+                        }
+
+                        // Check Syslog Tests
+                        foreach (var test in r.AppTests)
+                        {
+                            bool failed = test.Value.Equals("Fail", StringComparison.OrdinalIgnoreCase) || 
+                                         test.Value.Equals("1") || 
+                                         test.Value.Equals("No", StringComparison.OrdinalIgnoreCase);
+                            
+                            if (failed)
+                            {
+                                syslogFailures.Add(test.Key);
+                                isPass = false;
+                            }
+                        }
+
+                        string status = isPass ? "PASSED" : "FAILED";
+                        string kFailStr = kernelFailures.Count > 0 ? string.Join("; ", kernelFailures) : "None";
+                        string sFailStr = syslogFailures.Count > 0 ? string.Join("; ", syslogFailures) : "None";
+                        string comments = r.Comments != null ? string.Join(" | ", r.Comments).Replace(",", ";") : "";
+                        
+                        // Formatting CSV line
+                        sb.AppendLine($"{r.DateTime:yyyy-MM-dd HH:mm}," +
+                                      $"\"{r.DeviceName}\"," +
+                                      $"\"{r.Model}\"," +
+                                      $"\"{r.Storage}\"," +
+                                      $"\"{r.Serial}\"," +
+                                      $"\"{r.Imei}\"," +
+                                      $"\"{r.IosVersion}\"," +
+                                      $"\"{r.Region}\"," +
+                                      $"\"{r.BatteryHealth}%\"," +
+                                      $"\"{r.BatteryCycles}\"," +
+                                      $"\"{status}\"," +
+                                      $"\"{kFailStr}\"," +
+                                      $"\"{sFailStr}\"," +
+                                      $"\"{comments}\"");
+                    }
+
+                    // Write with UTF8 BOM
+                    File.WriteAllText(sfd.FileName, sb.ToString(), Encoding.UTF8);
+                    MessageBox.Show("Detailed report exported successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Export failed: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         private void SearchReports_Click(object sender, RoutedEventArgs e) => LoadReportsTable();

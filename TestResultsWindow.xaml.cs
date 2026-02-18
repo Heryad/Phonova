@@ -11,6 +11,7 @@ namespace Dyagnoz_Latest
 {
     public partial class TestResultsWindow : Window
     {
+        private ProcessedDevice? _currentDevice;
 
         public TestResultsWindow()
         {
@@ -19,6 +20,7 @@ namespace Dyagnoz_Latest
         
         public void PopulateFromProcessedDevice(ProcessedDevice device)
         {
+            _currentDevice = device;
             SetDeviceInfo(device.DeviceName ?? "Unknown", device.Serial ?? "-");
             SetModel(device.Model ?? "-");
             SetStorage(device.Storage ?? "-");
@@ -298,8 +300,25 @@ namespace Dyagnoz_Latest
 
         private void CertificateBtn_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implement certificate generation
-            MessageBox.Show("Generating certificate...", "Certificate", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (_currentDevice == null) return;
+
+            try
+            {
+                // Temporarily disable Topmost so the preview can come to the front
+                bool wasTopmost = this.Topmost;
+                this.Topmost = false;
+
+                var report = new Labels.DeviceCertificate(_currentDevice);
+                var tool = new DevExpress.XtraReports.UI.ReportPrintTool(report);
+                tool.ShowPreviewDialog();
+
+                // Restore Topmost status
+                this.Topmost = wasTopmost;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error generating certificate: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         
         // Set comments section

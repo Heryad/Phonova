@@ -60,6 +60,7 @@ namespace Dyagnoz_Latest
         private readonly iOSCommander _iosCommander = new iOSCommander();
         private CancellationTokenSource? _pipelineCts;
         private string _lastKnownDeviceId = string.Empty;
+        private bool _isSaved = false; // Track if we've already saved this session
 
         // Selection support for dashboard actions.
         public bool IsSelected
@@ -100,6 +101,8 @@ namespace Dyagnoz_Latest
             DeviceId = deviceId;
             DeviceLocationPath = locationPath;
             PortNumber = portNumber;
+            _isSaved = false; // Reset for new device
+            
             Debug.WriteLine($"Device {DeviceId} Connected on Port {PortNumber}");
 
             DeviceNameText.Text = deviceId;
@@ -342,8 +345,6 @@ namespace Dyagnoz_Latest
                 }
 
                 SetControlsEnabled(true);
-                // Save point for partial/activation results
-                SaveDeviceToDatabase();
 
                 if (!s.FullTest)
                 {
@@ -1624,10 +1625,16 @@ namespace Dyagnoz_Latest
         }
         private void AppBtn_Click(object sender, RoutedEventArgs e) { }
 
-        private void SaveDeviceToDatabase()
+        private void SaveDeviceToDatabase(bool isManual = false)
         {
             try
             {
+                // If this is a manual save (from UI) and we already auto-saved, skip it
+                if (isManual && _isSaved)
+                {
+                    Debug.WriteLine($"[Port {PortNumber}] Skipping manual save as it was already saved.");
+                    return;
+                }
                 var friendlyName = Dyagnoz.Models.DeviceModelMap.GetShortDeviceName(ProductType);
                 var storageLabel = GetRoundedStorageLabel(TotalDiskCapacity);
                 string deviceName = !string.IsNullOrWhiteSpace(friendlyName) ? $"{friendlyName}" : DeviceId;
@@ -1665,6 +1672,7 @@ namespace Dyagnoz_Latest
                 };
 
                 App.Database.SaveProcessedDevice(device);
+                _isSaved = true; // Mark as saved
                 Debug.WriteLine($"[Port {PortNumber}] Device saved to database successfully.");
             }
             catch (Exception ex)

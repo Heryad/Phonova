@@ -51,6 +51,15 @@
     <Reference Include="DevExpress.XtraReports.v18.1">
       <HintPath>DevExpress.XtraReports.v18.1.dll</HintPath>
     </Reference>
+	  <Reference Include="DevExpress.XtraBars.v18.1">
+		  <HintPath>DevExpress.XtraBars.v18.1.dll</HintPath>
+	  </Reference>
+    <Reference Include="DevExpress.XtraTreeList.v18.1">
+		  <HintPath>DevExpress.XtraTreeList.v18.1.dll</HintPath>
+	  </Reference>
+    <Reference Include="DevExpress.XtraLayout.v18.1">
+      <HintPath>DevExpress.XtraLayout.v18.1.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
@@ -58,6 +67,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\label_logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\certificate_logo.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="src_set\**">
