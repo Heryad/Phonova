@@ -258,62 +258,158 @@ namespace Dyagnoz_Latest.Services
             result = new IosCommandResult();
             StringBuilder standardOutputBuilder = new StringBuilder();
             StringBuilder standardErrorBuilder = new StringBuilder();
+            
+            // CRITICAL FIX 1: Clean up any existing process for this UDID first
+            StopProcessFor(udid);
+            System.Threading.Thread.Sleep(200); // Give OS time to release handles
+            
             using (Process process = new Process())
             {
-                RunningProcess[udid] = process;
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.CreateNoWindow = true;
-                process.StartInfo.RedirectStandardError = true;
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.FileName = newToolboxPath + IDEVICE_SYSLOG;
-                process.StartInfo.Arguments = $"-u {udid} -m DrFonesResultSTART-";
-                process.OutputDataReceived += (DataReceivedEventHandler)((sender, args) =>
+                // CRITICAL FIX 2: Use TryAdd to detect conflicts
+                if (!RunningProcess.TryAdd(udid, process))
                 {
-                    if (args.Data == null)
-                        return;
-                    standardOutputBuilder.AppendLine(args.Data);
-                    if (args.Data.Contains("-DrFonesResultEND") && !process.HasExited)
-                        process?.Kill();
-                });
-                process.ErrorDataReceived += (DataReceivedEventHandler)((sender, args) =>
-                {
-                    if (args.Data == null)
-                        return;
-                    standardErrorBuilder.AppendLine(args.Data);
-                });
-                process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-                if (process.WaitForExit(timeout))
-                {
-                    num = process.ExitCode;
+                    Debug.WriteLine($"[ERROR] Failed to register process for {udid} - already exists!");
+                    // Force cleanup and retry once
+                    StopProcessFor(udid);
+                    System.Threading.Thread.Sleep(500);
+                    
+                    if (!RunningProcess.TryAdd(udid, process))
+                    {
+                        result.Exception = "Failed to register syslog process - UDID conflict";
+                        return -1;
+                    }
                 }
-                else
+                
+                try
                 {
-                    process.Kill();
-                    result.Exception = "Exception";
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.StartInfo.RedirectStandardError = true;
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.FileName = newToolboxPath + IDEVICE_SYSLOG;
+                    process.StartInfo.Arguments = $"-u {udid} -m DrFonesResultSTART-";
+                    
+                    process.OutputDataReceived += (DataReceivedEventHandler)((sender, args) =>
+                    {
+                        if (args.Data == null)
+                            return;
+                        standardOutputBuilder.AppendLine(args.Data);
+                        if (args.Data.Contains("-DrFonesResultEND"))
+                        {
+                            try
+                            {
+                                if (!process.HasExited)
+                                    process?.Kill();
+                            }
+                            catch { }
+                        }
+                    });
+                    
+                    process.ErrorDataReceived += (DataReceivedEventHandler)((sender, args) =>
+                    {
+                        if (args.Data == null)
+                            return;
+                        standardErrorBuilder.AppendLine(args.Data);
+                    });
+                    
+                    process.Start();
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+                    
+                    if (process.WaitForExit(timeout))
+                    {
+                        num = process.ExitCode;
+                    }
+                    else
+                    {
+                        // Timeout reached
+                        try
+                        {
+                            if (!process.HasExited)
+                                process.Kill();
+                        }
+                        catch { }
+                        result.Exception = $"Timeout after {timeout}ms";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    result.Exception = $"Process error: {ex.Message}";
+                }
+                finally
+                {
+                    // CRITICAL FIX 3: Always remove from dictionary and dispose
+                    RunningProcess.TryRemove(udid, out _);
+                    
+                    try
+                    {
+                        if (!process.HasExited)
+                        {
+                            process.Kill();
+                            process.WaitForExit(1000);
+                        }
+                        process.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[WARN] Cleanup error for {udid}: {ex.Message}");
+                    }
                 }
             }
+            
             result.Result = standardOutputBuilder.ToString();
-            result.Exception = standardErrorBuilder.ToString();
+            if (string.IsNullOrEmpty(result.Exception))
+                result.Exception = standardErrorBuilder.ToString();
+            
             return num;
         }
 
         public static void StopProcessFor(string udid)
         {
+            if (string.IsNullOrEmpty(udid)) return;
+            
             try
             {
                 if (RunningProcess.TryRemove(udid, out Process process))
                 {
+                    Debug.WriteLine($"[CLEANUP] Stopping process for {udid}");
+                    
                     try
                     {
                         if (process != null && !process.HasExited)
+                        {
+                            // Try graceful kill first
                             process.Kill();
+                            
+                            // Wait up to 2 seconds for exit
+                            if (!process.WaitForExit(2000))
+                            {
+                                Debug.WriteLine($"[WARN] Process for {udid} did not exit gracefully");
+                                // Force kill if still running (shouldn't happen but safety net)
+                                try { process.Kill(); } catch { }
+                            }
+                        }
+                        
+                        // Always dispose to release handles
+                        process?.Dispose();
+                        Debug.WriteLine($"[CLEANUP] Process for {udid} stopped and disposed");
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[ERROR] Failed to kill process for {udid}: {ex.Message}");
+                        // Still try to dispose
+                        try { process?.Dispose(); } catch { }
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine($"[CLEANUP] No process found for {udid}");
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ERROR] StopProcessFor outer exception for {udid}: {ex.Message}");
+            }
         }
 
         public static void StopAllProcesses()

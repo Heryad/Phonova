@@ -11,7 +11,6 @@ namespace Dyagnoz_Latest
 {
     public partial class TestResultsWindow : Window
     {
-        public event EventHandler? OnPrintClicked;
 
         public TestResultsWindow()
         {
@@ -295,10 +294,7 @@ namespace Dyagnoz_Latest
             Close();
         }
 
-        private void PrintBtn_Click(object sender, RoutedEventArgs e)
-        {
-            OnPrintClicked?.Invoke(this, EventArgs.Empty);
-        }
+
 
         private void CertificateBtn_Click(object sender, RoutedEventArgs e)
         {

@@ -12,8 +12,6 @@ using System.Windows.Media;
 using System.Collections.Generic;
 using materialDesign = MaterialDesignThemes.Wpf;
 using System.Xml;
-using Dyagnoz.Services.Printing;
-
 
 namespace Dyagnoz_Latest
 {
@@ -60,6 +58,7 @@ namespace Dyagnoz_Latest
 
         private readonly iOSCommander _iosCommander = new iOSCommander();
         private CancellationTokenSource? _pipelineCts;
+        private string _lastKnownDeviceId = string.Empty;
 
         // Selection support for dashboard actions.
         public bool IsSelected
@@ -67,8 +66,6 @@ namespace Dyagnoz_Latest
             get => DeviceCheckbox.IsChecked ?? false;
             set => DeviceCheckbox.IsChecked = value;
         }
-
-        private bool isAlreadyPrinted = false; // To prevent multiple prints for the same device connection.
 
         public event EventHandler? OnSelectionChanged;
 
@@ -85,10 +82,20 @@ namespace Dyagnoz_Latest
 
         public void setDevice(string deviceId, string locationPath, int portNumber)
         {
+            // CRITICAL FIX: If we had a different device before, clean up its processes first
+            if (!string.IsNullOrEmpty(_lastKnownDeviceId) && _lastKnownDeviceId != deviceId)
+            {
+                Debug.WriteLine($"[Port {portNumber}] Device SWAP detected: {_lastKnownDeviceId} → {deviceId}");
+                iOSCommander.StopProcessFor(_lastKnownDeviceId);
+                System.Threading.Thread.Sleep(150); // Give process cleanup time to complete
+            }
+
             // Cancel any existing work for this card/slot.
             CancelPipeline();
 
             MainCardBorder.Background = (SolidColorBrush)FindResource("CardBg");
+            
+            _lastKnownDeviceId = deviceId; // Track for next potential swap
             DeviceId = deviceId;
             DeviceLocationPath = locationPath;
             PortNumber = portNumber;
@@ -99,7 +106,7 @@ namespace Dyagnoz_Latest
 
             // Per-card pipeline (keeps concurrent devices isolated).
             SetControlsEnabled(false);
-            isAlreadyPrinted = false;
+
             _pipelineCts = new CancellationTokenSource();
             _ = ProcessDevicePipelineAsync(DeviceId, DeviceLocationPath, PortNumber, _pipelineCts.Token);
 
@@ -107,13 +114,21 @@ namespace Dyagnoz_Latest
 
         public void ClearDevice()
         {
-            Debug.WriteLine($"Device {DeviceId} Disconnected from Port {PortNumber}");
+            string udidToCleanup = _lastKnownDeviceId; // Capture before clearing
+            
+            Debug.WriteLine($"Device {udidToCleanup} Disconnected from Port {PortNumber}");
 
-            iOSCommander.StopProcessFor(DeviceId);
+            // CRITICAL FIX: Stop processes for the device that's being cleared
+            if (!string.IsNullOrEmpty(udidToCleanup))
+            {
+                iOSCommander.StopProcessFor(udidToCleanup);
+                System.Threading.Thread.Sleep(100); // Let process cleanup complete
+            }
 
             CancelPipeline();
 
             // 1. Reset backing properties
+            _lastKnownDeviceId = string.Empty;
             DeviceId = string.Empty;
             DeviceLocationPath = string.Empty;
             ProductType = string.Empty;
@@ -142,7 +157,7 @@ namespace Dyagnoz_Latest
             FmiStatus = "—";
             SyslogTestResults.Clear();
             DeviceComments.Clear();
-            isAlreadyPrinted = false;
+
 
             MainCardBorder.Background = (SolidColorBrush)FindResource("CardBg");
 
@@ -209,7 +224,6 @@ namespace Dyagnoz_Latest
             Dispatcher.InvokeAsync(() =>
             {
                 ViewBtn.IsEnabled = enabled;
-                PrintBtn.IsEnabled = enabled;
                 CommentBtn.IsEnabled = enabled;
                 WifiBtn.IsEnabled = enabled;
                 AppBtn.IsEnabled = enabled;
@@ -515,8 +529,6 @@ namespace Dyagnoz_Latest
                                 }
                             }
                             catch { }
-
-                            if (autoPrint) await PrintLabel();
                             
                             if (autoWipe)
                             {
@@ -640,7 +652,10 @@ namespace Dyagnoz_Latest
 
             try
             {
-                IosCommandResult iosCommandResult = null;
+                IosCommandResult iosCommandResult;
+
+                // 20 MINUTE TIMEOUT for human testing (adjustable safety net)
+                int maxWaitMs = 20 * 60 * 1000; // 1,200,000 ms = 20 minutes
 
                 using (ct.Register(() => iOSCommander.StopProcessFor(udid)))
                 {
@@ -648,7 +663,7 @@ namespace Dyagnoz_Latest
                     {
                         ct.ThrowIfCancellationRequested();
                         IosCommandResult result;
-                        _iosCommander.HookSysLogProcess(udid, -1, out result);
+                        _iosCommander.HookSysLogProcess(udid, maxWaitMs, out result);
                         return result;
                     }, ct).ConfigureAwait(false);
                 }
@@ -1611,74 +1626,6 @@ namespace Dyagnoz_Latest
             catch (Exception ex)
             {
                 Debug.WriteLine($"[View] Error: {ex.Message}");
-            }
-        }
-        private async void PrintBtn_Click(object sender, RoutedEventArgs e)
-        {
-            PrintLabel();
-        }
-
-        private async Task<bool> PrintLabel()
-        {
-            var failedTests = new List<string>();
-            if (FaceIdStatus == "Fail") failedTests.Add("FaceID");
-            if (LcdStatus == "Fail") failedTests.Add("LCD");
-            if (BatteryStatus == "Fail") failedTests.Add("Battery");
-            if (CameraStatus == "Fail") failedTests.Add("Camera");
-
-            foreach (var test in SyslogTestResults)
-            {
-                if (test.Value != "0")
-                {
-                    failedTests.Add(test.Key);
-                }
-            }
-
-            string failedMessage = string.Join(", ", failedTests);
-            string commentsMessage = string.Join(", ", DeviceComments);
-            string finalMessage = failedMessage;
-
-            if (!string.IsNullOrEmpty(commentsMessage))
-            {
-                if (!string.IsNullOrEmpty(finalMessage)) finalMessage += " - ";
-                finalMessage += commentsMessage;
-            }
-
-            var labelData = new DeviceLabelData
-            {
-                DeviceName = DeviceNameText.Text,
-                Storage = GetRoundedStorageLabel(TotalDiskCapacity),
-                ModelNumber = ModelText.Text,
-                ICloudState = ICloudStatus,
-                FmiState = FmiStatus,
-                SimState = SimlockText.Text,
-                MdmState = MdmStatus,
-                Color = ColorText.Text,
-                IosVersion = ProductVersion.Replace("iOS : ", ""),
-                Battery = BatteryPercentText.Text,
-                Port = PortNumber.ToString(),
-                Imei = Imei1Text.Text,
-                SerialNumber = SerialText.Text,
-                Date = DateTime.Now.ToString("yyyy-MM-dd"),
-                Messages = finalMessage,
-                Comments = commentsMessage
-            };
-
-            try
-            {
-                bool isPrintSuccess = false;
-                if (!isAlreadyPrinted)
-                {
-                    isPrintSuccess = await App.PrintService.PrintDeviceLabelAsync(labelData);
-                    isAlreadyPrinted = isPrintSuccess;
-                }
-                return isPrintSuccess;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[Print] Error preparing label data: {ex.Message}");
-                //MessageBox.Show("Failed to prepare label for printing.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return false;
             }
         }
 

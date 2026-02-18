@@ -25,28 +25,6 @@ namespace Dyagnoz_Latest
             LoadAndEnsureTestProfile();
             LoadTestListUI();
             LoadCommentsTable();
-            LoadTestFlowSettings();
-        }
-
-        private void LoadTestFlowSettings()
-        {
-            try
-            {
-                string filePath = System.IO.Path.Combine(_configPath, "GlobalSettings.json");
-                if (System.IO.File.Exists(filePath))
-                {
-                    string json = System.IO.File.ReadAllText(filePath);
-                    using (var doc = System.Text.Json.JsonDocument.Parse(json))
-                    {
-                        var root = doc.RootElement;
-                        if (root.TryGetProperty("AutoWipe", out var wipe)) AutoWipeToggle.IsChecked = wipe.GetBoolean();
-                        if (root.TryGetProperty("AutoPrint", out var print)) AutoPrintToggle.IsChecked = print.GetBoolean();
-                        if (root.TryGetProperty("AutoShutdown", out var shutdown)) AutoShutdownToggle.IsChecked = shutdown.GetBoolean();
-                        if (root.TryGetProperty("AutoInstall", out var install)) AutoInstallToggle.IsChecked = install.GetBoolean();
-                    }
-                }
-            }
-            catch { }
         }
 
         private void AutoWipeToggle_Checked(object sender, RoutedEventArgs e)
