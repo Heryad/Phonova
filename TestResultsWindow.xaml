@@ -100,7 +100,21 @@
             <Setter Property="Padding" Value="12,10"/>
             <Setter Property="Margin" Value="0,0,0,6"/>
         </Style>
+
+        <!-- Rotating Animation for Spinner -->
+        <Storyboard x:Key="SpinAnimation" RepeatBehavior="Forever">
+            <DoubleAnimation 
+                Storyboard.TargetName="SpinnerRotate"
+                Storyboard.TargetProperty="Angle"
+                From="0" To="360" Duration="0:0:1.2"/>
+        </Storyboard>
     </Window.Resources>
+
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="Window.Loaded">
+            <BeginStoryboard Storyboard="{StaticResource SpinAnimation}"/>
+        </EventTrigger>
+    </Window.Triggers>
 
     <!-- Main Card with Shadow -->
     <Border Background="{StaticResource CardBg}" 
@@ -343,6 +357,41 @@
                     </Button>
                 </Grid>
             </Border>
+
+            <!-- Loading Overlay -->
+            <Grid x:Name="LoadingOverlay" Grid.RowSpan="3" Visibility="Collapsed">
+                <Border Background="#CCFFFFFF" CornerRadius="12"/>
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <!-- Custom Spinner from SplashScreen -->
+                    <Grid HorizontalAlignment="Center" Width="44" Height="44">
+                        <Ellipse Width="44" Height="44" 
+                                 Stroke="#E5E7EB" StrokeThickness="3"/>
+                        <Path Stroke="{StaticResource BrandPurple}" StrokeThickness="3"
+                              StrokeStartLineCap="Round"
+                              StrokeEndLineCap="Round"
+                              Data="M 22,0 A 22,22 0 0 1 44,22"
+                              RenderTransformOrigin="0.5,0.5"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Width="44" Height="44">
+                            <Path.RenderTransform>
+                                <RotateTransform x:Name="SpinnerRotate" Angle="0"/>
+                            </Path.RenderTransform>
+                        </Path>
+                    </Grid>
+                    
+                    <TextBlock Text="Generating Certificate..." 
+                               Margin="0,16,0,0" 
+                               FontSize="14" 
+                               FontWeight="SemiBold" 
+                               Foreground="{StaticResource BrandPurple}"/>
+                    <TextBlock Text="Please wait a moment" 
+                               HorizontalAlignment="Center"
+                               Margin="0,4,0,0" 
+                               FontSize="12" 
+                               Foreground="{StaticResource TextSecondary}"/>
+                </StackPanel>
+            </Grid>
         </Grid>
     </Border>
 </Window>

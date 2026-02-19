@@ -298,9 +298,13 @@ namespace Dyagnoz_Latest
 
 
 
-        private void CertificateBtn_Click(object sender, RoutedEventArgs e)
+        private async void CertificateBtn_Click(object sender, RoutedEventArgs e)
         {
             if (_currentDevice == null) return;
+
+            // Show Loading
+            LoadingOverlay.Visibility = Visibility.Visible;
+            CertificateBtn.IsEnabled = false;
 
             try
             {
@@ -308,7 +312,9 @@ namespace Dyagnoz_Latest
                 bool wasTopmost = this.Topmost;
                 this.Topmost = false;
 
-                var report = new Labels.DeviceCertificate(_currentDevice);
+                // Move heavy report generation to a background thread
+                var report = await Task.Run(() => new Labels.DeviceCertificate(_currentDevice));
+                
                 var tool = new DevExpress.XtraReports.UI.ReportPrintTool(report);
                 tool.ShowPreviewDialog();
 
@@ -318,6 +324,12 @@ namespace Dyagnoz_Latest
             catch (Exception ex)
             {
                 MessageBox.Show("Error generating certificate: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                // Hide Loading
+                LoadingOverlay.Visibility = Visibility.Collapsed;
+                CertificateBtn.IsEnabled = true;
             }
         }
         

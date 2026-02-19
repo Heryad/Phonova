@@ -369,31 +369,30 @@ namespace Dyagnoz_Latest
 
                 if (syslogOutcome == StepOutcome.Success)
                 {
+                    // Decoupled Printing: Print immediately after Syslog success
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        if (s.AutoPrint) PrintBtn_Click(null, null);
+                    });
+
+                    // Attempt WiFi Removal (Cleanup)
                     var wifiRemovalOutcome = await RunWithRetryAsync(
                         stepName: "Removing Wifi",
                         maxAttempts: 2,
                         retryDelayMs: 2000,
                         step: (token) => RemoveWifiStepAsync(udid, token),
                         ct: ct);
-                    if (wifiRemovalOutcome == StepOutcome.Success)
-                    {
-                        await Dispatcher.InvokeAsync(async () =>
-                        {
-                            StatusText.Text = "Finished";
-                            if (s.AutoPrint)
-                            {
-                                if (!AreDetailsComplete())
-                                {
-                                    await RunWithRetryAsync("Info", 1, 0, (token) => GetDeviceInfoStepAsync(udid, token), ct);
-                                    await Dispatcher.InvokeAsync(ApplyDeviceInfoToUi);
-                                }
-                                PrintBtn_Click(null, null);
-                            }
 
-                            if (s.AutoWipe) await Task.Run(() => _iosCommander.WipeDevice(udid));
-                            else if (s.AutoShutdown) await Task.Run(() => _iosCommander.ShutdownDevice(udid));
-                        });
-                    }
+                    // Finalize regardless of WiFi outcome so UI doesn't get stuck
+                    await Dispatcher.InvokeAsync(async () =>
+                    {
+                        StatusText.Text = "Finished";
+                        
+                        // Execute cleanup actions even if WiFi removal failed
+                        if (s.AutoWipe) await Task.Run(() => _iosCommander.WipeDevice(udid));
+                        else if (s.AutoShutdown) await Task.Run(() => _iosCommander.ShutdownDevice(udid));
+                    });
+                    
                     // Final save for full test results
                     SaveDeviceToDatabase();
                     Debug.WriteLine($"[Port {port}] Syslog results captured and saved.");
@@ -480,6 +479,15 @@ namespace Dyagnoz_Latest
             try
             {
                 ParseAndStoreDeviceInfo(result);
+
+                // CRITICAL: Ensure we have all mandatory fields before considering this a success.
+                // If incomplete, return Retry so the pipeline logic performs the requested retries.
+                if (!AreDetailsComplete())
+                {
+                    Debug.WriteLine($"[Port {PortNumber}] Device info incomplete for {udid}. Triggering retry...");
+                    return StepOutcome.Retry;
+                }
+
                 return StepOutcome.Success;
             }
             catch (Exception ex)
@@ -998,7 +1006,9 @@ namespace Dyagnoz_Latest
         return !string.IsNullOrWhiteSpace(SerialNumber) &&
                !string.IsNullOrWhiteSpace(InternationalMobileEquipmentIdentity) &&
                !string.IsNullOrWhiteSpace(ProductType) &&
-               !string.IsNullOrWhiteSpace(ProductVersion);
+               !string.IsNullOrWhiteSpace(ProductVersion) &&
+               !string.IsNullOrWhiteSpace(TotalDiskCapacity) &&
+               !string.IsNullOrWhiteSpace(DeviceEnclosureColor);
     }
 
         private void ParseAndStoreBatteryInfo(string rawBatteryInfo)
