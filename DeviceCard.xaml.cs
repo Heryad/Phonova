@@ -351,7 +351,7 @@ namespace Dyagnoz_Latest
                     await Dispatcher.InvokeAsync(async () =>
                     {
                         StatusText.Text = "Finished";
-                        if (s.AutoPrint) PrintBtn_Click(null, null);
+                        // NO PRINT for activation-only flow
                         if (s.AutoWipe) await Task.Run(() => _iosCommander.WipeDevice(udid));
                         else if (s.AutoShutdown) await Task.Run(() => _iosCommander.ShutdownDevice(udid));
                     });
@@ -372,7 +372,9 @@ namespace Dyagnoz_Latest
                     // Decoupled Printing: Print immediately after Syslog success
                     await Dispatcher.InvokeAsync(() =>
                     {
-                        if (s.AutoPrint) PrintBtn_Click(null, null);
+                        // CRITICAL FIX: Ensure device wasn't cleared/unplugged resulting in empty data
+                        if (s.AutoPrint && !string.IsNullOrEmpty(SerialNumber)) 
+                            PrintBtn_Click(null, null);
                     });
 
                     // Attempt WiFi Removal (Cleanup)
@@ -1447,6 +1449,10 @@ namespace Dyagnoz_Latest
 
         private void PrintBtn_Click(object sender, RoutedEventArgs e)
         {
+            // CRITICAL FIX: Guard against printing if device data is cleared (race condition on unplug)
+            if (string.IsNullOrEmpty(SerialNumber)) 
+                return;
+
             try
             {
                 var friendlyName = Dyagnoz.Models.DeviceModelMap.GetShortDeviceName(ProductType);
