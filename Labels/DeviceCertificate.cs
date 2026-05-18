@@ -7,9 +7,9 @@ using System.Linq;
 using DevExpress.XtraPrinting;
 using DevExpress.XtraPrinting.Drawing;
 using DevExpress.XtraReports.UI;
-using Dyagnoz_Latest.Services;
+using MOGY_Latest.Services;
 
-namespace Dyagnoz_Latest.Labels
+namespace MOGY_Latest.Labels
 {
     public class DeviceCertificate : XtraReport
     {
@@ -117,7 +117,7 @@ namespace Dyagnoz_Latest.Labels
             footerLine.ForeColor = Color.FromArgb(226, 232, 240);
 
             XRLabel footerText = new XRLabel();
-            footerText.Text = "This certificate confirms that the device has undergone a full hardware and software diagnostic sweep.\nVerification provided by Dyagnoz Professional Suite.";
+            footerText.Text = "This certificate confirms that the device has undergone a full hardware and software diagnostic sweep.\nVerification provided by MOGY Professional Suite.";
             footerText.Font = new Font("Segoe UI", 9);
             footerText.ForeColor = Color.FromArgb(107, 114, 128);
             footerText.SizeF = new SizeF(600f, 40f);
@@ -134,7 +134,7 @@ namespace Dyagnoz_Latest.Labels
 
             // Company Info
             XRLabel contactInfo = new XRLabel();
-            contactInfo.Text = "dyagnoz.com | info@dyagnoz.com";
+            contactInfo.Text = "MOGY.com | info@MOGY.com";
             contactInfo.Font = new Font("Segoe UI", 9, FontStyle.Bold);
             contactInfo.ForeColor = Color.FromArgb(83, 66, 125);
             contactInfo.SizeF = new SizeF(300f, 20f);
@@ -142,7 +142,7 @@ namespace Dyagnoz_Latest.Labels
             contactInfo.TextAlignment = TextAlignment.TopLeft;
 
             XRLabel signatureLabel = new XRLabel();
-            signatureLabel.Text = "Authorized Signature (Dyagnoz QC)";
+            signatureLabel.Text = "Authorized Signature (MOGY QC)";
             signatureLabel.Font = new Font("Segoe UI", 8, FontStyle.Italic);
             signatureLabel.SizeF = new SizeF(280f, 20f);
             signatureLabel.LocationF = new PointF(447f, 75f);

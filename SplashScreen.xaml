@@ -223,7 +223,7 @@
                         </Border>
 
                         <!-- Copyright at Bottom -->
-                        <TextBlock Text="© 2024 Dyagnoz. All rights reserved." 
+                        <TextBlock Text="© 2026 MOGY. All rights reserved." 
                                    FontSize="10"
                                    Foreground="#9CA3AF"
                                    VerticalAlignment="Bottom"
@@ -244,7 +244,7 @@
                         
                         <TextBlock Text="APP ALREADY RUNNING" FontSize="12" FontWeight="Bold" Foreground="#EF4444" HorizontalAlignment="Center" Margin="0,0,0,8"/>
                         <TextBlock Text="Multiple Instances Detected" FontSize="24" FontWeight="SemiBold" Foreground="#1A1A2E" HorizontalAlignment="Center" Margin="0,0,0,16"/>
-                        <TextBlock Text="Dyagnoz is already running on this machine. Please close the other instance before launching again." FontSize="14" Foreground="#6B7280" TextAlignment="Center" TextWrapping="Wrap" Width="400" Margin="0,0,0,32"/>
+                        <TextBlock Text="MOGY is already running on this machine. Please close the other instance before launching again." FontSize="14" Foreground="#6B7280" TextAlignment="Center" TextWrapping="Wrap" Width="400" Margin="0,0,0,32"/>
                         
                         <Button x:Name="ExitDuplicateBtn" 
                                 Content="Exit Application" 
