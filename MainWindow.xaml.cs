@@ -35,6 +35,7 @@ namespace Dyagnoz_Latest
             EnsureDeviceCards(DashboardCardCount);
             UpdateDeviceCount();    
             UpdateSelectedCount();  
+            UpdateCustomerHeaderUi();  
         }
 
         private void OnDeviceConnected(object? sender, AppleDeviceEventArgs e)
@@ -196,6 +197,20 @@ namespace Dyagnoz_Latest
          private void MinimizeBtn_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
         private void CloseBtn_Click(object sender, RoutedEventArgs e) => Close();
 
+        private void UpdateCustomerHeaderUi()
+        {
+            if (string.IsNullOrEmpty(SelectedCustomer))
+            {
+                HeaderCustomerText.Text = "Select Customer";
+                HeaderCustomerClearBtn.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                HeaderCustomerText.Text = SelectedCustomer;
+                HeaderCustomerClearBtn.Visibility = Visibility.Visible;
+            }
+        }
+
         private void HeaderCustomerBtn_Click(object sender, RoutedEventArgs e)
         {
             var customerWindow = new CustomerSelectWindow(SelectedCustomer);
@@ -205,16 +220,16 @@ namespace Dyagnoz_Latest
             if (customerWindow.Confirmed)
             {
                 SelectedCustomer = customerWindow.SelectedCustomer;
-                if (string.IsNullOrEmpty(SelectedCustomer))
-                {
-                    HeaderCustomerText.Text = "Select Customer";
-                }
-                else
-                {
-                    HeaderCustomerText.Text = SelectedCustomer;
-                }
+                UpdateCustomerHeaderUi();
                 Debug.WriteLine($"[MainWindow] Selected Customer updated globally to: {SelectedCustomer ?? "None"}");
             }
+        }
+
+        private void HeaderCustomerClearBtn_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedCustomer = null;
+            UpdateCustomerHeaderUi();
+            Debug.WriteLine("[MainWindow] Selected Customer cleared globally.");
         }
     }
 }

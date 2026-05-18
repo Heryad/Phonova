@@ -7,9 +7,9 @@ using System.Linq;
 using DevExpress.XtraPrinting;
 using DevExpress.XtraPrinting.Drawing;
 using DevExpress.XtraReports.UI;
-using MOGY_Latest.Services;
+using Dyagnoz_Latest.Services;
 
-namespace MOGY_Latest.Labels
+namespace Dyagnoz_Latest.Labels
 {
     public class DeviceCertificate : XtraReport
     {

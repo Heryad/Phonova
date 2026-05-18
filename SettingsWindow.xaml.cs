@@ -17,6 +17,7 @@ namespace Dyagnoz_Latest
         private readonly string _configPath;
         private Button? _activeNavButton;
         private List<ProcessedDevice> _lastFetchedReports = new();
+        private string? _editingCustomerName = null;
 
 
         public SettingsWindow()
@@ -506,6 +507,7 @@ namespace Dyagnoz_Latest
             PanelReports.Visibility = Visibility.Collapsed;
             PanelTests.Visibility = Visibility.Collapsed;
             PanelComments.Visibility = Visibility.Collapsed;
+            PanelCustomers.Visibility = Visibility.Collapsed;
 
             PanelWifi.Visibility = Visibility.Collapsed;
             PanelTestFlow.Visibility = Visibility.Collapsed;
@@ -517,6 +519,7 @@ namespace Dyagnoz_Latest
             NavReports.Style = (Style)FindResource("NavBtn");
             NavTests.Style = (Style)FindResource("NavBtn");
             NavComments.Style = (Style)FindResource("NavBtn");
+            NavCustomers.Style = (Style)FindResource("NavBtn");
 
             NavWifi.Style = (Style)FindResource("NavBtn");
             NavTestFlow.Style = (Style)FindResource("NavBtn");
@@ -530,6 +533,7 @@ namespace Dyagnoz_Latest
                 case "Reports": PanelReports.Visibility = Visibility.Visible; break;
                 case "Tests": PanelTests.Visibility = Visibility.Visible; break;
                 case "Comments": PanelComments.Visibility = Visibility.Visible; break;
+                case "Customers": PanelCustomers.Visibility = Visibility.Visible; break;
 
                 case "Wifi": PanelWifi.Visibility = Visibility.Visible; break;
                 case "TestFlow": PanelTestFlow.Visibility = Visibility.Visible; break;
@@ -542,6 +546,7 @@ namespace Dyagnoz_Latest
             _activeNavButton = navButton;
 
             if (panelName == "Comments") LoadCommentsTable();
+            if (panelName == "Customers") LoadCustomersTable();
             if (panelName == "Reports") LoadReportsTable();
         }
 
@@ -549,6 +554,7 @@ namespace Dyagnoz_Latest
         private void NavReports_Click(object sender, RoutedEventArgs e) => ShowPanel("Reports", NavReports);
         private void NavTests_Click(object sender, RoutedEventArgs e) => ShowPanel("Tests", NavTests);
         private void NavComments_Click(object sender, RoutedEventArgs e) => ShowPanel("Comments", NavComments);
+        private void NavCustomers_Click(object sender, RoutedEventArgs e) => ShowPanel("Customers", NavCustomers);
 
         private void NavWifi_Click(object sender, RoutedEventArgs e) => ShowPanel("Wifi", NavWifi);
         private void NavTestFlow_Click(object sender, RoutedEventArgs e) => ShowPanel("TestFlow", NavTestFlow);
@@ -615,6 +621,128 @@ namespace Dyagnoz_Latest
                 {
                     App.Database.DeleteCommentFromLibrary(comment);
                     LoadCommentsTable();
+                }
+            }
+        }
+        
+        // Customers CRUD
+        private void LoadCustomersTable()
+        {
+            if (CustomersTablePanel == null) return;
+            CustomersTablePanel.Children.Clear();
+
+            var customers = App.Database.GetAllCustomers();
+            foreach (var customer in customers)
+            {
+                var grid = new Grid { Margin = new Thickness(0, 0, 0, 1) };
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
+
+                var textBorder = new Border { Background = Brushes.White, Padding = new Thickness(12, 10, 12, 10) };
+                textBorder.Child = new TextBlock { Text = customer, FontSize = 13, VerticalAlignment = VerticalAlignment.Center };
+                Grid.SetColumn(textBorder, 0);
+                grid.Children.Add(textBorder);
+
+                var actionBorder = new Border { Background = Brushes.White, Padding = new Thickness(12, 10, 12, 10), HorizontalAlignment = HorizontalAlignment.Center };
+                
+                var actionStack = new StackPanel { Orientation = Orientation.Horizontal };
+
+                // Edit Button
+                var editBtn = new Button
+                {
+                    Content = new PackIcon { Kind = PackIconKind.Pencil, Width = 18, Height = 18 },
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F59E0B")),
+                    Background = Brushes.Transparent,
+                    BorderThickness = new Thickness(0),
+                    Width = 32,
+                    Height = 32,
+                    Padding = new Thickness(0),
+                    Tag = customer,
+                    Cursor = System.Windows.Input.Cursors.Hand,
+                    Margin = new Thickness(0, 0, 8, 0)
+                };
+                editBtn.Click += EditCustomer_Click;
+                actionStack.Children.Add(editBtn);
+
+                // Delete Button
+                var deleteBtn = new Button
+                {
+                    Content = new PackIcon { Kind = PackIconKind.Delete, Width = 18, Height = 18 },
+                    Foreground = Brushes.Red,
+                    Background = Brushes.Transparent,
+                    BorderThickness = new Thickness(0),
+                    Width = 32,
+                    Height = 32,
+                    Padding = new Thickness(0),
+                    Tag = customer,
+                    Cursor = System.Windows.Input.Cursors.Hand
+                };
+                deleteBtn.Click += DeleteCustomer_Click;
+                actionStack.Children.Add(deleteBtn);
+
+                actionBorder.Child = actionStack;
+                Grid.SetColumn(actionBorder, 1);
+                grid.Children.Add(actionBorder);
+
+                CustomersTablePanel.Children.Add(grid);
+            }
+        }
+
+        private void AddCustomerBtn_Click(object sender, RoutedEventArgs e)
+        {
+            string customerName = NewCustomerBox.Text?.Trim() ?? "";
+            if (string.IsNullOrWhiteSpace(customerName)) return;
+
+            if (!string.IsNullOrEmpty(_editingCustomerName))
+            {
+                // Update mode
+                App.Database.UpdateCustomerInLibrary(_editingCustomerName, customerName);
+                _editingCustomerName = null;
+                NewCustomerBox.Text = "";
+                AddCustomerBtnText.Text = "Add";
+                CancelEditCustomerBtn.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                // Add mode
+                App.Database.AddCustomerToLibrary(customerName);
+                NewCustomerBox.Text = "";
+            }
+            LoadCustomersTable();
+        }
+
+        private void EditCustomer_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string customerName)
+            {
+                _editingCustomerName = customerName;
+                NewCustomerBox.Text = customerName;
+                AddCustomerBtnText.Text = "Update";
+                CancelEditCustomerBtn.Visibility = Visibility.Visible;
+                NewCustomerBox.Focus();
+            }
+        }
+
+        private void CancelEditCustomerBtn_Click(object sender, RoutedEventArgs e)
+        {
+            _editingCustomerName = null;
+            NewCustomerBox.Text = "";
+            AddCustomerBtnText.Text = "Add";
+            CancelEditCustomerBtn.Visibility = Visibility.Collapsed;
+        }
+
+        private void DeleteCustomer_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string customerName)
+            {
+                if (MessageBox.Show($"Are you sure you want to delete '{customerName}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                {
+                    App.Database.DeleteCustomerFromLibrary(customerName);
+                    if (_editingCustomerName == customerName)
+                    {
+                        CancelEditCustomerBtn_Click(sender, e);
+                    }
+                    LoadCustomersTable();
                 }
             }
         }

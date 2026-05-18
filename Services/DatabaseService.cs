@@ -291,6 +291,21 @@ namespace Dyagnoz_Latest.Services
             }
         }
 
+        public void UpdateCustomerInLibrary(string oldName, string newName)
+        {
+            using (var connection = new SQLiteConnection(_connectionString))
+            {
+                connection.Open();
+                string updateSql = "UPDATE customers SET name = @newName WHERE name = @oldName;";
+                using (var command = new SQLiteCommand(updateSql, connection))
+                {
+                    command.Parameters.AddWithValue("@newName", newName);
+                    command.Parameters.AddWithValue("@oldName", oldName);
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
         public List<string> GetAllCustomers()
         {
             var result = new List<string>();

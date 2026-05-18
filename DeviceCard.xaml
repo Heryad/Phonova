@@ -257,6 +257,9 @@
                     </StackPanel>
                 </Grid>
                 
+                <!-- Comments Row -->
+                <TextBlock x:Name="CardCommentsText" Text="" FontSize="11" Foreground="#475569" FontWeight="Medium" HorizontalAlignment="Center" Margin="0,6,0,0" TextWrapping="Wrap" TextAlignment="Center" Visibility="Collapsed"/>
+                
                 <Border Style="{StaticResource Separator}"/>
 
                 <!-- Components Row -->

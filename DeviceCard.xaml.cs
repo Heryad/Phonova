@@ -201,6 +201,8 @@ namespace Dyagnoz_Latest
                 StatusBadge.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#10B981"));
 
                 MainCardBorder.Background = (SolidColorBrush)FindResource("CardBg");
+                CardCommentsText.Text = string.Empty;
+                CardCommentsText.Visibility = Visibility.Collapsed;
                 this.Foreground = (SolidColorBrush)FindResource("TextPrimary");
 
                 var grayBrush = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#F3F4F6"));
@@ -1592,7 +1594,25 @@ namespace Dyagnoz_Latest
             {
                 DeviceComments = commentWindow.SelectedComments;
                 Debug.WriteLine($"[Port {PortNumber}] Comments updated: {string.Join(", ", DeviceComments)}");
+                UpdateCommentsUi();
             }
+        }
+
+        private void UpdateCommentsUi()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (DeviceComments != null && DeviceComments.Count > 0)
+                {
+                    CardCommentsText.Text = string.Join(", ", DeviceComments);
+                    CardCommentsText.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    CardCommentsText.Text = string.Empty;
+                    CardCommentsText.Visibility = Visibility.Collapsed;
+                }
+            });
         }
 
         private async void WifiBtn_Click(object sender, RoutedEventArgs e)

@@ -56,6 +56,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <TextBox x:Name="QuickCustomerBox" 
                               materialDesign:HintAssist.Hint="Type a new customer name..." 
@@ -77,8 +78,23 @@
                             Background="#53427D" 
                             Foreground="White" 
                             BorderThickness="0" 
-                            Padding="16,4"
+                            Padding="16,8"
                             Click="AddQuickCustomerBtn_Click">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                    <Button Grid.Column="2" x:Name="CancelEditBtn" 
+                            Content="Cancel" 
+                            Background="#94A3B8" 
+                            Foreground="White" 
+                            BorderThickness="0" 
+                            Padding="12,8"
+                            Margin="8,0,0,0"
+                            Visibility="Collapsed"
+                            Click="CancelEditBtn_Click">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="6"/>
