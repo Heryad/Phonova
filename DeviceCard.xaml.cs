@@ -663,7 +663,17 @@ namespace Dyagnoz_Latest
                 if (root.TryGetProperty("PartHistory", out var history))
                 {
                     if (history.TryGetProperty("Battery", out var batVal))
-                        BatteryStatus = IsPartOriginal(batVal.GetString()) ? "Pass" : "Fail";
+                    {
+                        bool original = IsPartOriginal(batVal.GetString());
+                        if (original && BatteryHealth.HasValue && BatteryHealth.Value < 80)
+                        {
+                            BatteryStatus = "Fail";
+                        }
+                        else
+                        {
+                            BatteryStatus = original ? "Pass" : "Fail";
+                        }
+                    }
 
                     if (history.TryGetProperty("Camera", out var camVal))
                         CameraStatus = IsPartOriginal(camVal.GetString()) ? "Pass" : "Fail";
@@ -1036,6 +1046,11 @@ namespace Dyagnoz_Latest
 
                     BatteryHealth = healthInt;
                     BatteryCycleCount = cycleCount;
+
+                    if (healthInt < 80)
+                    {
+                        BatteryStatus = "Fail";
+                    }
                 }
             }
             catch (Exception ex)
@@ -1471,10 +1486,10 @@ namespace Dyagnoz_Latest
                     var failed = new System.Collections.Generic.List<string>();
 
                     // Kernel Tests (Red/Green Icons)
-                    if (FaceIdStatus == "Fail" || FaceIdStatus == "Fixed") failed.Add("FaceID");
-                    if (LcdStatus == "Fail" || LcdStatus == "Fixed") failed.Add("LCD");
-                    if (BatteryStatus == "Fail" || BatteryStatus == "Fixed") failed.Add("Battery");
-                    if (CameraStatus == "Fail" || CameraStatus == "Fixed") failed.Add("Camera");
+                    if (FaceIdStatus == "Fail" || FaceIdStatus == "Fixed") failed.Add("FaceID MSG");
+                    if (LcdStatus == "Fail" || LcdStatus == "Fixed") failed.Add("Display MSG");
+                    if (BatteryStatus == "Fail" || BatteryStatus == "Fixed") failed.Add("Battery MSG");
+                    if (CameraStatus == "Fail" || CameraStatus == "Fixed") failed.Add("Camera MSG");
 
                     // Syslog/App Tests
                     if (SyslogTestResults != null)
