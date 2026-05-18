@@ -483,6 +483,7 @@
                                             </Grid>
                                         </Border>
                                     </StackPanel>
+                                </Border>
                             </StackPanel>
 
                             <!-- Customers Panel -->
