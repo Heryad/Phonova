@@ -58,6 +58,10 @@ namespace Dyagnoz_Latest
         private const string VPP_STOKEN = "eyJleHBEYXRlIjoiMjAyNy0wMi0wMlQwODo0Njo1NiswMDAwIiwidG9rZW4iOiJRMDlxUGZKT3NSdmRUdDVLamFaMkRFZnBUOTdTRUgvMFJyOEVwVGpDTUdSUEVjZUw2b0RHOHJBNkZUQ3h4UlhyQTFCWm1TUWpHbys5ZzBVdzZCQnk3dE1nUUJya3B6L1dUdlRqbHIrbmZpMit5L2pIeWg4ZDhTU0pDcWFKMGpTOXdCaGMzNnQ3NGdpQ0t6eUgwOHJnTE9wZnZlblpGV2E4eVNNVVVUU2k2MEhXSVVzbVloQ0FzcDNVMHVQQkFOUDUiLCJvcmdOYW1lIjoiRFIgRk9ORVMgRlpDTyJ9";
 
         private readonly iOSCommander _iosCommander = new iOSCommander();
+
+        private bool _isBatteryOemrFail = false;
+        private bool _isBatteryThresholdFail = false;
+        private bool _isCameraOemrFail = false;
         private CancellationTokenSource? _pipelineCts;
         private string _lastKnownDeviceId = string.Empty;
         private bool _isSaved = false; // Track if we've already saved this session
@@ -161,6 +165,9 @@ namespace Dyagnoz_Latest
             FmiStatus = "—";
             SyslogTestResults.Clear();
             DeviceComments.Clear();
+            _isBatteryOemrFail = false;
+            _isBatteryThresholdFail = false;
+            _isCameraOemrFail = false;
 
 
             MainCardBorder.Background = (SolidColorBrush)FindResource("CardBg");
@@ -665,18 +672,35 @@ namespace Dyagnoz_Latest
                     if (history.TryGetProperty("Battery", out var batVal))
                     {
                         bool original = IsPartOriginal(batVal.GetString());
-                        if (original && BatteryHealth.HasValue && BatteryHealth.Value < 80)
+                        if (!original)
                         {
+                            _isBatteryOemrFail = true;
+                            BatteryStatus = "Fail";
+                        }
+                        else if (BatteryHealth.HasValue && BatteryHealth.Value < 80)
+                        {
+                            _isBatteryThresholdFail = true;
                             BatteryStatus = "Fail";
                         }
                         else
                         {
-                            BatteryStatus = original ? "Pass" : "Fail";
+                            BatteryStatus = "Pass";
                         }
                     }
 
                     if (history.TryGetProperty("Camera", out var camVal))
-                        CameraStatus = IsPartOriginal(camVal.GetString()) ? "Pass" : "Fail";
+                    {
+                        bool original = IsPartOriginal(camVal.GetString());
+                        if (!original)
+                        {
+                            _isCameraOemrFail = true;
+                            CameraStatus = "Fail";
+                        }
+                        else
+                        {
+                            CameraStatus = "Pass";
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -1049,6 +1073,7 @@ namespace Dyagnoz_Latest
 
                     if (healthInt < 80)
                     {
+                        _isBatteryThresholdFail = true;
                         BatteryStatus = "Fail";
                     }
                 }
@@ -1488,8 +1513,32 @@ namespace Dyagnoz_Latest
                     // Kernel Tests (Red/Green Icons)
                     if (FaceIdStatus == "Fail" || FaceIdStatus == "Fixed") failed.Add("FaceID MSG");
                     if (LcdStatus == "Fail" || LcdStatus == "Fixed") failed.Add("Display MSG");
-                    if (BatteryStatus == "Fail" || BatteryStatus == "Fixed") failed.Add("Battery MSG");
-                    if (CameraStatus == "Fail" || CameraStatus == "Fixed") failed.Add("Camera MSG");
+                    if (BatteryStatus == "Fail" || BatteryStatus == "Fixed")
+                    {
+                        if (_isBatteryOemrFail)
+                        {
+                            failed.Add("Battery MSG Unknown");
+                        }
+                        else if (_isBatteryThresholdFail)
+                        {
+                            failed.Add("Battery MSG Service");
+                        }
+                        else
+                        {
+                            failed.Add("Battery MSG");
+                        }
+                    }
+                    if (CameraStatus == "Fail" || CameraStatus == "Fixed")
+                    {
+                        if (_isCameraOemrFail)
+                        {
+                            failed.Add("Camera MSG Unknown");
+                        }
+                        else
+                        {
+                            failed.Add("Camera MSG");
+                        }
+                    }
 
                     // Syslog/App Tests
                     if (SyslogTestResults != null)
