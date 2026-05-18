@@ -314,7 +314,7 @@ namespace Dyagnoz_Latest
             float rightX  = tableX + tableW - rightW;
             float leftW   = tableW - rightW - 4f;
 
-            this.lblNotes.Font = new Font("Tahoma", 6.5f, FontStyle.Italic);
+            this.lblNotes.Font = new Font("Tahoma", 3.5f, FontStyle.Italic);
             this.lblNotes.LocationFloat = new PointFloat(tableX + 3f, bottomY);
             this.lblNotes.SizeF = new SizeF(leftW, lineH);
             this.lblNotes.TextAlignment = (TextAlignment)16;
@@ -324,7 +324,7 @@ namespace Dyagnoz_Latest
             this.lblNotes.CanGrow = false;
             this.lblNotes.Borders = BorderSide.None;
 
-            this.lblPort.Font = new Font("Tahoma", 6.5f, FontStyle.Regular);
+            this.lblPort.Font = new Font("Tahoma", 3.5f, FontStyle.Regular);
             this.lblPort.LocationFloat = new PointFloat(rightX, bottomY);
             this.lblPort.SizeF = new SizeF(rightW, lineH);
             this.lblPort.TextAlignment = (TextAlignment)64;
