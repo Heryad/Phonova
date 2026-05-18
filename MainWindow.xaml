@@ -1,4 +1,4 @@
-﻿<Window x:Class="Dyagnoz_Latest.MainWindow"
+<Window x:Class="Dyagnoz_Latest.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -152,6 +152,15 @@
                     </Button>
                     <Button x:Name="WipeBatchBtn" Style="{StaticResource RedIconBtn}" ToolTip="Wipe Selected" Click="WipeAllBtn_Click" IsEnabled="False">
                         <materialDesign:PackIcon Kind="DeleteForever" Width="18" Height="18"/>
+                    </Button>
+
+                    <Border Width="1" Background="#475569" Height="20" Margin="6,0"/>
+
+                    <Button x:Name="HeaderCustomerBtn" Style="{StaticResource IconBtn}" Width="Auto" Padding="12,0" ToolTip="Select Customer" Click="HeaderCustomerBtn_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Account" Width="16" Height="16" VerticalAlignment="Center" Foreground="#7FB679"/>
+                            <TextBlock x:Name="HeaderCustomerText" Text="Select Customer" FontSize="12" Margin="6,0,0,0" VerticalAlignment="Center" Foreground="White"/>
+                        </StackPanel>
                     </Button>
                 </StackPanel>
 

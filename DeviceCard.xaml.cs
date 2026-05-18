@@ -1517,7 +1517,8 @@ namespace Dyagnoz_Latest
                     MdmStatus,
                     displaySim,
                     PortNumber.ToString("D2"),
-                    notes
+                    notes,
+                    MainWindow.SelectedCustomer ?? ""
                 );
                 report.Print();
 
@@ -1566,6 +1567,7 @@ namespace Dyagnoz_Latest
                     KernelTests = kernelTests,
                     AppTests = SyslogTestResults,
                     Comments = DeviceComments,
+                    Customer = MainWindow.SelectedCustomer,
                     DateTime = DateTime.Now
                 };
 
@@ -1592,6 +1594,7 @@ namespace Dyagnoz_Latest
                 Debug.WriteLine($"[Port {PortNumber}] Comments updated: {string.Join(", ", DeviceComments)}");
             }
         }
+
         private async void WifiBtn_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(DeviceId)) return;
@@ -1684,6 +1687,7 @@ namespace Dyagnoz_Latest
                     KernelTests = kernelTests,
                     AppTests = SyslogTestResults,
                     Comments = DeviceComments,
+                    Customer = MainWindow.SelectedCustomer,
                     DateTime = DateTime.Now
                 };
 

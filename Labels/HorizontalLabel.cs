@@ -1,4 +1,4 @@
-﻿using DevExpress.Utils;
+using DevExpress.Utils;
 using DevExpress.XtraPrinting;
 using DevExpress.XtraPrinting.BarCode;
 using DevExpress.XtraPrinting.Shape;
@@ -50,7 +50,8 @@ namespace Dyagnoz_Latest
             string mdm,
             string sim,
             string port,
-            string notes = "")
+            string notes = "",
+            string customerName = "")
         {
             InitializeComponent();
 
@@ -64,14 +65,14 @@ namespace Dyagnoz_Latest
             ((XRControl)this.lbliCloud).Text = "iCloud: " + (icloud ?? "-");
             ((XRControl)this.lblFMI).Text = "FMI: " + (fmi ?? "-");
             ((XRControl)this.lblMDM).Text = "MDM: " + (mdm ?? "-");
-            ((XRControl)this.lblSIM).Text = "SIM: " + (sim ?? "-");
+            ((XRControl)this.lblSIM).Text = "SIM: Unlocked";
             ((XRControl)this.lblDate).Text = "Date: " + DateTime.Now.ToString("yyyy-MM-dd");
 
             var s = Services.SettingsManager.Current;
 
             ((XRControl)this.lblNotes).Text = string.IsNullOrEmpty(notes) ? "Notes: -" : "Notes: " + notes;
             ((XRControl)this.lblPort).Text = s.PrintPortNumber ? "Port: " + port : "";
-            ((XRControl)this.lblCust).Text = s.PrintCustomerName ? "DEMO VER" : "";
+            ((XRControl)this.lblCust).Text = s.PrintCustomerName ? (string.IsNullOrEmpty(customerName) ? "" : customerName) : "";
 
             if (!s.PrintCustomerName) ((XRControl)this.lblCust).Visible = false;
             if (!s.PrintPortNumber) ((XRControl)this.lblPort).Visible = false;
@@ -293,7 +294,7 @@ namespace Dyagnoz_Latest
             PlaceCell(this.lblDate, tableX, footerY, colAW, rowH);
 
             XRLabel lblBrand = new XRLabel();
-            lblBrand.Text = "mogy.ae";
+            lblBrand.Text = "Tester 1";
             lblBrand.Font = new Font("Tahoma", 6.5f, FontStyle.Bold);
             lblBrand.LocationFloat = new PointFloat(divAX + 1f + 3f, footerY + 1f);
             lblBrand.SizeF = new SizeF(colBW - 4f, rowH - 2f);

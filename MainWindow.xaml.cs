@@ -17,6 +17,7 @@ namespace Dyagnoz_Latest
         private const int DashboardCardCount = 20;
         private readonly Dictionary<int, DeviceCard> _portCards = new();
         private readonly iOSCommander _iosCommander = new();
+        public static string? SelectedCustomer { get; set; } = null;
 
         public MainWindow()
         {
@@ -192,7 +193,28 @@ namespace Dyagnoz_Latest
             portMapWindow.Show();
         }
 
-        private void MinimizeBtn_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+         private void MinimizeBtn_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
         private void CloseBtn_Click(object sender, RoutedEventArgs e) => Close();
+
+        private void HeaderCustomerBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var customerWindow = new CustomerSelectWindow(SelectedCustomer);
+            customerWindow.Owner = this;
+            customerWindow.ShowDialog();
+
+            if (customerWindow.Confirmed)
+            {
+                SelectedCustomer = customerWindow.SelectedCustomer;
+                if (string.IsNullOrEmpty(SelectedCustomer))
+                {
+                    HeaderCustomerText.Text = "Select Customer";
+                }
+                else
+                {
+                    HeaderCustomerText.Text = SelectedCustomer;
+                }
+                Debug.WriteLine($"[MainWindow] Selected Customer updated globally to: {SelectedCustomer ?? "None"}");
+            }
+        }
     }
 }

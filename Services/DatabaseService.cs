@@ -61,6 +61,14 @@ namespace Dyagnoz_Latest.Services
                         date_time DATETIME
                     );";
 
+                // customers lookup table
+                string createCustomersTable = @"
+                    CREATE TABLE IF NOT EXISTS customers (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT UNIQUE,
+                        date_time DATETIME
+                    );";
+
                 using (var command = new SQLiteCommand(createDevicesTable, connection))
                 {
                     command.ExecuteNonQuery();
@@ -71,11 +79,17 @@ namespace Dyagnoz_Latest.Services
                     command.ExecuteNonQuery();
                 }
 
+                using (var command = new SQLiteCommand(createCustomersTable, connection))
+                {
+                    command.ExecuteNonQuery();
+                }
+
                 // Migration: Check and add battery columns if missing
                 AddColumnIfNotExists(connection, "processed_devices", "battery_health", "TEXT");
                 AddColumnIfNotExists(connection, "processed_devices", "battery_cycles", "TEXT");
                 AddColumnIfNotExists(connection, "processed_devices", "ios_version", "TEXT");
                 AddColumnIfNotExists(connection, "processed_devices", "region", "TEXT");
+                AddColumnIfNotExists(connection, "processed_devices", "customer", "TEXT");
             }
         }
 
@@ -102,10 +116,10 @@ namespace Dyagnoz_Latest.Services
                 string insertSql = @"
                     INSERT INTO processed_devices (
                         device_name, model, color, storage, serial, imei, 
-                        icloud, fmip, sim, mdm, battery_health, battery_cycles, kernel_tests, app_tests, comments, ios_version, region, date_time
+                        icloud, fmip, sim, mdm, battery_health, battery_cycles, kernel_tests, app_tests, comments, ios_version, region, customer, date_time
                     ) VALUES (
                         @device_name, @model, @color, @storage, @serial, @imei, 
-                        @icloud, @fmip, @sim, @mdm, @battery_health, @battery_cycles, @kernel_tests, @app_tests, @comments, @ios_version, @region, @date_time
+                        @icloud, @fmip, @sim, @mdm, @battery_health, @battery_cycles, @kernel_tests, @app_tests, @comments, @ios_version, @region, @customer, @date_time
                     );";
 
                 using (var command = new SQLiteCommand(insertSql, connection))
@@ -127,6 +141,7 @@ namespace Dyagnoz_Latest.Services
                     command.Parameters.AddWithValue("@comments", JsonSerializer.Serialize(device.Comments));
                     command.Parameters.AddWithValue("@ios_version", device.IosVersion ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@region", device.Region ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@customer", device.Customer ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@date_time", DateTime.Now);
 
                     command.ExecuteNonQuery();
@@ -202,6 +217,7 @@ namespace Dyagnoz_Latest.Services
                                 Comments = JsonSerializer.Deserialize<List<string>>(reader.GetString(reader.GetOrdinal("comments"))) ?? new(),
                                 IosVersion = reader.IsDBNull(reader.GetOrdinal("ios_version")) ? null : reader.GetString(reader.GetOrdinal("ios_version")),
                                 Region = reader.IsDBNull(reader.GetOrdinal("region")) ? null : reader.GetString(reader.GetOrdinal("region")),
+                                Customer = reader.IsDBNull(reader.GetOrdinal("customer")) ? null : reader.GetString(reader.GetOrdinal("customer")),
                                 DateTime = reader.GetDateTime(reader.GetOrdinal("date_time"))
                             });
                         }
@@ -245,6 +261,56 @@ namespace Dyagnoz_Latest.Services
             }
             return result;
         }
+
+        public void AddCustomerToLibrary(string name)
+        {
+            using (var connection = new SQLiteConnection(_connectionString))
+            {
+                connection.Open();
+                string insertSql = "INSERT OR IGNORE INTO customers (name, date_time) VALUES (@name, @date);";
+                using (var command = new SQLiteCommand(insertSql, connection))
+                {
+                    command.Parameters.AddWithValue("@name", name);
+                    command.Parameters.AddWithValue("@date", DateTime.Now);
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public void DeleteCustomerFromLibrary(string name)
+        {
+            using (var connection = new SQLiteConnection(_connectionString))
+            {
+                connection.Open();
+                string deleteSql = "DELETE FROM customers WHERE name = @name;";
+                using (var command = new SQLiteCommand(deleteSql, connection))
+                {
+                    command.Parameters.AddWithValue("@name", name);
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public List<string> GetAllCustomers()
+        {
+            var result = new List<string>();
+            using (var connection = new SQLiteConnection(_connectionString))
+            {
+                connection.Open();
+                string selectSql = "SELECT name FROM customers ORDER BY name ASC;";
+                using (var command = new SQLiteCommand(selectSql, connection))
+                {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            result.Add(reader.GetString(0));
+                        }
+                    }
+                }
+            }
+            return result;
+        }
     }
 
     public class ProcessedDevice
@@ -268,6 +334,7 @@ namespace Dyagnoz_Latest.Services
         public Dictionary<string, string> KernelTests { get; set; } = new();
         public Dictionary<string, string> AppTests { get; set; } = new();
         public List<string> Comments { get; set; } = new();
+        public string? Customer { get; set; }
         public DateTime DateTime { get; set; }
     }
 }
