@@ -20,6 +20,7 @@ namespace Dyagnoz_Latest.Services
         public bool PrintFailedParts { get; set; } = true;
         public bool PrintPartMessages { get; set; } = true;
         public bool PrintCustomerName { get; set; } = true;
+        public bool PrintDeviceColor { get; set; } = true;
         public bool PrintTesterName { get; set; } = true;
         public bool PrintPortNumber { get; set; } = true;
     }

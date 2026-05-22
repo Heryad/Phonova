@@ -46,6 +46,7 @@ namespace Dyagnoz_Latest
             PrintFailedPartsToggle.IsChecked = s.PrintFailedParts;
             PrintPartMessagesToggle.IsChecked = s.PrintPartMessages;
             PrintCustomerNameToggle.IsChecked = s.PrintCustomerName;
+            PrintDeviceColorToggle.IsChecked = s.PrintDeviceColor;
             PrintTesterNameToggle.IsChecked = s.PrintTesterName;
             PrintPortNumberToggle.IsChecked = s.PrintPortNumber;
         }
@@ -82,6 +83,7 @@ namespace Dyagnoz_Latest
             s.PrintFailedParts = PrintFailedPartsToggle.IsChecked ?? false;
             s.PrintPartMessages = PrintPartMessagesToggle.IsChecked ?? false;
             s.PrintCustomerName = PrintCustomerNameToggle.IsChecked ?? false;
+            s.PrintDeviceColor = PrintDeviceColorToggle.IsChecked ?? false;
             s.PrintTesterName = PrintTesterNameToggle.IsChecked ?? false;
             s.PrintPortNumber = PrintPortNumberToggle.IsChecked ?? false;
 

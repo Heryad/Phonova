@@ -57,11 +57,13 @@ namespace Dyagnoz_Latest
         {
             InitializeComponent();
  
+            var s = Services.SettingsManager.Current;
+
             ((XRControl)this.barcodeIMEI).Text = imei;
             ((XRControl)this.lblProductInfo).Text = product + " - (" + model + ")";
  
             ((XRControl)this.lblSerial).Text = "Serial: " + (serial ?? "-");
-            ((XRControl)this.lblColor).Text = "Color: " + (color ?? "-");
+            ((XRControl)this.lblColor).Text = s.PrintDeviceColor ? "Color: " + (color ?? "-") : "";
             ((XRControl)this.lblVersion).Text = "Version: " + (version ?? "-");
             ((XRControl)this.lblBattery).Text = "Battery: " + (battery ?? "-");
             ((XRControl)this.lbliCloud).Text = "iCloud: " + (icloud ?? "-");
@@ -70,14 +72,13 @@ namespace Dyagnoz_Latest
             ((XRControl)this.lblSIM).Text = "SIM: Unlocked";
             ((XRControl)this.lblDate).Text = "Date: " + DateTime.Now.ToString("yyyy-MM-dd");
  
-            var s = Services.SettingsManager.Current;
- 
             ((XRControl)this.lblNotes).Text = string.IsNullOrEmpty(notes) ? "Notes: -" : "Notes: " + notes;
             ((XRControl)this.lblPort).Text = s.PrintPortNumber ? "Port: " + port : "";
             ((XRControl)this.lblCust).Text = s.PrintCustomerName ? (string.IsNullOrEmpty(customerName) ? "" : customerName) : "";
  
             if (!s.PrintCustomerName) ((XRControl)this.lblCust).Visible = false;
             if (!s.PrintPortNumber) ((XRControl)this.lblPort).Visible = false;
+            if (!s.PrintDeviceColor) ((XRControl)this.lblColor).Visible = false;
         }
  
         protected override void Dispose(bool disposing)

@@ -651,6 +651,11 @@
                                         </Grid>
                                         <Grid Margin="0,0,0,12">
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <TextBlock Text="Print device color" VerticalAlignment="Center"/>
+                                            <ToggleButton x:Name="PrintDeviceColorToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="SettingToggle_Click"/>
+                                        </Grid>
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                             <TextBlock Text="Print tester name" VerticalAlignment="Center"/>
                                             <ToggleButton x:Name="PrintTesterNameToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="SettingToggle_Click"/>
                                         </Grid>
