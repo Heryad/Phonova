@@ -562,6 +562,34 @@ namespace Dyagnoz_Latest
         private void NavAbout_Click(object sender, RoutedEventArgs e) => ShowPanel("About", NavAbout);
 
         private void CloseBtn_Click(object sender, RoutedEventArgs e) => Close();
+
+        private void TestPrintBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var label = new HorizontalLabel(
+                    imei:         "353456789012345",
+                    serial:       "C8QKF2ABCD12",
+                    model:        "iPhone 14 Pro",
+                    product:      "iPhone 14 Pro 256GB",
+                    color:        "Deep Purple",
+                    version:      "16.7.2",
+                    battery:      "94%",
+                    icloud:       "Off",
+                    fmi:          "Off",
+                    mdm:          "Off",
+                    sim:          "Unlocked",
+                    port:         "1",
+                    notes:        "Test Print",
+                    customerName: "Sample Customer"
+                );
+                label.PrintDirect(null);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Test print failed: {ex.Message}", "Print Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
         
         // Comments CRUD
         private void LoadCommentsTable()

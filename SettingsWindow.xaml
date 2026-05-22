@@ -661,7 +661,31 @@
                                         </Grid>
                                     </StackPanel>
                                 </Border>
-                            </StackPanel>
+
+                                <!-- Test Print Section -->
+                                <TextBlock Text="Test Print" FontWeight="Bold" Foreground="{StaticResource TextSecondary}" Margin="0,8,0,8"/>
+                                <Border Style="{StaticResource CardStyle}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Background="#F3E8FF" CornerRadius="8" Padding="12" Width="48" Height="48" VerticalAlignment="Center" Margin="0,0,16,0">
+                                            <materialDesign:PackIcon Kind="Printer" Width="24" Height="24" Foreground="#7C3AED" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="Print Test Label" FontWeight="SemiBold" FontSize="14"/>
+                                            <TextBlock Text="Send a sample label to the printer without a connected device" Foreground="{StaticResource TextSecondary}" FontSize="12" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="2" x:Name="TestPrintBtn" Style="{StaticResource SecondaryBtn}" Click="TestPrintBtn_Click" VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="PrinterOutline" Width="16" Height="16" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Test Print" Margin="8,0,0,0"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                </Border></StackPanel>
 
                             <!-- License Panel -->
                             <StackPanel x:Name="PanelLicense" Visibility="Collapsed">
