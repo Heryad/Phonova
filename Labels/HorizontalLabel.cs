@@ -139,32 +139,36 @@ namespace Dyagnoz_Latest
             ((XRControl)this.Detail).Padding = new PaddingInfo(0, 0, 0, 0, 100f);
             ((XRControl)this.Detail).TextAlignment = (DevExpress.XtraPrinting.TextAlignment)32;
 
-            // ── Logo — loaded from output directory, placed at top ────────────────────
-            const float logoH = 25f;   // logo strip height
+            // ── Logo (left) + Barcode (right) — side by side in the same row ──────────
+            const float topRowY  = 2f;
+            const float topRowH  = 46f;   // height shared by logo and barcode
+            const float logoW    = 110f;  // logo panel width
+            const float barcodeX = 5f + logoW + 4f;   // 119
+            const float barcodeW = 266f - logoW - 4f;  // 152
+
             string logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "label.png");
             this.picLogo.ImageUrl = logoPath;
             this.picLogo.Sizing = ImageSizeMode.ZoomImage;
-            this.picLogo.LocationFloat = new PointFloat(5f, 2f);
-            this.picLogo.SizeF = new SizeF(266f, logoH);               // full width minus margins
+            this.picLogo.LocationFloat = new PointFloat(5f, topRowY);
+            this.picLogo.SizeF = new SizeF(logoW, topRowH);
             this.picLogo.Borders = BorderSide.None;
             this.picLogo.BackColor = Color.Transparent;
             this.picLogo.Name = "picLogo";
 
-            // ── Barcode — placed below the logo ──────────────────────────────────────
-            float barcodeY = logoH + 4f;  // small gap after logo
+            // ── Barcode — right of the logo ───────────────────────────────────────────
             this.barcodeIMEI.AutoModule = true;
             this.barcodeIMEI.Font = new Font("Tahoma", 7f);
-            this.barcodeIMEI.LocationFloat = new PointFloat(5f, barcodeY);
+            this.barcodeIMEI.LocationFloat = new PointFloat(barcodeX, topRowY);
             this.barcodeIMEI.Name = "barcodeIMEI";
             this.barcodeIMEI.Padding = new PaddingInfo(2, 2, 0, 0, 100f);
-            this.barcodeIMEI.SizeF = new SizeF(266f, 46f);              // full width minus margins
+            this.barcodeIMEI.SizeF = new SizeF(barcodeW, topRowH);
             code128.CharacterSet = Code128Charset.CharsetAuto;
             this.barcodeIMEI.Symbology = code128;
             this.barcodeIMEI.TextAlignment = (TextAlignment)32;
             this.barcodeIMEI.ShowText = true;
 
             // ── Product Info Box ─────────────────────────────────────────────────────
-            float productY = barcodeY + 50f;  // below barcode
+            float productY = topRowY + topRowH + 4f;  // below the top row
             this.lblProductInfo.Font = new Font("Tahoma", 7f, FontStyle.Bold);
             this.lblProductInfo.LocationFloat = new PointFloat(5f, productY);
             this.lblProductInfo.SizeF = new SizeF(266f, 23f);
@@ -349,7 +353,7 @@ namespace Dyagnoz_Latest
 
             this.Bands.AddRange(new Band[] { this.Detail, this.TopMargin, this.BottomMargin });
 
-            this.Margins = new Margins(0, 0, 0, 0);
+            this.Margins = new Margins(10, 0, 0, 0);  // ~2.5mm left offset to correct print alignment
             this.PageHeight = 197;   // 50mm
             this.PageWidth  = 276;   // 70mm
             this.Landscape = false;
