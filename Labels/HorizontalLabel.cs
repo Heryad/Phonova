@@ -11,7 +11,7 @@ using System.Drawing.Printing;
 using System.Windows;
 using FontStyle = System.Drawing.FontStyle;
 using TextAlignment = DevExpress.XtraPrinting.TextAlignment;
-
+ 
 namespace Dyagnoz_Latest
 {
     public class HorizontalLabel : XtraReport
@@ -20,11 +20,11 @@ namespace Dyagnoz_Latest
         private DetailBand Detail;
         private TopMarginBand TopMargin;
         private BottomMarginBand BottomMargin;
-
+ 
         private XRPictureBox picLogo;
         private XRBarCode barcodeIMEI;
         private XRLabel lblProductInfo;
-
+ 
         private XRLabel lblSerial;
         private XRLabel lblColor;
         private XRLabel lblVersion;
@@ -35,10 +35,10 @@ namespace Dyagnoz_Latest
         private XRLabel lblSIM;
         private XRLabel lblDate;
         private XRLabel lblCust;
-
+ 
         private XRLabel lblNotes;
         private XRLabel lblPort;
-
+ 
         public HorizontalLabel(
             string imei,
             string serial,
@@ -56,10 +56,10 @@ namespace Dyagnoz_Latest
             string customerName = "")
         {
             InitializeComponent();
-
+ 
             ((XRControl)this.barcodeIMEI).Text = imei;
             ((XRControl)this.lblProductInfo).Text = product + " - (" + model + ")";
-
+ 
             ((XRControl)this.lblSerial).Text = "Serial: " + (serial ?? "-");
             ((XRControl)this.lblColor).Text = "Color: " + (color ?? "-");
             ((XRControl)this.lblVersion).Text = "Version: " + (version ?? "-");
@@ -69,36 +69,36 @@ namespace Dyagnoz_Latest
             ((XRControl)this.lblMDM).Text = "MDM: " + (mdm ?? "-");
             ((XRControl)this.lblSIM).Text = "SIM: Unlocked";
             ((XRControl)this.lblDate).Text = "Date: " + DateTime.Now.ToString("yyyy-MM-dd");
-
+ 
             var s = Services.SettingsManager.Current;
-
+ 
             ((XRControl)this.lblNotes).Text = string.IsNullOrEmpty(notes) ? "Notes: -" : "Notes: " + notes;
             ((XRControl)this.lblPort).Text = s.PrintPortNumber ? "Port: " + port : "";
             ((XRControl)this.lblCust).Text = s.PrintCustomerName ? (string.IsNullOrEmpty(customerName) ? "" : customerName) : "";
-
+ 
             if (!s.PrintCustomerName) ((XRControl)this.lblCust).Visible = false;
             if (!s.PrintPortNumber) ((XRControl)this.lblPort).Visible = false;
         }
-
+ 
         protected override void Dispose(bool disposing)
         {
             if (disposing && this.components != null)
                 this.components.Dispose();
             base.Dispose(disposing);
         }
-
+ 
         private void InitializeComponent()
         {
             Code128Generator code128 = new Code128Generator();
-
+ 
             this.Detail = new DetailBand();
             this.TopMargin = new TopMarginBand();
             this.BottomMargin = new BottomMarginBand();
-
+ 
             this.picLogo = new XRPictureBox();
             this.barcodeIMEI = new XRBarCode();
             this.lblProductInfo = new XRLabel();
-
+ 
             this.lblSerial = new XRLabel();
             this.lblColor = new XRLabel();
             this.lblVersion = new XRLabel();
@@ -109,12 +109,12 @@ namespace Dyagnoz_Latest
             this.lblSIM = new XRLabel();
             this.lblDate = new XRLabel();
             this.lblCust = new XRLabel();
-
+ 
             this.lblNotes = new XRLabel();
             this.lblPort = new XRLabel();
-
+ 
             ((ISupportInitialize)this).BeginInit();
-
+ 
             // ── Detail Band ──────────────────────────────────────────────────────────
             ((XRControl)this.Detail).Controls.AddRange(new XRControl[]
             {
@@ -138,35 +138,35 @@ namespace Dyagnoz_Latest
             ((XRControl)this.Detail).Name = "Detail";
             ((XRControl)this.Detail).Padding = new PaddingInfo(0, 0, 0, 0, 100f);
             ((XRControl)this.Detail).TextAlignment = (DevExpress.XtraPrinting.TextAlignment)32;
-
+ 
             // ── Logo (left) + Barcode (right) — side by side in the same row ──────────
-            const float topRowY  = 2f;
-            const float topRowH  = 46f;   // height shared by logo and barcode
-            const float logoW    = 110f;  // logo panel width
+            const float topRowY = 25f;
+            const float topRowH = 46f;   // height shared by logo and barcode
+            const float logoW = 110f;  // logo panel width
             const float barcodeX = 5f + logoW + 4f;   // 119
-            const float barcodeW = 266f - logoW - 4f;  // 152
-
+            const float barcodeW = 240f - logoW - 4f;  // 152
+ 
             string logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "label.png");
             this.picLogo.ImageUrl = logoPath;
             this.picLogo.Sizing = ImageSizeMode.ZoomImage;
-            this.picLogo.LocationFloat = new PointFloat(5f, topRowY);
-            this.picLogo.SizeF = new SizeF(logoW, topRowH);
+            this.picLogo.LocationFloat = new PointFloat(10f, topRowY + 10);
+            this.picLogo.SizeF = new SizeF(logoW - 10, topRowH - 10);
             this.picLogo.Borders = BorderSide.None;
             this.picLogo.BackColor = Color.Transparent;
             this.picLogo.Name = "picLogo";
-
+ 
             // ── Barcode — right of the logo ───────────────────────────────────────────
             this.barcodeIMEI.AutoModule = true;
             this.barcodeIMEI.Font = new Font("Tahoma", 7f);
-            this.barcodeIMEI.LocationFloat = new PointFloat(barcodeX, topRowY);
+            this.barcodeIMEI.LocationFloat = new PointFloat(barcodeX + 25, topRowY + 10);
             this.barcodeIMEI.Name = "barcodeIMEI";
             this.barcodeIMEI.Padding = new PaddingInfo(2, 2, 0, 0, 100f);
-            this.barcodeIMEI.SizeF = new SizeF(barcodeW, topRowH);
+            this.barcodeIMEI.SizeF = new SizeF(barcodeW, topRowH - 5);
             code128.CharacterSet = Code128Charset.CharsetAuto;
             this.barcodeIMEI.Symbology = code128;
             this.barcodeIMEI.TextAlignment = (TextAlignment)32;
             this.barcodeIMEI.ShowText = true;
-
+ 
             // ── Product Info Box ─────────────────────────────────────────────────────
             float productY = topRowY + topRowH + 4f;  // below the top row
             this.lblProductInfo.Font = new Font("Tahoma", 7f, FontStyle.Bold);
@@ -175,7 +175,7 @@ namespace Dyagnoz_Latest
             this.lblProductInfo.TextAlignment = (TextAlignment)32;
             this.lblProductInfo.Borders = BorderSide.None;
             this.lblProductInfo.BackColor = Color.Transparent;
-
+ 
             XRShape shapeProductBox = new XRShape();
             shapeProductBox.LocationFloat = new PointFloat(5f, productY);
             shapeProductBox.SizeF = new SizeF(266f, 23f);
@@ -186,29 +186,29 @@ namespace Dyagnoz_Latest
             shapeProductBox.Borders = BorderSide.None;
             shapeProductBox.BackColor = Color.Transparent;
             ((XRControl)this.Detail).Controls.Add(shapeProductBox);
-
+ 
             // ── Table geometry — positioned below product info ────────────────────────
-            float tableX  = 5f;
-            float tableY  = productY + 27f;   // below product info box
-            float col1W   = 130f;
-            float col2W   = 130f;
-            float rowH    = 14f;
-            int   ROWS    = 5;
-            float tableW  = col1W + 1f + col2W;   // 261
-            float tableH  = rowH * ROWS;           // 70
-
+            float tableX = 22f;
+            float tableY = productY + 27f;   // below product info box
+            float col1W = 120f;
+            float col2W = 120f;
+            float rowH = 14f;
+            int ROWS = 5;
+            float tableW = col1W + 1f + col2W;   // 261
+            float tableH = rowH * ROWS;           // 70
+ 
             // Footer column widths
-            float colAW   = 90f;
-            float colBW   = 75f;
-            float colCW   = tableW - colAW - colBW - 2f;
-
-            float divX    = tableX + col1W;
-            float divAX   = tableX + colAW;
-            float divBX   = divAX + 1f + colBW;
+            float colAW = 90f;
+            float colBW = 75f;
+            float colCW = tableW - colAW - colBW - 2f;
+ 
+            float divX = tableX + col1W;
+            float divAX = tableX + colAW;
+            float divBX = divAX + 1f + colBW;
             float footerY = tableY + rowH * 4;
-
+ 
             Font cellFont = new Font("Tahoma", 6.5f, FontStyle.Regular);
-
+ 
             // ── Outer border — 4 explicit lines (avoids XRShape 1px rendering quirk) ──
             // Top
             XRLine borderTop = new XRLine();
@@ -238,7 +238,7 @@ namespace Dyagnoz_Latest
             borderRight.SizeF = new SizeF(1f, tableH);
             borderRight.ForeColor = Color.Black; borderRight.LineWidth = 1; borderRight.Borders = BorderSide.None;
             ((XRControl)this.Detail).Controls.Add(borderRight);
-
+ 
             // ── Main vertical divider — data rows only ────────────────────────────────
             XRLine vDivMain = new XRLine();
             vDivMain.LineDirection = LineDirection.Vertical;
@@ -248,7 +248,7 @@ namespace Dyagnoz_Latest
             vDivMain.LineWidth = 1;
             vDivMain.Borders = BorderSide.None;
             ((XRControl)this.Detail).Controls.Add(vDivMain);
-
+ 
             // ── Horizontal dividers — rows 1-4 ───────────────────────────────────────
             for (int i = 1; i <= 4; i++)
             {
@@ -261,7 +261,7 @@ namespace Dyagnoz_Latest
                 hLine.Borders = BorderSide.None;
                 ((XRControl)this.Detail).Controls.Add(hLine);
             }
-
+ 
             // ── Footer vertical dividers ──────────────────────────────────────────────
             XRLine vDivA = new XRLine();
             vDivA.LineDirection = LineDirection.Vertical;
@@ -271,7 +271,7 @@ namespace Dyagnoz_Latest
             vDivA.LineWidth = 1;
             vDivA.Borders = BorderSide.None;
             ((XRControl)this.Detail).Controls.Add(vDivA);
-
+ 
             XRLine vDivB = new XRLine();
             vDivB.LineDirection = LineDirection.Vertical;
             vDivB.LocationFloat = new PointFloat(divBX, footerY);
@@ -280,7 +280,7 @@ namespace Dyagnoz_Latest
             vDivB.LineWidth = 1;
             vDivB.Borders = BorderSide.None;
             ((XRControl)this.Detail).Controls.Add(vDivB);
-
+ 
             // ── Cell helper ───────────────────────────────────────────────────────────
             void PlaceCell(XRLabel lbl, float x, float y, float w, float h,
                            TextAlignment align = (TextAlignment)16)
@@ -293,23 +293,23 @@ namespace Dyagnoz_Latest
                 lbl.Borders = BorderSide.None;
                 lbl.BackColor = Color.Transparent;
             }
-
+ 
             // ── Data rows ─────────────────────────────────────────────────────────────
-            PlaceCell(this.lblSerial,  tableX,        tableY,            col1W, rowH);
-            PlaceCell(this.lblColor,   divX + 1f,     tableY,            col2W, rowH);
-
-            PlaceCell(this.lblVersion, tableX,        tableY + rowH,     col1W, rowH);
-            PlaceCell(this.lblBattery, divX + 1f,     tableY + rowH,     col2W, rowH);
-
-            PlaceCell(this.lbliCloud,  tableX,        tableY + rowH * 2, col1W, rowH);
-            PlaceCell(this.lblFMI,     divX + 1f,     tableY + rowH * 2, col2W, rowH);
-
-            PlaceCell(this.lblMDM,     tableX,        tableY + rowH * 3, col1W, rowH);
-            PlaceCell(this.lblSIM,     divX + 1f,     tableY + rowH * 3, col2W, rowH);
-
+            PlaceCell(this.lblSerial, tableX, tableY, col1W, rowH);
+            PlaceCell(this.lblColor, divX + 1f, tableY, col2W, rowH);
+ 
+            PlaceCell(this.lblVersion, tableX, tableY + rowH, col1W, rowH);
+            PlaceCell(this.lblBattery, divX + 1f, tableY + rowH, col2W, rowH);
+ 
+            PlaceCell(this.lbliCloud, tableX, tableY + rowH * 2, col1W, rowH);
+            PlaceCell(this.lblFMI, divX + 1f, tableY + rowH * 2, col2W, rowH);
+ 
+            PlaceCell(this.lblMDM, tableX, tableY + rowH * 3, col1W, rowH);
+            PlaceCell(this.lblSIM, divX + 1f, tableY + rowH * 3, col2W, rowH);
+ 
             // ── Footer row ────────────────────────────────────────────────────────────
             PlaceCell(this.lblDate, tableX, footerY, colAW, rowH);
-
+ 
             XRLabel lblBrand = new XRLabel();
             lblBrand.Text = "Tester 1";
             lblBrand.Font = new Font("Tahoma", 6.5f, FontStyle.Bold);
@@ -320,18 +320,18 @@ namespace Dyagnoz_Latest
             lblBrand.Borders = BorderSide.None;
             lblBrand.BackColor = Color.Transparent;
             ((XRControl)this.Detail).Controls.Add(lblBrand);
-
+ 
             PlaceCell(this.lblCust, divBX + 1f, footerY, colCW, rowH, (TextAlignment)16);
-
+ 
             // ── Below-table strip: Notes | Port ──────────────────────────────────────
             // Original bottomY = tableY(92) + tableH(75) + 4 = 171. Scaled: 83 + 70 + 4 = 157.
             float bottomY = tableY + tableH + 4f;   // 157f
-            float lineH   = 14f;                    // was 16 × 0.9
-            float rightW  = 81f;                    // was 90 × 0.9
-            float rightX  = tableX + tableW - rightW;
-            float leftW   = tableW - rightW - 4f;
-
-            this.lblNotes.Font = new Font("Tahoma", 3.5f, FontStyle.Italic);
+            float lineH = 14f;                    // was 16 × 0.9
+            float rightW = 81f;                    // was 90 × 0.9
+            float rightX = tableX + tableW - rightW;
+            float leftW = tableW - rightW - 4f;
+ 
+            this.lblNotes.Font = new Font("Tahoma", 5f, FontStyle.Regular);
             this.lblNotes.LocationFloat = new PointFloat(tableX + 3f, bottomY);
             this.lblNotes.SizeF = new SizeF(leftW, lineH);
             this.lblNotes.TextAlignment = (TextAlignment)16;
@@ -340,22 +340,22 @@ namespace Dyagnoz_Latest
             this.lblNotes.WordWrap = false;
             this.lblNotes.CanGrow = false;
             this.lblNotes.Borders = BorderSide.None;
-
-            this.lblPort.Font = new Font("Tahoma", 3.5f, FontStyle.Regular);
+ 
+            this.lblPort.Font = new Font("Tahoma", 5f, FontStyle.Regular);
             this.lblPort.LocationFloat = new PointFloat(rightX, bottomY);
             this.lblPort.SizeF = new SizeF(rightW, lineH);
             this.lblPort.TextAlignment = (TextAlignment)64;
             this.lblPort.Borders = BorderSide.None;
-
+ 
             // ── Page / Margin Settings ────────────────────────────────────────────────
             this.TopMargin.HeightF = 0f;
             this.BottomMargin.HeightF = 0f;
-
+ 
             this.Bands.AddRange(new Band[] { this.Detail, this.TopMargin, this.BottomMargin });
-
-            this.Margins = new Margins(10, 0, 0, 0);  // ~2.5mm left offset to correct print alignment
+ 
+            this.Margins = new Margins(0, 0, 0, 0);  // ~2.5mm left offset to correct print alignment
             this.PageHeight = 197;   // 50mm
-            this.PageWidth  = 276;   // 70mm
+            this.PageWidth = 276;   // 70mm
             this.Landscape = false;
             this.PaperKind = PaperKind.Custom;
             this.PaperName = "User defined";
@@ -363,7 +363,7 @@ namespace Dyagnoz_Latest
             this.ShowPrintMarginsWarning = false;
             this.ShowPrintStatusDialog = false;
             this.Version = "18.1";
-
+ 
             ((ISupportInitialize)this).EndInit();
         }
     }
