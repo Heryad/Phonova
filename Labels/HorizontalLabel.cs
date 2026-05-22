@@ -5,6 +5,7 @@ using DevExpress.XtraPrinting.Shape;
 using DevExpress.XtraReports.UI;
 using System;
 using System.ComponentModel;
+using System.IO;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Windows;
@@ -20,6 +21,7 @@ namespace Dyagnoz_Latest
         private TopMarginBand TopMargin;
         private BottomMarginBand BottomMargin;
 
+        private XRPictureBox picLogo;
         private XRBarCode barcodeIMEI;
         private XRLabel lblProductInfo;
 
@@ -93,6 +95,7 @@ namespace Dyagnoz_Latest
             this.TopMargin = new TopMarginBand();
             this.BottomMargin = new BottomMarginBand();
 
+            this.picLogo = new XRPictureBox();
             this.barcodeIMEI = new XRBarCode();
             this.lblProductInfo = new XRLabel();
 
@@ -115,6 +118,7 @@ namespace Dyagnoz_Latest
             // ── Detail Band ──────────────────────────────────────────────────────────
             ((XRControl)this.Detail).Controls.AddRange(new XRControl[]
             {
+                this.picLogo,
                 this.barcodeIMEI,
                 this.lblProductInfo,
                 this.lblSerial,
@@ -130,37 +134,47 @@ namespace Dyagnoz_Latest
                 this.lblNotes,
                 this.lblPort
             });
-            ((XRControl)this.Detail).HeightF = 177f;          // was 197 × 0.9
+            ((XRControl)this.Detail).HeightF = 197f;          // 50mm
             ((XRControl)this.Detail).Name = "Detail";
             ((XRControl)this.Detail).Padding = new PaddingInfo(0, 0, 0, 0, 100f);
             ((XRControl)this.Detail).TextAlignment = (DevExpress.XtraPrinting.TextAlignment)32;
 
-            // ── Barcode — now starts at left edge (no logo) ──────────────────────────
-            // Original was 151 × 51 at X=137. With logo gone, centre it in the full width.
-            // Full usable width ≈ 265. Barcode scaled: 136 × 46. Centred X = (265-136)/2 ≈ 65.
+            // ── Logo — loaded from output directory, placed at top ────────────────────
+            const float logoH = 25f;   // logo strip height
+            string logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "label.png");
+            this.picLogo.ImageUrl = logoPath;
+            this.picLogo.Sizing = ImageSizeMode.ZoomImage;
+            this.picLogo.LocationFloat = new PointFloat(5f, 2f);
+            this.picLogo.SizeF = new SizeF(266f, logoH);               // full width minus margins
+            this.picLogo.Borders = BorderSide.None;
+            this.picLogo.BackColor = Color.Transparent;
+            this.picLogo.Name = "picLogo";
+
+            // ── Barcode — placed below the logo ──────────────────────────────────────
+            float barcodeY = logoH + 4f;  // small gap after logo
             this.barcodeIMEI.AutoModule = true;
             this.barcodeIMEI.Font = new Font("Tahoma", 7f);
-            this.barcodeIMEI.LocationFloat = new PointFloat(5f, 5f);     // left-aligned, small top gap
+            this.barcodeIMEI.LocationFloat = new PointFloat(5f, barcodeY);
             this.barcodeIMEI.Name = "barcodeIMEI";
             this.barcodeIMEI.Padding = new PaddingInfo(2, 2, 0, 0, 100f);
-            this.barcodeIMEI.SizeF = new SizeF(255f, 46f);              // wider now — full width minus margins
+            this.barcodeIMEI.SizeF = new SizeF(266f, 46f);              // full width minus margins
             code128.CharacterSet = Code128Charset.CharsetAuto;
             this.barcodeIMEI.Symbology = code128;
             this.barcodeIMEI.TextAlignment = (TextAlignment)32;
             this.barcodeIMEI.ShowText = true;
 
             // ── Product Info Box ─────────────────────────────────────────────────────
-            // Y was 62, scaled → 56. Width was 279 → 251.
-            this.lblProductInfo.Font = new Font("Tahoma", 7f, FontStyle.Bold);  // font kept readable
-            this.lblProductInfo.LocationFloat = new PointFloat(5f, 56f);
-            this.lblProductInfo.SizeF = new SizeF(255f, 23f);            // 279×26 × 0.9 ≈ 251×23
+            float productY = barcodeY + 50f;  // below barcode
+            this.lblProductInfo.Font = new Font("Tahoma", 7f, FontStyle.Bold);
+            this.lblProductInfo.LocationFloat = new PointFloat(5f, productY);
+            this.lblProductInfo.SizeF = new SizeF(266f, 23f);
             this.lblProductInfo.TextAlignment = (TextAlignment)32;
             this.lblProductInfo.Borders = BorderSide.None;
             this.lblProductInfo.BackColor = Color.Transparent;
 
             XRShape shapeProductBox = new XRShape();
-            shapeProductBox.LocationFloat = new PointFloat(5f, 56f);
-            shapeProductBox.SizeF = new SizeF(255f, 23f);
+            shapeProductBox.LocationFloat = new PointFloat(5f, productY);
+            shapeProductBox.SizeF = new SizeF(266f, 23f);
             shapeProductBox.Shape = new ShapeRectangle() { Fillet = 40 };
             shapeProductBox.FillColor = Color.Transparent;
             shapeProductBox.ForeColor = Color.Black;
@@ -169,26 +183,25 @@ namespace Dyagnoz_Latest
             shapeProductBox.BackColor = Color.Transparent;
             ((XRControl)this.Detail).Controls.Add(shapeProductBox);
 
-            // ── Table geometry — all values scaled × 0.9 from originals ──────────────
-            // Original: tableX=5, tableY=92, col1W=138, col2W=136, rowH=16, tableW=275
-            const float tableX  = 5f;
-            const float tableY  = 83f;      // 92 × 0.9 ≈ 83
-            const float col1W   = 124f;     // 138 × 0.9 ≈ 124
-            const float col2W   = 122f;     // 136 × 0.9 ≈ 122 (+ 1px divider = 247 total)
-            const float rowH    = 14f;      // 16  × 0.9 ≈ 14  (kept integer-ish)
-            const int   ROWS    = 5;
-            const float tableW  = col1W + 1f + col2W;   // 247f
-            const float tableH  = rowH * ROWS;          // 70f
+            // ── Table geometry — positioned below product info ────────────────────────
+            float tableX  = 5f;
+            float tableY  = productY + 27f;   // below product info box
+            float col1W   = 130f;
+            float col2W   = 130f;
+            float rowH    = 14f;
+            int   ROWS    = 5;
+            float tableW  = col1W + 1f + col2W;   // 261
+            float tableH  = rowH * ROWS;           // 70
 
-            // Footer column widths — scaled × 0.9, must sum to tableW - 2
-            const float colAW   = 85f;      // 95 × 0.9 ≈ 85
-            const float colBW   = 68f;      // 75 × 0.9 ≈ 68
-            const float colCW   = tableW - colAW - colBW - 2f;  // ≈ 92f
+            // Footer column widths
+            float colAW   = 90f;
+            float colBW   = 75f;
+            float colCW   = tableW - colAW - colBW - 2f;
 
-            const float divX    = tableX + col1W;
-            const float divAX   = tableX + colAW;
-            const float divBX   = divAX + 1f + colBW;
-            const float footerY = tableY + rowH * 4;
+            float divX    = tableX + col1W;
+            float divAX   = tableX + colAW;
+            float divBX   = divAX + 1f + colBW;
+            float footerY = tableY + rowH * 4;
 
             Font cellFont = new Font("Tahoma", 6.5f, FontStyle.Regular);
 
@@ -337,8 +350,8 @@ namespace Dyagnoz_Latest
             this.Bands.AddRange(new Band[] { this.Detail, this.TopMargin, this.BottomMargin });
 
             this.Margins = new Margins(0, 0, 0, 0);
-            this.PageHeight = 177;   // 197 × 0.9 ≈ 177
-            this.PageWidth  = 265;   // 295 × 0.9 ≈ 265 (rounded to int)
+            this.PageHeight = 197;   // 50mm
+            this.PageWidth  = 276;   // 70mm
             this.Landscape = false;
             this.PaperKind = PaperKind.Custom;
             this.PaperName = "User defined";
