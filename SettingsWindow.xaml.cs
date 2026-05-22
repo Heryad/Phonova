@@ -583,7 +583,7 @@ namespace Dyagnoz_Latest
                     notes:        "Test Print",
                     customerName: "Sample Customer"
                 );
-                label.PrintDirect(null);
+                label.Print();
             }
             catch (Exception ex)
             {
