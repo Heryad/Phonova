@@ -53,7 +53,8 @@ namespace Dyagnoz_Latest
             string sim,
             string port,
             string notes = "",
-            string customerName = "")
+            string customerName = "",
+            bool isSynced = true)
         {
             InitializeComponent();
  
@@ -66,12 +67,36 @@ namespace Dyagnoz_Latest
             ((XRControl)this.lblColor).Text = s.PrintDeviceColor ? "Color: " + (color ?? "-") : "";
             ((XRControl)this.lblVersion).Text = "Version: " + (version ?? "-");
             ((XRControl)this.lblBattery).Text = "Battery: " + (battery ?? "-");
-            ((XRControl)this.lbliCloud).Text = "iCloud: " + (icloud ?? "-");
-            ((XRControl)this.lblFMI).Text = "FMI: " + (fmi ?? "-");
+
+            // ── Grid Cell Mappings ──
+            // iCloud is replaced with merged FMI/iCloud: ON or OFF
+            string icloudVal = (icloud ?? "-").Trim().ToUpper();
+            ((XRControl)this.lbliCloud).Text = "FMI/iCloud: " + icloudVal;
+ 
+            // FMI is replaced with SIM status
+            ((XRControl)this.lblFMI).Text = "SIM: " + (sim ?? "-");
+ 
+            // MDM stays as MDM status
             ((XRControl)this.lblMDM).Text = "MDM: " + (mdm ?? "-");
-            ((XRControl)this.lblSIM).Text = "SIM: Unlocked";
+ 
+            // SIM cell (free cell) is used for Work status:
+            string workStatus = "";
+            if (!isSynced)
+            {
+                workStatus = "Pending";
+            }
+            else if (string.IsNullOrEmpty(notes))
+            {
+                workStatus = "100% working phone";
+            }
+            else
+            {
+                workStatus = "Not Working Phone";
+            }
+            ((XRControl)this.lblSIM).Text = workStatus;
+ 
             ((XRControl)this.lblDate).Text = "Date: " + DateTime.Now.ToString("yyyy-MM-dd");
-             ((XRControl)this.lblNotes).Text = string.IsNullOrEmpty(notes) ? "" : notes;
+            ((XRControl)this.lblNotes).Text = string.IsNullOrEmpty(notes) ? "" : notes;
             
             int lineCount = 1;
             if (!string.IsNullOrEmpty(notes))
@@ -103,7 +128,7 @@ namespace Dyagnoz_Latest
                 this.lblNotes.Font = new Font("Tahoma", 6.5f, FontStyle.Regular);
             }
 
-            ((XRControl)this.lblPort).Text = s.PrintPortNumber ? "Port: " + port : "";
+            ((XRControl)this.lblPort).Text = s.PrintPortNumber ? port : "";
             ((XRControl)this.lblCust).Text = s.PrintCustomerName ? (string.IsNullOrEmpty(customerName) ? "" : customerName) : "";
 
             if (!s.PrintPortNumber)
@@ -227,15 +252,15 @@ namespace Dyagnoz_Latest
  
             // ── Product Info Box ─────────────────────────────────────────────────────
             float productY = topRowY + topRowH + 4f;  // below the top row
-            this.lblProductInfo.Font = new Font("Tahoma", 7f, FontStyle.Bold);
+            this.lblProductInfo.Font = new Font("Tahoma", 6.6f, FontStyle.Bold);
             this.lblProductInfo.LocationFloat = new PointFloat(5f, productY);
             this.lblProductInfo.SizeF = new SizeF(190f, 23f);
             this.lblProductInfo.TextAlignment = TextAlignment.MiddleLeft;
             this.lblProductInfo.Padding = new PaddingInfo(10, 0, 0, 0, 100f);
             this.lblProductInfo.Borders = BorderSide.None;
             this.lblProductInfo.BackColor = Color.Transparent;
-
-            this.lblPort.Font = new Font("Tahoma", 7f, FontStyle.Bold);
+ 
+            this.lblPort.Font = new Font("Tahoma", 6.6f, FontStyle.Bold);
             this.lblPort.LocationFloat = new PointFloat(195f, productY);
             this.lblPort.SizeF = new SizeF(66f, 23f);
             this.lblPort.TextAlignment = TextAlignment.MiddleRight;

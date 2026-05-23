@@ -1578,6 +1578,7 @@ namespace Dyagnoz_Latest
                 // Map Color and SIM Name
                 var displayColor = Dyagnoz.Models.DeviceColorMap.GetColorName(ProductType, DeviceEnclosureColor);
                 var displaySim = SIMStatus == "kCTSIMSupportSIMStatusReady" ? "Unlocked" : "Locked";
+                bool isSynced = (StatusText.Text == "Finished");
 
                 // Create the label report with merged data
                 var report = new HorizontalLabel(
@@ -1594,7 +1595,8 @@ namespace Dyagnoz_Latest
                     displaySim,
                     PortNumber.ToString("D2"),
                     notes,
-                    MainWindow.SelectedCustomer ?? ""
+                    MainWindow.SelectedCustomer ?? "",
+                    isSynced
                 );
                 report.Print();
 
