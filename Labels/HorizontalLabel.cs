@@ -297,7 +297,7 @@ namespace Dyagnoz_Latest
             shapeProductBox.Shape = new ShapeRectangle() { Fillet = 40 };
             shapeProductBox.FillColor = Color.Transparent;
             shapeProductBox.ForeColor = Color.Black;
-            shapeProductBox.LineWidth = 1;
+            shapeProductBox.LineWidth = 2;
             shapeProductBox.Borders = BorderSide.None;
             shapeProductBox.BackColor = Color.Transparent;
             ((XRControl)this.Detail).Controls.Add(shapeProductBox);
