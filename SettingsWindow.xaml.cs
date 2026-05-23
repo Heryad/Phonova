@@ -9,6 +9,7 @@ using MaterialDesignThemes.Wpf;
 using System.IO;
 using System.Text;
 using Microsoft.Win32;
+using DevExpress.XtraReports.UI;
 
 namespace Dyagnoz_Latest
 {
