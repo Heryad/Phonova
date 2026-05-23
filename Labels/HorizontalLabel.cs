@@ -252,7 +252,7 @@ namespace Dyagnoz_Latest
             XRLine vDivA = new XRLine();
             vDivA.LineDirection = LineDirection.Vertical;
             vDivA.LocationFloat = new PointFloat(divAX, footerY);
-            vDivA.SizeF = new SizeF(1f, footerRowH);
+            vDivA.SizeF = new SizeF(1f, rowH);
             vDivA.ForeColor = Color.Black;
             vDivA.LineWidth = 1;
             vDivA.Borders = BorderSide.None;
@@ -261,7 +261,7 @@ namespace Dyagnoz_Latest
             XRLine vDivB = new XRLine();
             vDivB.LineDirection = LineDirection.Vertical;
             vDivB.LocationFloat = new PointFloat(divBX, footerY);
-            vDivB.SizeF = new SizeF(1f, footerRowH);
+            vDivB.SizeF = new SizeF(1f, rowH);
             vDivB.ForeColor = Color.Black;
             vDivB.LineWidth = 1;
             vDivB.Borders = BorderSide.None;
@@ -310,15 +310,15 @@ namespace Dyagnoz_Latest
             PlaceCell(this.lblCust, divBX + 1f, footerY, colCW, footerRowH, (TextAlignment)16);
  
             // ── Below-table strip: Notes | Port ──────────────────────────────────────
-            float bottomY = tableY + tableH + 4f;   // 157f
-            float notesBoxH = 34f;
+            float bottomY = tableY + tableH + 2f;   // 159f
+            float notesBoxH = 22f;                  // reduced from 34f to 22f to save space and prevent page overflow
             var s = Services.SettingsManager.Current;
             bool printPort = s.PrintPortNumber;
-
+ 
             float rightW = printPort ? 60f : 0f;
             float rightX = tableX + tableW - rightW;
             float leftW = printPort ? (tableW - rightW - 4f) : tableW;
-
+ 
             // Draw a beautiful rounded box for the Notes
             XRShape shapeNotesBox = new XRShape();
             shapeNotesBox.LocationFloat = new PointFloat(tableX, bottomY);
@@ -330,18 +330,18 @@ namespace Dyagnoz_Latest
             shapeNotesBox.Borders = BorderSide.None;
             shapeNotesBox.BackColor = Color.Transparent;
             ((XRControl)this.Detail).Controls.Add(shapeNotesBox);
-
+ 
             this.lblNotes.Font = new Font("Tahoma", 6.5f, FontStyle.Regular);
-            this.lblNotes.LocationFloat = new PointFloat(tableX + 4f, bottomY + 2f);
-            this.lblNotes.SizeF = new SizeF(leftW - 8f, notesBoxH - 4f);
+            this.lblNotes.LocationFloat = new PointFloat(tableX + 4f, bottomY + 1f);
+            this.lblNotes.SizeF = new SizeF(leftW - 8f, notesBoxH - 2f);
             this.lblNotes.TextAlignment = (TextAlignment)16;
-            this.lblNotes.Padding = new PaddingInfo(2, 2, 2, 2, 100f);
+            this.lblNotes.Padding = new PaddingInfo(2, 2, 1, 1, 100f);
             this.lblNotes.Multiline = true;
             this.lblNotes.WordWrap = true;
             this.lblNotes.CanGrow = false;
             this.lblNotes.Borders = BorderSide.None;
             this.lblNotes.BackColor = Color.Transparent;
-
+ 
             if (printPort)
             {
                 // Draw a beautiful rounded box for the Port
@@ -355,10 +355,10 @@ namespace Dyagnoz_Latest
                 shapePortBox.Borders = BorderSide.None;
                 shapePortBox.BackColor = Color.Transparent;
                 ((XRControl)this.Detail).Controls.Add(shapePortBox);
-
+ 
                 this.lblPort.Font = new Font("Tahoma", 6.5f, FontStyle.Bold);
-                this.lblPort.LocationFloat = new PointFloat(rightX + 2f, bottomY + 2f);
-                this.lblPort.SizeF = new SizeF(rightW - 4f, notesBoxH - 4f);
+                this.lblPort.LocationFloat = new PointFloat(rightX + 2f, bottomY + 1f);
+                this.lblPort.SizeF = new SizeF(rightW - 4f, notesBoxH - 2f);
                 this.lblPort.TextAlignment = (TextAlignment)32;
                 this.lblPort.Padding = new PaddingInfo(0, 0, 0, 0, 100f);
                 this.lblPort.Borders = BorderSide.None;
