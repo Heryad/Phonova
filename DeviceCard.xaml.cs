@@ -322,11 +322,18 @@ namespace Dyagnoz_Latest
                     if (activationOutcome == StepOutcome.Success)
                     {
                         await Task.Delay(2000, ct).ConfigureAwait(false);
+
+                        // Push WiFi first so it installs automatically when setup is bypassed
+                        await RunWithRetryAsync("WiFi", 2, 2000, (token) => PushWifiStepAsync(udid, token), ct);
+
                         await RunWithRetryAsync("Setup", 4, 2000, (token) => SkipSetupStepAsync(udid, token), ct);
                     }
                 }
                 else if (isActivated && !setupDone)
                 {
+                    // Push WiFi first so it installs automatically when setup is bypassed
+                    await RunWithRetryAsync("WiFi", 2, 2000, (token) => PushWifiStepAsync(udid, token), ct);
+
                     await RunWithRetryAsync("Setup", 4, 2000, (token) => SkipSetupStepAsync(udid, token), ct);
                 }
 
@@ -349,8 +356,7 @@ namespace Dyagnoz_Latest
                     await RunWithRetryAsync("Kernel", 2, 2000, (token) => GetOemRInfoStepAsync(udid, token), ct);
                     await Dispatcher.InvokeAsync(ApplyDeviceInfoToUi);
 
-                    // Step 10: WiFi
-                    await RunWithRetryAsync("WiFi", 1, 0, (token) => PushWifiStepAsync(udid, token), ct);
+                    // WiFi profile is now pushed prior to setup bypass (Step 3)
 
                     // Step 11: App Installation
                     var appInstalledOutcome = await RunWithRetryAsync("Checking App", 1, 0, (token) => CheckIfAppInstalledStepAsync(udid, token), ct);
