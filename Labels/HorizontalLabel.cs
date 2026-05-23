@@ -274,20 +274,22 @@ namespace Dyagnoz_Latest
             this.lblProductInfo.WordWrap = false;
             this.lblProductInfo.Multiline = false;
  
-            this.picPortIcon.LocationFloat = new PointFloat(213f, productY + 4f);
-            this.picPortIcon.SizeF = new SizeF(15f, 15f);
-            this.picPortIcon.Sizing = ImageSizeMode.ZoomImage;
-            this.picPortIcon.Borders = BorderSide.None;
-            this.picPortIcon.BackColor = Color.Transparent;
-            this.picPortIcon.Image = GetPortIconImage();
- 
             this.lblPort.Font = new Font("Tahoma", 6.6f, FontStyle.Bold);
-            this.lblPort.LocationFloat = new PointFloat(230f, productY);
-            this.lblPort.SizeF = new SizeF(31f, 23f);
-            this.lblPort.TextAlignment = TextAlignment.MiddleLeft;
+            this.lblPort.LocationFloat = new PointFloat(212f, productY);
+            this.lblPort.SizeF = new SizeF(28f, 23f);
+            this.lblPort.TextAlignment = TextAlignment.MiddleRight;
             this.lblPort.Padding = new PaddingInfo(0, 0, 0, 0, 100f);
             this.lblPort.Borders = BorderSide.None;
             this.lblPort.BackColor = Color.Transparent;
+ 
+            this.picPortIcon.LocationFloat = new PointFloat(242f, productY + 3.5f);
+            this.picPortIcon.SizeF = new SizeF(16f, 16f);
+            this.picPortIcon.Sizing = ImageSizeMode.ZoomImage;
+            this.picPortIcon.Borders = BorderSide.None;
+            this.picPortIcon.BackColor = Color.Transparent;
+            
+            string usbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "usb.png");
+            this.picPortIcon.ImageUrl = usbPath;
  
             XRShape shapeProductBox = new XRShape();
             shapeProductBox.LocationFloat = new PointFloat(5f, productY);
@@ -465,40 +467,6 @@ namespace Dyagnoz_Latest
             this.Version = "18.1";
  
             ((ISupportInitialize)this).EndInit();
-        }
-
-        private static Image GetPortIconImage()
-        {
-            Bitmap bmp = new Bitmap(32, 32);
-            using (Graphics g = Graphics.FromImage(bmp))
-            {
-                g.Clear(Color.Transparent);
-                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                
-                using (Pen pen = new Pen(Color.Black, 2.2f))
-                using (SolidBrush brush = new SolidBrush(Color.Black))
-                {
-                    // Draw a gorgeous, modern vector-style "network connection / port" icon
-                    // Center hub
-                    g.DrawEllipse(pen, 11, 11, 10, 10);
-                    g.FillEllipse(brush, 14, 14, 4, 4);
-                    
-                    // Left node
-                    g.DrawEllipse(pen, 2, 20, 6, 6);
-                    
-                    // Right node
-                    g.DrawEllipse(pen, 24, 20, 6, 6);
-                    
-                    // Connecting lines
-                    g.DrawLine(pen, 11, 17, 7, 21);
-                    g.DrawLine(pen, 21, 17, 25, 21);
-                    
-                    // Top host node
-                    g.DrawLine(pen, 16, 11, 16, 7);
-                    g.DrawEllipse(pen, 13, 2, 6, 6);
-                }
-            }
-            return bmp;
         }
     }
 }
