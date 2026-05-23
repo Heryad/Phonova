@@ -204,6 +204,12 @@
                                 <TextBlock Text="Comments" Margin="12,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
+                        <Button x:Name="NavMmrComments" Style="{StaticResource NavBtn}" Click="NavMmrComments_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="CommentAlert" Width="20" Height="20" VerticalAlignment="Center"/>
+                                <TextBlock Text="MMR Comments" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                         <Button x:Name="NavCustomers" Style="{StaticResource NavBtn}" Click="NavCustomers_Click">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="Account" Width="20" Height="20" VerticalAlignment="Center"/>
@@ -486,6 +492,57 @@
                                 </Border>
                             </StackPanel>
 
+                            <!-- MMR Comments Panel -->
+                            <StackPanel x:Name="PanelMmrComments" Visibility="Collapsed">
+                                <TextBlock Text="MMR Comment Templates" Style="{StaticResource SectionTitle}"/>
+                                <Border Style="{StaticResource CardStyle}">
+                                    <StackPanel>
+                                        <!-- Add/Update MMR comment -->
+                                        <Grid Margin="0,0,0,16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Border Grid.Column="0" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="6" Background="White" Margin="0,0,8,0">
+                                                <TextBox x:Name="NewMmrCommentBox" BorderThickness="0" Padding="12,10" FontSize="13" VerticalAlignment="Center" materialDesign:HintAssist.Hint="Enter MMR comment template..."/>
+                                            </Border>
+                                            <Button Grid.Column="1" x:Name="AddMmrCommentBtn" Style="{StaticResource ActionBtn}" Click="AddMmrCommentBtn_Click">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="Plus" Width="16" Height="16" VerticalAlignment="Center"/>
+                                                    <TextBlock x:Name="AddMmrCommentBtnText" Text="Add" Margin="8,0,0,0"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Grid.Column="2" x:Name="CancelEditMmrCommentBtn" Style="{StaticResource SecondaryBtn}" Margin="8,0,0,0" Visibility="Collapsed" Click="CancelEditMmrCommentBtn_Click">
+                                                <TextBlock Text="Cancel" />
+                                            </Button>
+                                        </Grid>
+                                        <!-- MMR Comments table -->
+                                        <Border BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="6">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                <!-- Header -->
+                                                <Grid Grid.Row="0" Background="#F9FAFB">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="120"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="MMR Comment" FontWeight="SemiBold" Padding="12,10"/>
+                                                    <TextBlock Grid.Column="1" Text="Actions" FontWeight="SemiBold" Padding="12,10" HorizontalAlignment="Center"/>
+                                                </Grid>
+                                                <!-- Dynamic rows -->
+                                                <StackPanel x:Name="MmrCommentsTablePanel" Grid.Row="1">
+                                                    <!-- Rows will be added dynamically -->
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
                             <!-- Customers Panel -->
                             <StackPanel x:Name="PanelCustomers" Visibility="Collapsed">
                                 <TextBlock Text="Customers Library" Style="{StaticResource SectionTitle}"/>
@@ -598,10 +655,16 @@
                                             <ToggleButton x:Name="FullTestToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="FlowToggle_Click"/>
                                         </Grid>
                                         <Border Height="1" Background="{StaticResource BorderColor}" Margin="0,0,0,16"/>
-                                        <Grid>
+                                        <Grid Margin="0,0,0,16">
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                             <StackPanel><TextBlock Text="Activation Only" FontWeight="SemiBold"/><TextBlock Text="Skip diagnostics, only activate device" Foreground="{StaticResource TextSecondary}" FontSize="12"/></StackPanel>
                                             <ToggleButton x:Name="ActivationOnlyToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="FlowToggle_Click"/>
+                                        </Grid>
+                                        <Border Height="1" Background="{StaticResource BorderColor}" Margin="0,0,0,16"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <StackPanel><TextBlock Text="MMR Mode" FontWeight="SemiBold"/><TextBlock Text="Perform specialized MMR diagnostic check" Foreground="{StaticResource TextSecondary}" FontSize="12"/></StackPanel>
+                                            <ToggleButton x:Name="MmrModeToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="FlowToggle_Click"/>
                                         </Grid>
                                     </StackPanel>
                                 </Border>

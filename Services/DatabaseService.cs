@@ -61,6 +61,14 @@ namespace Dyagnoz_Latest.Services
                         date_time DATETIME
                     );";
 
+                // mmr_comments lookup table
+                string createMmrCommentsTable = @"
+                    CREATE TABLE IF NOT EXISTS mmr_comments (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        comment_title TEXT UNIQUE,
+                        date_time DATETIME
+                    );";
+
                 // customers lookup table
                 string createCustomersTable = @"
                     CREATE TABLE IF NOT EXISTS customers (
@@ -75,6 +83,11 @@ namespace Dyagnoz_Latest.Services
                 }
 
                 using (var command = new SQLiteCommand(createCommentsTable, connection))
+                {
+                    command.ExecuteNonQuery();
+                }
+
+                using (var command = new SQLiteCommand(createMmrCommentsTable, connection))
                 {
                     command.ExecuteNonQuery();
                 }
@@ -313,6 +326,71 @@ namespace Dyagnoz_Latest.Services
             {
                 connection.Open();
                 string selectSql = "SELECT name FROM customers ORDER BY name ASC;";
+                using (var command = new SQLiteCommand(selectSql, connection))
+                {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            result.Add(reader.GetString(0));
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        public void AddMmrCommentToLibrary(string title)
+        {
+            using (var connection = new SQLiteConnection(_connectionString))
+            {
+                connection.Open();
+                string insertSql = "INSERT OR IGNORE INTO mmr_comments (comment_title, date_time) VALUES (@title, @date);";
+                using (var command = new SQLiteCommand(insertSql, connection))
+                {
+                    command.Parameters.AddWithValue("@title", title);
+                    command.Parameters.AddWithValue("@date", DateTime.Now);
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public void DeleteMmrCommentFromLibrary(string title)
+        {
+            using (var connection = new SQLiteConnection(_connectionString))
+            {
+                connection.Open();
+                string deleteSql = "DELETE FROM mmr_comments WHERE comment_title = @title;";
+                using (var command = new SQLiteCommand(deleteSql, connection))
+                {
+                    command.Parameters.AddWithValue("@title", title);
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public void UpdateMmrCommentInLibrary(string oldTitle, string newTitle)
+        {
+            using (var connection = new SQLiteConnection(_connectionString))
+            {
+                connection.Open();
+                string updateSql = "UPDATE mmr_comments SET comment_title = @newTitle WHERE comment_title = @oldTitle;";
+                using (var command = new SQLiteCommand(updateSql, connection))
+                {
+                    command.Parameters.AddWithValue("@newTitle", newTitle);
+                    command.Parameters.AddWithValue("@oldTitle", oldTitle);
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public List<string> GetAllMmrComments()
+        {
+            var result = new List<string>();
+            using (var connection = new SQLiteConnection(_connectionString))
+            {
+                connection.Open();
+                string selectSql = "SELECT comment_title FROM mmr_comments ORDER BY comment_title ASC;";
                 using (var command = new SQLiteCommand(selectSql, connection))
                 {
                     using (var reader = command.ExecuteReader())

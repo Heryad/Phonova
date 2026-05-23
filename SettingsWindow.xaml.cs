@@ -19,6 +19,7 @@ namespace Dyagnoz_Latest
         private Button? _activeNavButton;
         private List<ProcessedDevice> _lastFetchedReports = new();
         private string? _editingCustomerName = null;
+        private string? _editingMmrComment = null;
 
 
         public SettingsWindow()
@@ -41,6 +42,7 @@ namespace Dyagnoz_Latest
             var s = SettingsManager.Current;
             FullTestToggle.IsChecked = s.FullTest;
             ActivationOnlyToggle.IsChecked = s.ActivationOnly;
+            MmrModeToggle.IsChecked = s.MmrMode;
             AutoPrintToggle.IsChecked = s.AutoPrint;
             AutoWipeToggle.IsChecked = s.AutoWipe;
             AutoShutdownToggle.IsChecked = s.AutoShutdown;
@@ -56,9 +58,20 @@ namespace Dyagnoz_Latest
         private void FlowToggle_Click(object sender, RoutedEventArgs e)
         {
             if (sender == FullTestToggle && FullTestToggle.IsChecked == true)
+            {
                 ActivationOnlyToggle.IsChecked = false;
+                MmrModeToggle.IsChecked = false;
+            }
             else if (sender == ActivationOnlyToggle && ActivationOnlyToggle.IsChecked == true)
+            {
                 FullTestToggle.IsChecked = false;
+                MmrModeToggle.IsChecked = false;
+            }
+            else if (sender == MmrModeToggle && MmrModeToggle.IsChecked == true)
+            {
+                FullTestToggle.IsChecked = false;
+                ActivationOnlyToggle.IsChecked = false;
+            }
 
             UpdateSettingsAndSave();
         }
@@ -79,6 +92,7 @@ namespace Dyagnoz_Latest
             var s = SettingsManager.Current;
             s.FullTest = FullTestToggle.IsChecked ?? false;
             s.ActivationOnly = ActivationOnlyToggle.IsChecked ?? false;
+            s.MmrMode = MmrModeToggle.IsChecked ?? false;
             s.AutoPrint = AutoPrintToggle.IsChecked ?? false;
             s.AutoWipe = AutoWipeToggle.IsChecked ?? false;
             s.AutoShutdown = AutoShutdownToggle.IsChecked ?? false;
@@ -512,6 +526,7 @@ namespace Dyagnoz_Latest
             PanelReports.Visibility = Visibility.Collapsed;
             PanelTests.Visibility = Visibility.Collapsed;
             PanelComments.Visibility = Visibility.Collapsed;
+            PanelMmrComments.Visibility = Visibility.Collapsed;
             PanelCustomers.Visibility = Visibility.Collapsed;
 
             PanelWifi.Visibility = Visibility.Collapsed;
@@ -524,6 +539,7 @@ namespace Dyagnoz_Latest
             NavReports.Style = (Style)FindResource("NavBtn");
             NavTests.Style = (Style)FindResource("NavBtn");
             NavComments.Style = (Style)FindResource("NavBtn");
+            NavMmrComments.Style = (Style)FindResource("NavBtn");
             NavCustomers.Style = (Style)FindResource("NavBtn");
 
             NavWifi.Style = (Style)FindResource("NavBtn");
@@ -538,6 +554,7 @@ namespace Dyagnoz_Latest
                 case "Reports": PanelReports.Visibility = Visibility.Visible; break;
                 case "Tests": PanelTests.Visibility = Visibility.Visible; break;
                 case "Comments": PanelComments.Visibility = Visibility.Visible; break;
+                case "MmrComments": PanelMmrComments.Visibility = Visibility.Visible; break;
                 case "Customers": PanelCustomers.Visibility = Visibility.Visible; break;
 
                 case "Wifi": PanelWifi.Visibility = Visibility.Visible; break;
@@ -551,6 +568,7 @@ namespace Dyagnoz_Latest
             _activeNavButton = navButton;
 
             if (panelName == "Comments") LoadCommentsTable();
+            if (panelName == "MmrComments") LoadMmrCommentsTable();
             if (panelName == "Customers") LoadCustomersTable();
             if (panelName == "Reports") LoadReportsTable();
         }
@@ -559,6 +577,7 @@ namespace Dyagnoz_Latest
         private void NavReports_Click(object sender, RoutedEventArgs e) => ShowPanel("Reports", NavReports);
         private void NavTests_Click(object sender, RoutedEventArgs e) => ShowPanel("Tests", NavTests);
         private void NavComments_Click(object sender, RoutedEventArgs e) => ShowPanel("Comments", NavComments);
+        private void NavMmrComments_Click(object sender, RoutedEventArgs e) => ShowPanel("MmrComments", NavMmrComments);
         private void NavCustomers_Click(object sender, RoutedEventArgs e) => ShowPanel("Customers", NavCustomers);
 
         private void NavWifi_Click(object sender, RoutedEventArgs e) => ShowPanel("Wifi", NavWifi);
@@ -654,6 +673,125 @@ namespace Dyagnoz_Latest
                 {
                     App.Database.DeleteCommentFromLibrary(comment);
                     LoadCommentsTable();
+                }
+            }
+        }
+
+        // MMR Comments CRUD
+        private void LoadMmrCommentsTable()
+        {
+            if (MmrCommentsTablePanel == null) return;
+            MmrCommentsTablePanel.Children.Clear();
+
+            var comments = App.Database.GetAllMmrComments();
+            foreach (var comment in comments)
+            {
+                var grid = new Grid { Margin = new Thickness(0, 0, 0, 1) };
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
+
+                var textBorder = new Border { Background = Brushes.White, Padding = new Thickness(12, 10, 12, 10) };
+                textBorder.Child = new TextBlock { Text = comment, FontSize = 13, VerticalAlignment = VerticalAlignment.Center };
+                Grid.SetColumn(textBorder, 0);
+                grid.Children.Add(textBorder);
+
+                var actionBorder = new Border { Background = Brushes.White, Padding = new Thickness(12, 10, 12, 10), HorizontalAlignment = HorizontalAlignment.Center };
+                var actionStack = new StackPanel { Orientation = Orientation.Horizontal };
+
+                // Edit Button
+                var editBtn = new Button
+                {
+                    Content = new PackIcon { Kind = PackIconKind.Pencil, Width = 18, Height = 18 },
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F59E0B")),
+                    Background = Brushes.Transparent,
+                    BorderThickness = new Thickness(0),
+                    Width = 32,
+                    Height = 32,
+                    Padding = new Thickness(0),
+                    Tag = comment,
+                    Cursor = System.Windows.Input.Cursors.Hand,
+                    Margin = new Thickness(0, 0, 8, 0)
+                };
+                editBtn.Click += EditMmrComment_Click;
+                actionStack.Children.Add(editBtn);
+
+                // Delete Button
+                var deleteBtn = new Button
+                {
+                    Content = new PackIcon { Kind = PackIconKind.Delete, Width = 18, Height = 18 },
+                    Foreground = Brushes.Red,
+                    Background = Brushes.Transparent,
+                    BorderThickness = new Thickness(0),
+                    Width = 32,
+                    Height = 32,
+                    Padding = new Thickness(0),
+                    Tag = comment,
+                    Cursor = System.Windows.Input.Cursors.Hand
+                };
+                deleteBtn.Click += DeleteMmrComment_Click;
+                actionStack.Children.Add(deleteBtn);
+
+                actionBorder.Child = actionStack;
+                Grid.SetColumn(actionBorder, 1);
+                grid.Children.Add(actionBorder);
+
+                MmrCommentsTablePanel.Children.Add(grid);
+            }
+        }
+
+        private void AddMmrCommentBtn_Click(object sender, RoutedEventArgs e)
+        {
+            string newComment = NewMmrCommentBox.Text?.Trim() ?? "";
+            if (string.IsNullOrWhiteSpace(newComment)) return;
+
+            if (!string.IsNullOrEmpty(_editingMmrComment))
+            {
+                App.Database.UpdateMmrCommentInLibrary(_editingMmrComment, newComment);
+                _editingMmrComment = null;
+                NewMmrCommentBox.Text = "";
+                AddMmrCommentBtnText.Text = "Add";
+                CancelEditMmrCommentBtn.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                App.Database.AddMmrCommentToLibrary(newComment);
+                NewMmrCommentBox.Text = "";
+            }
+            LoadMmrCommentsTable();
+        }
+
+        private void EditMmrComment_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string comment)
+            {
+                _editingMmrComment = comment;
+                NewMmrCommentBox.Text = comment;
+                AddMmrCommentBtnText.Text = "Update";
+                CancelEditMmrCommentBtn.Visibility = Visibility.Visible;
+                NewMmrCommentBox.Focus();
+            }
+        }
+
+        private void CancelEditMmrCommentBtn_Click(object sender, RoutedEventArgs e)
+        {
+            _editingMmrComment = null;
+            NewMmrCommentBox.Text = "";
+            AddMmrCommentBtnText.Text = "Add";
+            CancelEditMmrCommentBtn.Visibility = Visibility.Collapsed;
+        }
+
+        private void DeleteMmrComment_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string comment)
+            {
+                if (MessageBox.Show($"Are you sure you want to delete '{comment}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                {
+                    App.Database.DeleteMmrCommentFromLibrary(comment);
+                    if (_editingMmrComment == comment)
+                    {
+                        CancelEditMmrCommentBtn_Click(sender, e);
+                    }
+                    LoadMmrCommentsTable();
                 }
             }
         }

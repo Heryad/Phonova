@@ -10,6 +10,7 @@ namespace Dyagnoz_Latest.Services
         // Test Flow
         public bool FullTest { get; set; } = true;
         public bool ActivationOnly { get; set; } = false;
+        public bool MmrMode { get; set; } = false;
 
         // Post Test
         public bool AutoPrint { get; set; } = true;

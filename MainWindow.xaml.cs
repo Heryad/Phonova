@@ -20,6 +20,7 @@ namespace Dyagnoz_Latest
         private readonly Dictionary<int, DeviceCard> _portCards = new();
         private readonly iOSCommander _iosCommander = new();
         public static string? SelectedCustomer { get; set; } = null;
+        public static string? SelectedMmrComment { get; set; } = null;
 
         public MainWindow()
         {
@@ -39,6 +40,7 @@ namespace Dyagnoz_Latest
             UpdateDeviceCount();    
             UpdateSelectedCount();  
             UpdateCustomerHeaderUi();  
+            UpdateMmrHeaderVisibility();
         }
 
         private void OnDeviceConnected(object? sender, AppleDeviceEventArgs e)
@@ -210,6 +212,10 @@ namespace Dyagnoz_Latest
         private void DashboardBtn_Click(object sender, RoutedEventArgs e) { }
         private void SettingsBtn_Click(object sender, RoutedEventArgs e) {
             SettingsWindow settingsWindow = new SettingsWindow();
+            settingsWindow.Closed += (s, ev) => {
+                SettingsManager.Load();
+                UpdateMmrHeaderVisibility();
+            };
             settingsWindow.Show();
         }
         private void PortmapBtn_Click(object sender, RoutedEventArgs e) { 
@@ -301,6 +307,57 @@ namespace Dyagnoz_Latest
                     InternetStatusBorder.ToolTip = "Internet Offline";
                 }
             });
+        }
+
+        private void UpdateMmrHeaderVisibility()
+        {
+            var isMmrMode = SettingsManager.Current.MmrMode;
+            if (isMmrMode)
+            {
+                HeaderMmrCommentBtn.Visibility = Visibility.Visible;
+                UpdateMmrCommentHeaderUi();
+            }
+            else
+            {
+                HeaderMmrCommentBtn.Visibility = Visibility.Collapsed;
+                HeaderMmrCommentClearBtn.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void UpdateMmrCommentHeaderUi()
+        {
+            if (string.IsNullOrEmpty(SelectedMmrComment))
+            {
+                HeaderMmrCommentText.Text = "Select MMR Comment";
+                HeaderMmrCommentClearBtn.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                HeaderMmrCommentText.Text = SelectedMmrComment;
+                HeaderMmrCommentClearBtn.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void HeaderMmrCommentBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var existing = string.IsNullOrEmpty(SelectedMmrComment) ? null : new List<string> { SelectedMmrComment };
+            var mmrSelectWindow = new MmrCommentSelectWindow(existing);
+            mmrSelectWindow.Owner = this;
+            mmrSelectWindow.ShowDialog();
+
+            if (mmrSelectWindow.Confirmed)
+            {
+                SelectedMmrComment = mmrSelectWindow.SelectedMmrComments.FirstOrDefault();
+                UpdateMmrCommentHeaderUi();
+                Debug.WriteLine($"[MainWindow] Selected MMR Comment updated globally to: {SelectedMmrComment ?? "None"}");
+            }
+        }
+
+        private void HeaderMmrCommentClearBtn_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedMmrComment = null;
+            UpdateMmrCommentHeaderUi();
+            Debug.WriteLine("[MainWindow] Selected MMR Comment cleared globally.");
         }
     }
 }

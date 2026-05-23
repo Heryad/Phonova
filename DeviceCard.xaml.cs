@@ -312,6 +312,33 @@ namespace Dyagnoz_Latest
 
                 var s = SettingsManager.Current;
 
+                if (s.MmrMode)
+                {
+                    // MMR Mode specific pipeline: Battery only, then print, wipe/shutdown, and exit (no SQL save)
+                    await RunWithRetryAsync("Bat + Cycle", 2, 2000, (token) => GetBatteryInfoStepAsync(udid, token), ct);
+                    await Dispatcher.InvokeAsync(ApplyDeviceInfoToUi);
+
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        if (s.AutoPrint && !string.IsNullOrEmpty(SerialNumber))
+                        {
+                            PrintBtn_Click(null, null);
+                        }
+                    });
+
+                    SetControlsEnabled(true);
+
+                    await Dispatcher.InvokeAsync(async () =>
+                    {
+                        StatusText.Text = "Finished";
+                        if (s.AutoWipe) await Task.Run(() => _iosCommander.WipeDevice(udid));
+                        else if (s.AutoShutdown) await Task.Run(() => _iosCommander.ShutdownDevice(udid));
+                    });
+
+                    Debug.WriteLine($"[Port {port}] MMR Mode pipeline completed. SQL Save skipped.");
+                    return;
+                }
+
                 // Step 3: Check activation state and setup status
                 bool isActivated = string.Equals(ActivationState, "Activated", StringComparison.OrdinalIgnoreCase);
                 bool setupDone = string.Equals(SetupDone, "true", StringComparison.OrdinalIgnoreCase);
@@ -1519,65 +1546,74 @@ namespace Dyagnoz_Latest
 
                 var s = Services.SettingsManager.Current;
 
-                string notes = DeviceComments != null ? string.Join(", ", DeviceComments) : "";
+                string notes = "";
 
-                // Parse failed parts based on settings
-                if (s.PrintFailedParts)
+                if (s.MmrMode)
                 {
-                    var failed = new System.Collections.Generic.List<string>();
+                    notes = MainWindow.SelectedMmrComment ?? "";
+                }
+                else
+                {
+                    notes = DeviceComments != null ? string.Join(", ", DeviceComments) : "";
 
-                    // Kernel Tests (Red/Green Icons)
-                    if (FaceIdStatus == "Fail" || FaceIdStatus == "Fixed") failed.Add("FaceID MSG");
-                    if (LcdStatus == "Fail" || LcdStatus == "Fixed") failed.Add("Display MSG");
-                    if (BatteryStatus == "Fail" || BatteryStatus == "Fixed")
+                    // Parse failed parts based on settings
+                    if (s.PrintFailedParts)
                     {
-                        if (_isBatteryOemrFail)
-                        {
-                            failed.Add("Battery MSG Unknown");
-                        }
-                        else if (_isBatteryThresholdFail)
-                        {
-                            failed.Add("Battery MSG Service");
-                        }
-                        else
-                        {
-                            failed.Add("Battery MSG");
-                        }
-                    }
-                    if (CameraStatus == "Fail" || CameraStatus == "Fixed")
-                    {
-                        if (_isCameraOemrFail)
-                        {
-                            failed.Add("Camera MSG Unknown");
-                        }
-                        else
-                        {
-                            failed.Add("Camera MSG");
-                        }
-                    }
+                        var failed = new System.Collections.Generic.List<string>();
 
-                    // Syslog/App Tests
-                    if (SyslogTestResults != null)
-                    {
-                        foreach (var kv in SyslogTestResults)
+                        // Kernel Tests (Red/Green Icons)
+                        if (FaceIdStatus == "Fail" || FaceIdStatus == "Fixed") failed.Add("FaceID MSG");
+                        if (LcdStatus == "Fail" || LcdStatus == "Fixed") failed.Add("Display MSG");
+                        if (BatteryStatus == "Fail" || BatteryStatus == "Fixed")
                         {
-                            string val = kv.Value?.Trim() ?? "";
-                            // 1 = Failure, 0 = Success in these syslogs
-                            if (val.Equals("Fail", StringComparison.OrdinalIgnoreCase) || 
-                                val.Equals("No", StringComparison.OrdinalIgnoreCase) ||
-                                val == "1") 
+                            if (_isBatteryOemrFail)
                             {
-                                string cleanKey = kv.Key.Replace(" Button", "").Replace(" Mic", "Mic");
-                                failed.Add(cleanKey); // Just the name, no status message
+                                failed.Add("Battery MSG Unknown");
+                            }
+                            else if (_isBatteryThresholdFail)
+                            {
+                                failed.Add("Battery MSG Service");
+                            }
+                            else
+                            {
+                                failed.Add("Battery MSG");
                             }
                         }
-                    }
+                        if (CameraStatus == "Fail" || CameraStatus == "Fixed")
+                        {
+                            if (_isCameraOemrFail)
+                            {
+                                failed.Add("Camera MSG Unknown");
+                            }
+                            else
+                            {
+                                failed.Add("Camera MSG");
+                            }
+                        }
 
-                    if (failed.Count > 0)
-                    {
-                        string failedText = string.Join(", ", failed);
-                        if (string.IsNullOrEmpty(notes)) notes = failedText;
-                        else notes = notes.TrimEnd() + " | " + failedText;
+                        // Syslog/App Tests
+                        if (SyslogTestResults != null)
+                        {
+                            foreach (var kv in SyslogTestResults)
+                            {
+                                string val = kv.Value?.Trim() ?? "";
+                                // 1 = Failure, 0 = Success in these syslogs
+                                if (val.Equals("Fail", StringComparison.OrdinalIgnoreCase) || 
+                                    val.Equals("No", StringComparison.OrdinalIgnoreCase) ||
+                                    val == "1") 
+                                {
+                                    string cleanKey = kv.Key.Replace(" Button", "").Replace(" Mic", "Mic");
+                                    failed.Add(cleanKey); // Just the name, no status message
+                                }
+                            }
+                        }
+
+                        if (failed.Count > 0)
+                        {
+                            string failedText = string.Join(", ", failed);
+                            if (string.IsNullOrEmpty(notes)) notes = failedText;
+                            else notes = notes.TrimEnd() + " | " + failedText;
+                        }
                     }
                 }
 
