@@ -198,7 +198,7 @@ namespace Dyagnoz_Latest
             float rowH = 14f;
             int ROWS = 5;
             float tableW = col1W + 1f + col2W;   // 266
-            float tableH = rowH * ROWS;           // 70
+            float tableH = 74f;                   // increased to 74f to compensate for rounded corner inset
  
             // Footer column widths
             float colAW = 90f;
@@ -209,6 +209,7 @@ namespace Dyagnoz_Latest
             float divAX = tableX + colAW;
             float divBX = divAX + 1f + colBW;
             float footerY = tableY + rowH * 4;
+            float footerRowH = tableH - rowH * 4; // dynamic footer height to reach bottom perfectly
  
             Font cellFont = new Font("Tahoma", 6.5f, FontStyle.Regular);
  
@@ -251,7 +252,7 @@ namespace Dyagnoz_Latest
             XRLine vDivA = new XRLine();
             vDivA.LineDirection = LineDirection.Vertical;
             vDivA.LocationFloat = new PointFloat(divAX, footerY);
-            vDivA.SizeF = new SizeF(1f, rowH);
+            vDivA.SizeF = new SizeF(1f, footerRowH);
             vDivA.ForeColor = Color.Black;
             vDivA.LineWidth = 1;
             vDivA.Borders = BorderSide.None;
@@ -260,7 +261,7 @@ namespace Dyagnoz_Latest
             XRLine vDivB = new XRLine();
             vDivB.LineDirection = LineDirection.Vertical;
             vDivB.LocationFloat = new PointFloat(divBX, footerY);
-            vDivB.SizeF = new SizeF(1f, rowH);
+            vDivB.SizeF = new SizeF(1f, footerRowH);
             vDivB.ForeColor = Color.Black;
             vDivB.LineWidth = 1;
             vDivB.Borders = BorderSide.None;
@@ -293,20 +294,20 @@ namespace Dyagnoz_Latest
             PlaceCell(this.lblSIM, divX + 1f, tableY + rowH * 3, col2W, rowH);
  
             // ── Footer row ────────────────────────────────────────────────────────────
-            PlaceCell(this.lblDate, tableX, footerY, colAW, rowH);
+            PlaceCell(this.lblDate, tableX, footerY, colAW, footerRowH);
  
             XRLabel lblBrand = new XRLabel();
             lblBrand.Text = "Tester 1";
             lblBrand.Font = new Font("Tahoma", 6.5f, FontStyle.Bold);
             lblBrand.LocationFloat = new PointFloat(divAX + 1f + 3f, footerY + 1f);
-            lblBrand.SizeF = new SizeF(colBW - 4f, rowH - 2f);
+            lblBrand.SizeF = new SizeF(colBW - 4f, footerRowH - 2f);
             lblBrand.TextAlignment = (TextAlignment)32;
             lblBrand.Padding = new PaddingInfo(0, 0, 0, 0, 100f);
             lblBrand.Borders = BorderSide.None;
             lblBrand.BackColor = Color.Transparent;
             ((XRControl)this.Detail).Controls.Add(lblBrand);
  
-            PlaceCell(this.lblCust, divBX + 1f, footerY, colCW, rowH, (TextAlignment)16);
+            PlaceCell(this.lblCust, divBX + 1f, footerY, colCW, footerRowH, (TextAlignment)16);
  
             // ── Below-table strip: Notes | Port ──────────────────────────────────────
             float bottomY = tableY + tableH + 4f;   // 157f
