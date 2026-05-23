@@ -99,7 +99,14 @@ namespace Dyagnoz_Latest
             // Cancel any existing work for this card/slot.
             CancelPipeline();
 
-            MainCardBorder.Background = (SolidColorBrush)FindResource("CardBg");
+            if (!string.IsNullOrEmpty(deviceId))
+            {
+                MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#e67802"));
+            }
+            else
+            {
+                MainCardBorder.Background = (SolidColorBrush)FindResource("CardBg");
+            }
             
             _lastKnownDeviceId = deviceId; // Track for next potential swap
             DeviceId = deviceId;
@@ -512,7 +519,7 @@ namespace Dyagnoz_Latest
         {
             await Dispatcher.InvokeAsync(() =>
             {
-                MainCardBorder.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#BFDBFE"));
+                MainCardBorder.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#1b60b5"));
             });
 
             try
@@ -1400,21 +1407,21 @@ namespace Dyagnoz_Latest
                 // 2. If currently Syncing/Testing -> Blue (alert user)
                 // 3. Otherwise -> Neutral
                 if (StatusText.Text == "Finished")
-                    MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#A7F3D0"));
+                    MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1e754d"));
                 else if (StatusText.Text == "Syncing" || StatusText.Text == "Removing Wifi")
-                    MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#BFDBFE"));
+                    MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1b60b5"));
                 else
-                    MainCardBorder.Background = (SolidColorBrush)FindResource("CardBg");
+                    MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#e67802"));
             }
             else if (failed <= 2)
             {
                 StatusBadge.Background = (SolidColorBrush)FindResource("StatusWarn");
-                MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FDE68A")); // Amber
+                MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#b01919")); // Amber -> same as failed
             }
             else
             {
                 StatusBadge.Background = (SolidColorBrush)FindResource("StatusBad");
-                MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FECACA")); // Red
+                MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#b01919")); // Failed
             }
         }
 
