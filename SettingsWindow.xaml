@@ -659,10 +659,15 @@
                                             <TextBlock Text="Print tester name" VerticalAlignment="Center"/>
                                             <ToggleButton x:Name="PrintTesterNameToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="SettingToggle_Click"/>
                                         </Grid>
-                                        <Grid>
+                                        <Grid Margin="0,0,0,12">
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                             <TextBlock Text="Print port number" VerticalAlignment="Center"/>
                                             <ToggleButton x:Name="PrintPortNumberToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="SettingToggle_Click"/>
+                                        </Grid>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <TextBlock Text="Print logo" VerticalAlignment="Center"/>
+                                            <ToggleButton x:Name="PrintLogoToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="SettingToggle_Click"/>
                                         </Grid>
                                     </StackPanel>
                                 </Border>

@@ -50,6 +50,7 @@ namespace Dyagnoz_Latest
             PrintDeviceColorToggle.IsChecked = s.PrintDeviceColor;
             PrintTesterNameToggle.IsChecked = s.PrintTesterName;
             PrintPortNumberToggle.IsChecked = s.PrintPortNumber;
+            PrintLogoToggle.IsChecked = s.PrintLogo;
         }
 
         private void FlowToggle_Click(object sender, RoutedEventArgs e)
@@ -87,6 +88,7 @@ namespace Dyagnoz_Latest
             s.PrintDeviceColor = PrintDeviceColorToggle.IsChecked ?? false;
             s.PrintTesterName = PrintTesterNameToggle.IsChecked ?? false;
             s.PrintPortNumber = PrintPortNumberToggle.IsChecked ?? false;
+            s.PrintLogo = PrintLogoToggle.IsChecked ?? false;
 
             SettingsManager.Save();
         }

@@ -23,6 +23,7 @@ namespace Dyagnoz_Latest.Services
         public bool PrintDeviceColor { get; set; } = true;
         public bool PrintTesterName { get; set; } = true;
         public bool PrintPortNumber { get; set; } = true;
+        public bool PrintLogo { get; set; } = true;
     }
 
     public class SettingsManager

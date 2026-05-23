@@ -81,6 +81,7 @@ namespace Dyagnoz_Latest
             if (!s.PrintCustomerName) ((XRControl)this.lblCust).Visible = false;
             if (!s.PrintPortNumber) ((XRControl)this.lblPort).Visible = false;
             if (!s.PrintDeviceColor) ((XRControl)this.lblColor).Visible = false;
+            if (!s.PrintLogo) ((XRControl)this.picLogo).Visible = false;
         }
  
         protected override void Dispose(bool disposing)
@@ -149,6 +150,9 @@ namespace Dyagnoz_Latest
             const float barcodeX = 5f + logoW + 4f;   // 119
             const float barcodeW = 240f - logoW - 4f;  // 152
  
+            var sGlobal = Services.SettingsManager.Current;
+            bool printLogo = sGlobal.PrintLogo;
+ 
             string logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "label.png");
             this.picLogo.ImageUrl = logoPath;
             this.picLogo.Sizing = ImageSizeMode.ZoomImage;
@@ -158,17 +162,25 @@ namespace Dyagnoz_Latest
             this.picLogo.BackColor = Color.Transparent;
             this.picLogo.Name = "picLogo";
  
-            // ── Barcode — right of the logo ───────────────────────────────────────────
+            // ── Barcode — right of the logo (or full width if logo is hidden) ──────────
+            float barcodeXFinal = printLogo ? (barcodeX + 25f) : 5f;
+            float barcodeWFinal = printLogo ? barcodeW : 266f;
+ 
             this.barcodeIMEI.AutoModule = true;
             this.barcodeIMEI.Font = new Font("Tahoma", 7f);
-            this.barcodeIMEI.LocationFloat = new PointFloat(barcodeX + 25, topRowY);
+            this.barcodeIMEI.LocationFloat = new PointFloat(barcodeXFinal, topRowY);
             this.barcodeIMEI.Name = "barcodeIMEI";
             this.barcodeIMEI.Padding = new PaddingInfo(2, 2, 0, 0, 100f);
-            this.barcodeIMEI.SizeF = new SizeF(barcodeW, topRowH);
+            this.barcodeIMEI.SizeF = new SizeF(barcodeWFinal, topRowH);
             code128.CharacterSet = Code128Charset.CharsetAuto;
             this.barcodeIMEI.Symbology = code128;
             this.barcodeIMEI.TextAlignment = (TextAlignment)32;
             this.barcodeIMEI.ShowText = true;
+ 
+            if (!printLogo)
+            {
+                this.picLogo.Visible = false;
+            }
  
             // ── Product Info Box ─────────────────────────────────────────────────────
             float productY = topRowY + topRowH + 4f;  // below the top row
@@ -311,7 +323,7 @@ namespace Dyagnoz_Latest
  
             // ── Below-table strip: Notes | Port ──────────────────────────────────────
             float bottomY = tableY + tableH + 2f;   // 159f
-            float notesBoxH = 22f;                  // reduced from 34f to 22f to save space and prevent page overflow
+            float notesBoxH = 28f;                  // set to 26f to give extra breathing room while preventing page overflow
             var s = Services.SettingsManager.Current;
             bool printPort = s.PrintPortNumber;
  
