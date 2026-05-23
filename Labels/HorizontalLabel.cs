@@ -118,19 +118,44 @@ namespace Dyagnoz_Latest
             }
 
             bool isMultiLine = lineCount > 1;
-            this.lblNotes.TextAlignment = isMultiLine ? TextAlignment.TopLeft : TextAlignment.MiddleLeft;
-            
-            if (lineCount >= 3)
+            if (s.MmrMode)
             {
-                this.lblNotes.Font = new Font("Tahoma", 5.2f, FontStyle.Regular);
-            }
-            else if (lineCount == 2)
-            {
-                this.lblNotes.Font = new Font("Tahoma", 6.0f, FontStyle.Regular);
+                this.lblNotes.TextAlignment = isMultiLine ? TextAlignment.TopCenter : TextAlignment.MiddleCenter;
             }
             else
             {
-                this.lblNotes.Font = new Font("Tahoma", 6.5f, FontStyle.Regular);
+                this.lblNotes.TextAlignment = isMultiLine ? TextAlignment.TopLeft : TextAlignment.MiddleLeft;
+            }
+            
+            if (s.MmrMode)
+            {
+                if (lineCount >= 3)
+                {
+                    this.lblNotes.Font = new Font("Tahoma", 5.72f, FontStyle.Regular);
+                }
+                else if (lineCount == 2)
+                {
+                    this.lblNotes.Font = new Font("Tahoma", 6.6f, FontStyle.Regular);
+                }
+                else
+                {
+                    this.lblNotes.Font = new Font("Tahoma", 7.15f, FontStyle.Regular);
+                }
+            }
+            else
+            {
+                if (lineCount >= 3)
+                {
+                    this.lblNotes.Font = new Font("Tahoma", 5.2f, FontStyle.Regular);
+                }
+                else if (lineCount == 2)
+                {
+                    this.lblNotes.Font = new Font("Tahoma", 6.0f, FontStyle.Regular);
+                }
+                else
+                {
+                    this.lblNotes.Font = new Font("Tahoma", 6.5f, FontStyle.Regular);
+                }
             }
  
             // Strip leading zeros from the port number
