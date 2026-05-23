@@ -71,8 +71,7 @@ namespace Dyagnoz_Latest
             ((XRControl)this.lblMDM).Text = "MDM: " + (mdm ?? "-");
             ((XRControl)this.lblSIM).Text = "SIM: Unlocked";
             ((XRControl)this.lblDate).Text = "Date: " + DateTime.Now.ToString("yyyy-MM-dd");
- 
-            ((XRControl)this.lblNotes).Text = string.IsNullOrEmpty(notes) ? "" : notes;
+             ((XRControl)this.lblNotes).Text = string.IsNullOrEmpty(notes) ? "" : notes;
             
             int lineCount = 1;
             if (!string.IsNullOrEmpty(notes))
@@ -81,9 +80,9 @@ namespace Dyagnoz_Latest
                 int estimated = 0;
                 foreach (var l in lines)
                 {
-                    // With a smaller port box width of 32f, the note text area width is ~222f.
-                    // At 6.5f font, roughly 36 characters fit in a line.
-                    estimated += Math.Max(1, (int)Math.Ceiling(l.Length / 36.0));
+                    // With full width notes (266f), printable width is ~258f.
+                    // At 6.5f font, roughly 55 characters fit per line.
+                    estimated += Math.Max(1, (int)Math.Ceiling(l.Length / 55.0));
                 }
                 lineCount = Math.Max(lines.Length, estimated);
             }
@@ -93,11 +92,11 @@ namespace Dyagnoz_Latest
             
             if (lineCount >= 3)
             {
-                this.lblNotes.Font = new Font("Tahoma", 4.8f, FontStyle.Regular);
+                this.lblNotes.Font = new Font("Tahoma", 5.2f, FontStyle.Regular);
             }
             else if (lineCount == 2)
             {
-                this.lblNotes.Font = new Font("Tahoma", 5.5f, FontStyle.Regular);
+                this.lblNotes.Font = new Font("Tahoma", 6.0f, FontStyle.Regular);
             }
             else
             {
@@ -106,6 +105,21 @@ namespace Dyagnoz_Latest
 
             ((XRControl)this.lblPort).Text = s.PrintPortNumber ? "Port: " + port : "";
             ((XRControl)this.lblCust).Text = s.PrintCustomerName ? (string.IsNullOrEmpty(customerName) ? "" : customerName) : "";
+
+            if (!s.PrintPortNumber)
+            {
+                ((XRControl)this.lblPort).Visible = false;
+                this.lblProductInfo.SizeF = new SizeF(266f, 23f);
+                this.lblProductInfo.TextAlignment = TextAlignment.MiddleCenter;
+                this.lblProductInfo.Padding = new PaddingInfo(0, 0, 0, 0, 100f);
+            }
+            else
+            {
+                ((XRControl)this.lblPort).Visible = true;
+                this.lblProductInfo.SizeF = new SizeF(190f, 23f);
+                this.lblProductInfo.TextAlignment = TextAlignment.MiddleLeft;
+                this.lblProductInfo.Padding = new PaddingInfo(10, 0, 0, 0, 100f);
+            }
  
             if (!s.PrintCustomerName) ((XRControl)this.lblCust).Visible = false;
             if (!s.PrintPortNumber) ((XRControl)this.lblPort).Visible = false;
@@ -215,10 +229,19 @@ namespace Dyagnoz_Latest
             float productY = topRowY + topRowH + 4f;  // below the top row
             this.lblProductInfo.Font = new Font("Tahoma", 7f, FontStyle.Bold);
             this.lblProductInfo.LocationFloat = new PointFloat(5f, productY);
-            this.lblProductInfo.SizeF = new SizeF(266f, 23f);
-            this.lblProductInfo.TextAlignment = (TextAlignment)32;
+            this.lblProductInfo.SizeF = new SizeF(190f, 23f);
+            this.lblProductInfo.TextAlignment = TextAlignment.MiddleLeft;
+            this.lblProductInfo.Padding = new PaddingInfo(10, 0, 0, 0, 100f);
             this.lblProductInfo.Borders = BorderSide.None;
             this.lblProductInfo.BackColor = Color.Transparent;
+
+            this.lblPort.Font = new Font("Tahoma", 7f, FontStyle.Bold);
+            this.lblPort.LocationFloat = new PointFloat(195f, productY);
+            this.lblPort.SizeF = new SizeF(66f, 23f);
+            this.lblPort.TextAlignment = TextAlignment.MiddleRight;
+            this.lblPort.Padding = new PaddingInfo(0, 10, 0, 0, 100f);
+            this.lblPort.Borders = BorderSide.None;
+            this.lblPort.BackColor = Color.Transparent;
  
             XRShape shapeProductBox = new XRShape();
             shapeProductBox.LocationFloat = new PointFloat(5f, productY);
@@ -350,15 +373,10 @@ namespace Dyagnoz_Latest
  
             PlaceCell(this.lblCust, divBX + 1f, footerY, colCW, footerRowH, (TextAlignment)16);
  
-            // ── Below-table strip: Notes | Port ──────────────────────────────────────
+            // ── Below-table strip: Notes — now always full width ─────────────────────
             float bottomY = tableY + tableH + 2f;   // 159f
             float notesBoxH = 28f;                  // set to 26f to give extra breathing room while preventing page overflow
-            var s = Services.SettingsManager.Current;
-            bool printPort = s.PrintPortNumber;
- 
-            float rightW = printPort ? 32f : 0f;
-            float rightX = tableX + tableW - rightW;
-            float leftW = printPort ? (tableW - rightW - 4f) : tableW;
+            float leftW = tableW;                   // always full width (266f)
  
             // Draw a beautiful rounded box for the Notes
             XRShape shapeNotesBox = new XRShape();
@@ -382,33 +400,6 @@ namespace Dyagnoz_Latest
             this.lblNotes.CanGrow = false;
             this.lblNotes.Borders = BorderSide.None;
             this.lblNotes.BackColor = Color.Transparent;
- 
-            if (printPort)
-            {
-                // Draw a beautiful rounded box for the Port
-                XRShape shapePortBox = new XRShape();
-                shapePortBox.LocationFloat = new PointFloat(rightX, bottomY);
-                shapePortBox.SizeF = new SizeF(rightW, notesBoxH);
-                shapePortBox.Shape = new ShapeRectangle() { Fillet = 20 };
-                shapePortBox.FillColor = Color.Transparent;
-                shapePortBox.ForeColor = Color.Black;
-                shapePortBox.LineWidth = 1;
-                shapePortBox.Borders = BorderSide.None;
-                shapePortBox.BackColor = Color.Transparent;
-                ((XRControl)this.Detail).Controls.Add(shapePortBox);
- 
-                this.lblPort.Font = new Font("Tahoma", 5.8f, FontStyle.Bold);
-                this.lblPort.LocationFloat = new PointFloat(rightX + 2f, bottomY + 1f);
-                this.lblPort.SizeF = new SizeF(rightW - 4f, notesBoxH - 2f);
-                this.lblPort.TextAlignment = (TextAlignment)32;
-                this.lblPort.Padding = new PaddingInfo(0, 0, 0, 0, 100f);
-                this.lblPort.Borders = BorderSide.None;
-                this.lblPort.BackColor = Color.Transparent;
-            }
-            else
-            {
-                ((XRControl)this.lblPort).Visible = false;
-            }
  
             // ── Page / Margin Settings ────────────────────────────────────────────────
             this.TopMargin.HeightF = 0f;

@@ -199,19 +199,19 @@ namespace Dyagnoz_Latest
 
                 IcloudText.Text = "—";
                 IcloudBadge.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#F3F4F6"));
-                IcloudText.Foreground = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#9CA3AF"));
+                IcloudText.Foreground = (SolidColorBrush)FindResource("TextMuted");
 
                 FmiText.Text = "—";
                 FmiBadge.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#F3F4F6"));
-                FmiText.Foreground = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#9CA3AF"));
+                FmiText.Foreground = (SolidColorBrush)FindResource("TextMuted");
 
                 MdmText.Text = "—";
                 MdmBadge.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#F3F4F6"));
-                MdmText.Foreground = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#9CA3AF"));
+                MdmText.Foreground = (SolidColorBrush)FindResource("TextMuted");
 
                 SimlockText.Text = "—";
                 SimlockBadge.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#F3F4F6"));
-                SimlockText.Foreground = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#9CA3AF"));
+                SimlockText.Foreground = (SolidColorBrush)FindResource("TextMuted");
 
                 StatusText.Text = "Ready";
                 StatusBadge.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#10B981"));
