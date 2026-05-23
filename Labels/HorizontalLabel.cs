@@ -73,6 +73,8 @@ namespace Dyagnoz_Latest
             ((XRControl)this.lblDate).Text = "Date: " + DateTime.Now.ToString("yyyy-MM-dd");
  
             ((XRControl)this.lblNotes).Text = string.IsNullOrEmpty(notes) ? "" : notes;
+            bool isMultiLine = !string.IsNullOrEmpty(notes) && (notes.Contains("\n") || notes.Length > 35);
+            this.lblNotes.TextAlignment = isMultiLine ? TextAlignment.TopLeft : TextAlignment.MiddleLeft;
             ((XRControl)this.lblPort).Text = s.PrintPortNumber ? "Port: " + port : "";
             ((XRControl)this.lblCust).Text = s.PrintCustomerName ? (string.IsNullOrEmpty(customerName) ? "" : customerName) : "";
  
@@ -214,7 +216,7 @@ namespace Dyagnoz_Latest
             XRShape shapeTableBox = new XRShape();
             shapeTableBox.LocationFloat = new PointFloat(tableX, tableY);
             shapeTableBox.SizeF = new SizeF(tableW, tableH);
-            shapeTableBox.Shape = new ShapeRectangle() { Fillet = 20 };
+            shapeTableBox.Shape = new ShapeRectangle() { Fillet = 8 };
             shapeTableBox.FillColor = Color.Transparent;
             shapeTableBox.ForeColor = Color.Black;
             shapeTableBox.LineWidth = 1;
