@@ -127,7 +127,9 @@ namespace Dyagnoz_Latest
             else
             {
                 this.lblNotes.Font = new Font("Tahoma", 6.5f, FontStyle.Regular);
-                   // Strip leading zeros from the port number
+            }
+ 
+            // Strip leading zeros from the port number
             string cleanPort = (port ?? "").Trim();
             while (cleanPort.StartsWith("0") && cleanPort.Length > 1)
             {
@@ -471,15 +473,29 @@ namespace Dyagnoz_Latest
             using (Graphics g = Graphics.FromImage(bmp))
             {
                 g.Clear(Color.Transparent);
-                using (Pen pen = new Pen(Color.Black, 2.5f))
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                
+                using (Pen pen = new Pen(Color.Black, 2.2f))
+                using (SolidBrush brush = new SolidBrush(Color.Black))
                 {
-                    // Draw outline of network/ethernet connector
-                    g.DrawRectangle(pen, 4, 8, 24, 16);
-                    using (SolidBrush brush = new SolidBrush(Color.Black))
-                    {
-                        // Draw connector tab
-                        g.FillRectangle(brush, 8, 12, 16, 4);
-                    }
+                    // Draw a gorgeous, modern vector-style "network connection / port" icon
+                    // Center hub
+                    g.DrawEllipse(pen, 11, 11, 10, 10);
+                    g.FillEllipse(brush, 14, 14, 4, 4);
+                    
+                    // Left node
+                    g.DrawEllipse(pen, 2, 20, 6, 6);
+                    
+                    // Right node
+                    g.DrawEllipse(pen, 24, 20, 6, 6);
+                    
+                    // Connecting lines
+                    g.DrawLine(pen, 11, 17, 7, 21);
+                    g.DrawLine(pen, 21, 17, 25, 21);
+                    
+                    // Top host node
+                    g.DrawLine(pen, 16, 11, 16, 7);
+                    g.DrawEllipse(pen, 13, 2, 6, 6);
                 }
             }
             return bmp;
