@@ -6,6 +6,8 @@ using System.Windows.Controls;
 using System.Text.Json;
 using Dyagnoz_Latest.Services;
 using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace Dyagnoz_Latest
 {
@@ -23,6 +25,7 @@ namespace Dyagnoz_Latest
         {
             InitializeComponent();
             InitializeDashboard();
+            StartInternetCheck();
         }
 
         private async void InitializeDashboard()
@@ -126,7 +129,27 @@ namespace Dyagnoz_Latest
             }
         }
 
-        private void SelectAllBtn_Click(object sender, RoutedEventArgs e) { }
+        private void SelectAllBtn_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var card in _portCards.Values)
+            {
+                if (!string.IsNullOrEmpty(card.DeviceId) && card.DeviceId != "Unknown UDID")
+                {
+                    card.IsSelected = true;
+                }
+            }
+            UpdateSelectedCount();
+        }
+ 
+        private void DeselectAllBtn_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var card in _portCards.Values)
+            {
+                card.IsSelected = false;
+            }
+            UpdateSelectedCount();
+        }
+ 
         private void PrintAllBtn_Click(object sender, RoutedEventArgs e) { }
         
         private async void RebootAllBtn_Click(object sender, RoutedEventArgs e) 
@@ -230,6 +253,54 @@ namespace Dyagnoz_Latest
             SelectedCustomer = null;
             UpdateCustomerHeaderUi();
             Debug.WriteLine("[MainWindow] Selected Customer cleared globally.");
+        }
+ 
+        private System.Windows.Threading.DispatcherTimer? _internetCheckTimer;
+ 
+        private void StartInternetCheck()
+        {
+            _internetCheckTimer = new System.Windows.Threading.DispatcherTimer();
+            _internetCheckTimer.Interval = TimeSpan.FromSeconds(5);
+            _internetCheckTimer.Tick += async (s, e) => await CheckInternetStatusAsync();
+            _internetCheckTimer.Start();
+            
+            _ = CheckInternetStatusAsync();
+        }
+ 
+        private async Task CheckInternetStatusAsync()
+        {
+            bool isConnected = false;
+            try
+            {
+                using (var client = new System.Net.Http.HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromSeconds(2);
+                    using (var response = await client.GetAsync("https://www.google.com", System.Net.Http.HttpCompletionOption.ResponseHeadersRead))
+                    {
+                        isConnected = response.IsSuccessStatusCode;
+                    }
+                }
+            }
+            catch
+            {
+                isConnected = false;
+            }
+ 
+            Dispatcher.Invoke(() =>
+            {
+                if (isConnected)
+                {
+                    InternetStatusIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Wifi;
+                    InternetStatusIcon.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981"));
+                    InternetStatusBorder.ToolTip = "Internet Connected";
+                }
+                else
+                {
+                    InternetStatusIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.WifiOff;
+                    InternetStatusIcon.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444"));
+                    InternetStatusBorder.ToolTip = "Internet Offline";
+                }
+            });
         }
     }
 }

@@ -141,7 +141,17 @@
                     <Button x:Name="SettingsBtn2" Style="{StaticResource IconBtn}" ToolTip="Settings" Click="SettingsBtn_Click">
                         <materialDesign:PackIcon Kind="Cog" Width="18" Height="18"/>
                     </Button>
-
+ 
+                    <Border Width="1" Background="#475569" Height="20" Margin="6,0"/>
+ 
+                    <!-- Select / Deselect All -->
+                    <Button x:Name="SelectAllBtn" Style="{StaticResource IconBtn}" ToolTip="Select All" Click="SelectAllBtn_Click">
+                        <materialDesign:PackIcon Kind="CheckboxMultipleMarked" Width="18" Height="18"/>
+                    </Button>
+                    <Button x:Name="DeselectAllBtn" Style="{StaticResource IconBtn}" ToolTip="Deselect All" Click="DeselectAllBtn_Click">
+                        <materialDesign:PackIcon Kind="CheckboxMultipleBlankOutline" Width="18" Height="18"/>
+                    </Button>
+ 
                     <Border Width="1" Background="#475569" Height="20" Margin="6,0"/>
 
                     <Button x:Name="RebootBatchBtn" Style="{StaticResource IconBtn}" ToolTip="Reboot Selected" Click="RebootAllBtn_Click" IsEnabled="False">
@@ -183,6 +193,11 @@
                         </StackPanel>
                     </Button>
 
+                    <!-- Internet Status Indicator -->
+                    <Border x:Name="InternetStatusBorder" Background="Transparent" VerticalAlignment="Center" Margin="6,0,12,0" ToolTip="Checking Internet...">
+                        <materialDesign:PackIcon x:Name="InternetStatusIcon" Kind="Wifi" Width="20" Height="20" Foreground="#10B981"/>
+                    </Border>
+ 
                     <Border Width="1" Background="#475569" Margin="6,8"/>
 
                     <Button x:Name="MinimizeBtn" Style="{StaticResource IconBtn}" ToolTip="Minimize" Click="MinimizeBtn_Click">

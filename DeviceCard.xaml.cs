@@ -512,7 +512,7 @@ namespace Dyagnoz_Latest
         {
             await Dispatcher.InvokeAsync(() =>
             {
-                MainCardBorder.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#DBEAFE"));
+                MainCardBorder.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#BFDBFE"));
             });
 
             try
@@ -1400,21 +1400,21 @@ namespace Dyagnoz_Latest
                 // 2. If currently Syncing/Testing -> Blue (alert user)
                 // 3. Otherwise -> Neutral
                 if (StatusText.Text == "Finished")
-                    MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DEF7EC"));
+                    MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#A7F3D0"));
                 else if (StatusText.Text == "Syncing" || StatusText.Text == "Removing Wifi")
-                    MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DBEAFE"));
+                    MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#BFDBFE"));
                 else
                     MainCardBorder.Background = (SolidColorBrush)FindResource("CardBg");
             }
             else if (failed <= 2)
             {
                 StatusBadge.Background = (SolidColorBrush)FindResource("StatusWarn");
-                MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FDF6B2")); // Amber
+                MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FDE68A")); // Amber
             }
             else
             {
                 StatusBadge.Background = (SolidColorBrush)FindResource("StatusBad");
-                MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FDE8E8")); // Red
+                MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FECACA")); // Red
             }
         }
 
