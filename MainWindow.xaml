@@ -179,27 +179,30 @@
 
                 <!-- Right Side - Dashboard & Window Controls -->
                 <StackPanel Grid.Column="3" Orientation="Horizontal">
-                    <Button x:Name="SettingsBtn" Style="{StaticResource GreenIconBtn}" Width="128" Padding="16,0" ToolTip="Settings" Click="SettingsBtn_Click">
+                    <!-- Internet Status Indicator -->
+                    <Border x:Name="InternetStatusBorder" Background="Transparent" VerticalAlignment="Center" Margin="0,0,8,0" ToolTip="Checking Internet...">
+                        <materialDesign:PackIcon x:Name="InternetStatusIcon" Kind="Wifi" Width="20" Height="20" Foreground="#10B981"/>
+                    </Border>
+
+                    <!-- Divider after Internet Status -->
+                    <Border Width="1" Background="#475569" Margin="6,8"/>
+
+                    <Button x:Name="SettingsBtn" Style="{StaticResource GreenIconBtn}" Width="128" Padding="16,0" ToolTip="Settings" Click="SettingsBtn_Click" Margin="6,0,0,0">
                         <StackPanel Orientation="Horizontal" Margin="4,0">
                             <materialDesign:PackIcon Kind="Gear" Width="16" Height="16" VerticalAlignment="Center"/>
                             <TextBlock Text="Settings" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     
-                    <Button x:Name="PortmapBtn" Style="{StaticResource GreenIconBtn}" Width="128" Padding="16,0" ToolTip="Portmap" Click="PortmapBtn_Click">
+                    <Button x:Name="PortmapBtn" Style="{StaticResource GreenIconBtn}" Width="128" Padding="16,0" ToolTip="Portmap" Click="PortmapBtn_Click" Margin="6,0,0,0">
                         <StackPanel Orientation="Horizontal" Margin="4,0">
                             <materialDesign:PackIcon Kind="UsbPort" Width="16" Height="16" VerticalAlignment="Center"/>
                             <TextBlock Text="Portmap" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
-
-                    <!-- Internet Status Indicator -->
-                    <Border x:Name="InternetStatusBorder" Background="Transparent" VerticalAlignment="Center" Margin="6,0,12,0" ToolTip="Checking Internet...">
-                        <materialDesign:PackIcon x:Name="InternetStatusIcon" Kind="Wifi" Width="20" Height="20" Foreground="#10B981"/>
-                    </Border>
  
-                    <Border Width="1" Background="#475569" Margin="6,8"/>
-
+                    <Border Width="1" Background="#475569" Margin="12,8"/>
+ 
                     <Button x:Name="MinimizeBtn" Style="{StaticResource IconBtn}" ToolTip="Minimize" Click="MinimizeBtn_Click">
                         <materialDesign:PackIcon Kind="WindowMinimize" Width="16" Height="16"/>
                     </Button>
