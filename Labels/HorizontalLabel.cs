@@ -73,8 +73,37 @@ namespace Dyagnoz_Latest
             ((XRControl)this.lblDate).Text = "Date: " + DateTime.Now.ToString("yyyy-MM-dd");
  
             ((XRControl)this.lblNotes).Text = string.IsNullOrEmpty(notes) ? "" : notes;
-            bool isMultiLine = !string.IsNullOrEmpty(notes) && (notes.Contains("\n") || notes.Length > 35);
+            
+            int lineCount = 1;
+            if (!string.IsNullOrEmpty(notes))
+            {
+                string[] lines = notes.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+                int estimated = 0;
+                foreach (var l in lines)
+                {
+                    // With a smaller port box width of 32f, the note text area width is ~222f.
+                    // At 6.5f font, roughly 36 characters fit in a line.
+                    estimated += Math.Max(1, (int)Math.Ceiling(l.Length / 36.0));
+                }
+                lineCount = Math.Max(lines.Length, estimated);
+            }
+
+            bool isMultiLine = lineCount > 1;
             this.lblNotes.TextAlignment = isMultiLine ? TextAlignment.TopLeft : TextAlignment.MiddleLeft;
+            
+            if (lineCount >= 3)
+            {
+                this.lblNotes.Font = new Font("Tahoma", 4.8f, FontStyle.Regular);
+            }
+            else if (lineCount == 2)
+            {
+                this.lblNotes.Font = new Font("Tahoma", 5.5f, FontStyle.Regular);
+            }
+            else
+            {
+                this.lblNotes.Font = new Font("Tahoma", 6.5f, FontStyle.Regular);
+            }
+
             ((XRControl)this.lblPort).Text = s.PrintPortNumber ? "Port: " + port : "";
             ((XRControl)this.lblCust).Text = s.PrintCustomerName ? (string.IsNullOrEmpty(customerName) ? "" : customerName) : "";
  
@@ -327,7 +356,7 @@ namespace Dyagnoz_Latest
             var s = Services.SettingsManager.Current;
             bool printPort = s.PrintPortNumber;
  
-            float rightW = printPort ? 60f : 0f;
+            float rightW = printPort ? 32f : 0f;
             float rightX = tableX + tableW - rightW;
             float leftW = printPort ? (tableW - rightW - 4f) : tableW;
  
@@ -368,7 +397,7 @@ namespace Dyagnoz_Latest
                 shapePortBox.BackColor = Color.Transparent;
                 ((XRControl)this.Detail).Controls.Add(shapePortBox);
  
-                this.lblPort.Font = new Font("Tahoma", 6.5f, FontStyle.Bold);
+                this.lblPort.Font = new Font("Tahoma", 5.8f, FontStyle.Bold);
                 this.lblPort.LocationFloat = new PointFloat(rightX + 2f, bottomY + 1f);
                 this.lblPort.SizeF = new SizeF(rightW - 4f, notesBoxH - 2f);
                 this.lblPort.TextAlignment = (TextAlignment)32;

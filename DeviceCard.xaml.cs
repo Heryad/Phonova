@@ -1802,11 +1802,10 @@ namespace Dyagnoz_Latest
                 if (useWhite)
                 {
                     var whiteBrush = Brushes.White;
-                    var transparentWhiteBrush = new SolidColorBrush(Color.FromArgb(179, 255, 255, 255)); // 70% opacity white
                     
                     this.Resources["TextPrimary"] = whiteBrush;
-                    this.Resources["TextSecondary"] = transparentWhiteBrush;
-                    this.Resources["TextMuted"] = transparentWhiteBrush;
+                    this.Resources["TextSecondary"] = whiteBrush;
+                    this.Resources["TextMuted"] = whiteBrush;
                 }
                 else
                 {
