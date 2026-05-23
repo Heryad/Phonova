@@ -141,7 +141,7 @@ namespace Dyagnoz_Latest
             ((XRControl)this.Detail).TextAlignment = (DevExpress.XtraPrinting.TextAlignment)32;
  
             // ── Logo (left) + Barcode (right) — side by side in the same row ──────────
-            const float topRowY = 25f;
+            const float topRowY = 6f;
             const float topRowH = 46f;   // height shared by logo and barcode
             const float logoW = 110f;  // logo panel width
             const float barcodeX = 5f + logoW + 4f;   // 119
@@ -150,8 +150,8 @@ namespace Dyagnoz_Latest
             string logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "label.png");
             this.picLogo.ImageUrl = logoPath;
             this.picLogo.Sizing = ImageSizeMode.ZoomImage;
-            this.picLogo.LocationFloat = new PointFloat(10f, topRowY + 10);
-            this.picLogo.SizeF = new SizeF(logoW - 10, topRowH - 10);
+            this.picLogo.LocationFloat = new PointFloat(10f, topRowY + 6f);
+            this.picLogo.SizeF = new SizeF(logoW - 10, topRowH - 6f);
             this.picLogo.Borders = BorderSide.None;
             this.picLogo.BackColor = Color.Transparent;
             this.picLogo.Name = "picLogo";
@@ -159,10 +159,10 @@ namespace Dyagnoz_Latest
             // ── Barcode — right of the logo ───────────────────────────────────────────
             this.barcodeIMEI.AutoModule = true;
             this.barcodeIMEI.Font = new Font("Tahoma", 7f);
-            this.barcodeIMEI.LocationFloat = new PointFloat(barcodeX + 25, topRowY + 10);
+            this.barcodeIMEI.LocationFloat = new PointFloat(barcodeX + 25, topRowY);
             this.barcodeIMEI.Name = "barcodeIMEI";
             this.barcodeIMEI.Padding = new PaddingInfo(2, 2, 0, 0, 100f);
-            this.barcodeIMEI.SizeF = new SizeF(barcodeW, topRowH - 5);
+            this.barcodeIMEI.SizeF = new SizeF(barcodeW, topRowH);
             code128.CharacterSet = Code128Charset.CharsetAuto;
             this.barcodeIMEI.Symbology = code128;
             this.barcodeIMEI.TextAlignment = (TextAlignment)32;
@@ -189,13 +189,13 @@ namespace Dyagnoz_Latest
             ((XRControl)this.Detail).Controls.Add(shapeProductBox);
  
             // ── Table geometry — positioned below product info ────────────────────────
-            float tableX = 22f;
+            float tableX = 5f;
             float tableY = productY + 27f;   // below product info box
-            float col1W = 120f;
-            float col2W = 120f;
+            float col1W = 132.5f;
+            float col2W = 132.5f;
             float rowH = 14f;
             int ROWS = 5;
-            float tableW = col1W + 1f + col2W;   // 261
+            float tableW = col1W + 1f + col2W;   // 266
             float tableH = rowH * ROWS;           // 70
  
             // Footer column widths
@@ -325,28 +325,64 @@ namespace Dyagnoz_Latest
             PlaceCell(this.lblCust, divBX + 1f, footerY, colCW, rowH, (TextAlignment)16);
  
             // ── Below-table strip: Notes | Port ──────────────────────────────────────
-            // Original bottomY = tableY(92) + tableH(75) + 4 = 171. Scaled: 83 + 70 + 4 = 157.
             float bottomY = tableY + tableH + 4f;   // 157f
-            float lineH = 14f;                    // was 16 × 0.9
-            float rightW = 81f;                    // was 90 × 0.9
+            float notesBoxH = 34f;
+            var s = Services.SettingsManager.Current;
+            bool printPort = s.PrintPortNumber;
+
+            float rightW = printPort ? 60f : 0f;
             float rightX = tableX + tableW - rightW;
-            float leftW = tableW - rightW - 4f;
- 
-            this.lblNotes.Font = new Font("Tahoma", 5f, FontStyle.Regular);
-            this.lblNotes.LocationFloat = new PointFloat(tableX + 3f, bottomY);
-            this.lblNotes.SizeF = new SizeF(leftW, lineH);
+            float leftW = printPort ? (tableW - rightW - 4f) : tableW;
+
+            // Draw a beautiful rounded box for the Notes
+            XRShape shapeNotesBox = new XRShape();
+            shapeNotesBox.LocationFloat = new PointFloat(tableX, bottomY);
+            shapeNotesBox.SizeF = new SizeF(leftW, notesBoxH);
+            shapeNotesBox.Shape = new ShapeRectangle() { Fillet = 20 };
+            shapeNotesBox.FillColor = Color.Transparent;
+            shapeNotesBox.ForeColor = Color.Black;
+            shapeNotesBox.LineWidth = 1;
+            shapeNotesBox.Borders = BorderSide.None;
+            shapeNotesBox.BackColor = Color.Transparent;
+            ((XRControl)this.Detail).Controls.Add(shapeNotesBox);
+
+            this.lblNotes.Font = new Font("Tahoma", 6.5f, FontStyle.Regular);
+            this.lblNotes.LocationFloat = new PointFloat(tableX + 4f, bottomY + 2f);
+            this.lblNotes.SizeF = new SizeF(leftW - 8f, notesBoxH - 4f);
             this.lblNotes.TextAlignment = (TextAlignment)16;
-            this.lblNotes.Padding = new PaddingInfo(0, 0, 0, 0, 100f);
-            this.lblNotes.Multiline = false;
-            this.lblNotes.WordWrap = false;
+            this.lblNotes.Padding = new PaddingInfo(2, 2, 2, 2, 100f);
+            this.lblNotes.Multiline = true;
+            this.lblNotes.WordWrap = true;
             this.lblNotes.CanGrow = false;
             this.lblNotes.Borders = BorderSide.None;
- 
-            this.lblPort.Font = new Font("Tahoma", 5f, FontStyle.Regular);
-            this.lblPort.LocationFloat = new PointFloat(rightX, bottomY);
-            this.lblPort.SizeF = new SizeF(rightW, lineH);
-            this.lblPort.TextAlignment = (TextAlignment)64;
-            this.lblPort.Borders = BorderSide.None;
+            this.lblNotes.BackColor = Color.Transparent;
+
+            if (printPort)
+            {
+                // Draw a beautiful rounded box for the Port
+                XRShape shapePortBox = new XRShape();
+                shapePortBox.LocationFloat = new PointFloat(rightX, bottomY);
+                shapePortBox.SizeF = new SizeF(rightW, notesBoxH);
+                shapePortBox.Shape = new ShapeRectangle() { Fillet = 20 };
+                shapePortBox.FillColor = Color.Transparent;
+                shapePortBox.ForeColor = Color.Black;
+                shapePortBox.LineWidth = 1;
+                shapePortBox.Borders = BorderSide.None;
+                shapePortBox.BackColor = Color.Transparent;
+                ((XRControl)this.Detail).Controls.Add(shapePortBox);
+
+                this.lblPort.Font = new Font("Tahoma", 6.5f, FontStyle.Bold);
+                this.lblPort.LocationFloat = new PointFloat(rightX + 2f, bottomY + 2f);
+                this.lblPort.SizeF = new SizeF(rightW - 4f, notesBoxH - 4f);
+                this.lblPort.TextAlignment = (TextAlignment)32;
+                this.lblPort.Padding = new PaddingInfo(0, 0, 0, 0, 100f);
+                this.lblPort.Borders = BorderSide.None;
+                this.lblPort.BackColor = Color.Transparent;
+            }
+            else
+            {
+                ((XRControl)this.lblPort).Visible = false;
+            }
  
             // ── Page / Margin Settings ────────────────────────────────────────────────
             this.TopMargin.HeightF = 0f;
