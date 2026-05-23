@@ -236,11 +236,25 @@ namespace Dyagnoz_Latest
             string logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "label.png");
             this.picLogo.ImageUrl = logoPath;
             this.picLogo.Sizing = ImageSizeMode.ZoomImage;
-            this.picLogo.LocationFloat = new PointFloat(10f, topRowY + 6f);
-            this.picLogo.SizeF = new SizeF(logoW - 10, topRowH - 6f);
+            this.picLogo.LocationFloat = new PointFloat(10f, topRowY + 5f);
+            this.picLogo.SizeF = new SizeF(logoW - 10f, topRowH - 10f);
             this.picLogo.Borders = BorderSide.None;
             this.picLogo.BackColor = Color.Transparent;
             this.picLogo.Name = "picLogo";
+ 
+            if (printLogo)
+            {
+                XRShape shapeLogoBox = new XRShape();
+                shapeLogoBox.LocationFloat = new PointFloat(5f, topRowY);
+                shapeLogoBox.SizeF = new SizeF(logoW, topRowH);
+                shapeLogoBox.Shape = new ShapeRectangle() { Fillet = 20 };
+                shapeLogoBox.FillColor = Color.Transparent;
+                shapeLogoBox.ForeColor = Color.Black;
+                shapeLogoBox.LineWidth = 1;
+                shapeLogoBox.Borders = BorderSide.None;
+                shapeLogoBox.BackColor = Color.Transparent;
+                ((XRControl)this.Detail).Controls.Add(shapeLogoBox);
+            }
  
             // ── Barcode — right of the logo (or full width if logo is hidden) ──────────
             float barcodeXFinal = printLogo ? (barcodeX + 25f) : 5f;
