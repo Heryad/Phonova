@@ -1593,7 +1593,7 @@ namespace Dyagnoz_Latest
                     FmiStatus,
                     MdmStatus,
                     displaySim,
-                    PortNumber.ToString("D2"),
+                    PortNumber.ToString(),
                     notes,
                     MainWindow.SelectedCustomer ?? "",
                     isSynced

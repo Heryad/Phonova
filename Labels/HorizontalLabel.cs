@@ -22,6 +22,7 @@ namespace Dyagnoz_Latest
         private BottomMarginBand BottomMargin;
  
         private XRPictureBox picLogo;
+        private XRPictureBox picPortIcon;
         private XRBarCode barcodeIMEI;
         private XRLabel lblProductInfo;
  
@@ -126,14 +127,19 @@ namespace Dyagnoz_Latest
             else
             {
                 this.lblNotes.Font = new Font("Tahoma", 6.5f, FontStyle.Regular);
+                   // Strip leading zeros from the port number
+            string cleanPort = (port ?? "").Trim();
+            while (cleanPort.StartsWith("0") && cleanPort.Length > 1)
+            {
+                cleanPort = cleanPort.Substring(1);
             }
-
-            ((XRControl)this.lblPort).Text = s.PrintPortNumber ? port : "";
+            ((XRControl)this.lblPort).Text = s.PrintPortNumber ? cleanPort : "";
             ((XRControl)this.lblCust).Text = s.PrintCustomerName ? (string.IsNullOrEmpty(customerName) ? "" : customerName) : "";
-
+ 
             if (!s.PrintPortNumber)
             {
                 ((XRControl)this.lblPort).Visible = false;
+                ((XRControl)this.picPortIcon).Visible = false;
                 this.lblProductInfo.SizeF = new SizeF(266f, 23f);
                 this.lblProductInfo.TextAlignment = TextAlignment.MiddleCenter;
                 this.lblProductInfo.Padding = new PaddingInfo(0, 0, 0, 0, 100f);
@@ -141,13 +147,15 @@ namespace Dyagnoz_Latest
             else
             {
                 ((XRControl)this.lblPort).Visible = true;
-                this.lblProductInfo.SizeF = new SizeF(190f, 23f);
+                ((XRControl)this.picPortIcon).Visible = true;
+                this.lblProductInfo.SizeF = new SizeF(205f, 23f);
                 this.lblProductInfo.TextAlignment = TextAlignment.MiddleLeft;
                 this.lblProductInfo.Padding = new PaddingInfo(10, 0, 0, 0, 100f);
             }
  
             if (!s.PrintCustomerName) ((XRControl)this.lblCust).Visible = false;
             if (!s.PrintPortNumber) ((XRControl)this.lblPort).Visible = false;
+            if (!s.PrintPortNumber) ((XRControl)this.picPortIcon).Visible = false;
             if (!s.PrintDeviceColor) ((XRControl)this.lblColor).Visible = false;
             if (!s.PrintLogo) ((XRControl)this.picLogo).Visible = false;
         }
@@ -168,6 +176,7 @@ namespace Dyagnoz_Latest
             this.BottomMargin = new BottomMarginBand();
  
             this.picLogo = new XRPictureBox();
+            this.picPortIcon = new XRPictureBox();
             this.barcodeIMEI = new XRBarCode();
             this.lblProductInfo = new XRLabel();
  
@@ -204,7 +213,8 @@ namespace Dyagnoz_Latest
                 this.lblDate,
                 this.lblCust,
                 this.lblNotes,
-                this.lblPort
+                this.lblPort,
+                this.picPortIcon
             });
             ((XRControl)this.Detail).HeightF = 197f;          // 50mm
             ((XRControl)this.Detail).Name = "Detail";
@@ -254,17 +264,26 @@ namespace Dyagnoz_Latest
             float productY = topRowY + topRowH + 4f;  // below the top row
             this.lblProductInfo.Font = new Font("Tahoma", 6.6f, FontStyle.Bold);
             this.lblProductInfo.LocationFloat = new PointFloat(5f, productY);
-            this.lblProductInfo.SizeF = new SizeF(190f, 23f);
+            this.lblProductInfo.SizeF = new SizeF(205f, 23f);
             this.lblProductInfo.TextAlignment = TextAlignment.MiddleLeft;
             this.lblProductInfo.Padding = new PaddingInfo(10, 0, 0, 0, 100f);
             this.lblProductInfo.Borders = BorderSide.None;
             this.lblProductInfo.BackColor = Color.Transparent;
+            this.lblProductInfo.WordWrap = false;
+            this.lblProductInfo.Multiline = false;
+ 
+            this.picPortIcon.LocationFloat = new PointFloat(213f, productY + 4f);
+            this.picPortIcon.SizeF = new SizeF(15f, 15f);
+            this.picPortIcon.Sizing = ImageSizeMode.ZoomImage;
+            this.picPortIcon.Borders = BorderSide.None;
+            this.picPortIcon.BackColor = Color.Transparent;
+            this.picPortIcon.Image = GetPortIconImage();
  
             this.lblPort.Font = new Font("Tahoma", 6.6f, FontStyle.Bold);
-            this.lblPort.LocationFloat = new PointFloat(195f, productY);
-            this.lblPort.SizeF = new SizeF(66f, 23f);
-            this.lblPort.TextAlignment = TextAlignment.MiddleRight;
-            this.lblPort.Padding = new PaddingInfo(0, 10, 0, 0, 100f);
+            this.lblPort.LocationFloat = new PointFloat(230f, productY);
+            this.lblPort.SizeF = new SizeF(31f, 23f);
+            this.lblPort.TextAlignment = TextAlignment.MiddleLeft;
+            this.lblPort.Padding = new PaddingInfo(0, 0, 0, 0, 100f);
             this.lblPort.Borders = BorderSide.None;
             this.lblPort.BackColor = Color.Transparent;
  
@@ -444,6 +463,26 @@ namespace Dyagnoz_Latest
             this.Version = "18.1";
  
             ((ISupportInitialize)this).EndInit();
+        }
+
+        private static Image GetPortIconImage()
+        {
+            Bitmap bmp = new Bitmap(32, 32);
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.Clear(Color.Transparent);
+                using (Pen pen = new Pen(Color.Black, 2.5f))
+                {
+                    // Draw outline of network/ethernet connector
+                    g.DrawRectangle(pen, 4, 8, 24, 16);
+                    using (SolidBrush brush = new SolidBrush(Color.Black))
+                    {
+                        // Draw connector tab
+                        g.FillRectangle(brush, 8, 12, 16, 4);
+                    }
+                }
+            }
+            return bmp;
         }
     }
 }
