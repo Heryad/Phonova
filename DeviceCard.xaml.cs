@@ -102,10 +102,12 @@ namespace Dyagnoz_Latest
             if (!string.IsNullOrEmpty(deviceId))
             {
                 MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#e67802"));
+                SetCardTextColor(true);
             }
             else
             {
                 MainCardBorder.Background = (SolidColorBrush)FindResource("CardBg");
+                SetCardTextColor(false);
             }
             
             _lastKnownDeviceId = deviceId; // Track for next potential swap
@@ -215,6 +217,7 @@ namespace Dyagnoz_Latest
                 StatusBadge.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#10B981"));
 
                 MainCardBorder.Background = (SolidColorBrush)FindResource("CardBg");
+                SetCardTextColor(false);
                 CardCommentsText.Text = string.Empty;
                 CardCommentsText.Visibility = Visibility.Collapsed;
                 this.Foreground = (SolidColorBrush)FindResource("TextPrimary");
@@ -1790,6 +1793,28 @@ namespace Dyagnoz_Latest
             {
                 Debug.WriteLine($"[Port {PortNumber}] Failed to save device to database: {ex.Message}");
             }
+        }
+ 
+        private void SetCardTextColor(bool useWhite)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (useWhite)
+                {
+                    var whiteBrush = Brushes.White;
+                    var transparentWhiteBrush = new SolidColorBrush(Color.FromArgb(179, 255, 255, 255)); // 70% opacity white
+                    
+                    this.Resources["TextPrimary"] = whiteBrush;
+                    this.Resources["TextSecondary"] = transparentWhiteBrush;
+                    this.Resources["TextMuted"] = transparentWhiteBrush;
+                }
+                else
+                {
+                    this.Resources["TextPrimary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1A1A2E"));
+                    this.Resources["TextSecondary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#6B7280"));
+                    this.Resources["TextMuted"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#9CA3AF"));
+                }
+            });
         }
     }
 }
