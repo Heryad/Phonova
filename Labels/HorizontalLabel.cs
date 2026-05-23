@@ -82,7 +82,11 @@ namespace Dyagnoz_Latest
  
             // SIM cell (free cell) is used for Work status:
             string workStatus = "";
-            if (!isSynced)
+            if (s.MmrMode)
+            {
+                workStatus = "Pending - MMR MODE";
+            }
+            else if (!isSynced)
             {
                 workStatus = "Pending";
             }
