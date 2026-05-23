@@ -72,7 +72,7 @@ namespace Dyagnoz_Latest
             ((XRControl)this.lblSIM).Text = "SIM: Unlocked";
             ((XRControl)this.lblDate).Text = "Date: " + DateTime.Now.ToString("yyyy-MM-dd");
  
-            ((XRControl)this.lblNotes).Text = string.IsNullOrEmpty(notes) ? "Notes: -" : "Notes: " + notes;
+            ((XRControl)this.lblNotes).Text = string.IsNullOrEmpty(notes) ? "" : notes;
             ((XRControl)this.lblPort).Text = s.PrintPortNumber ? "Port: " + port : "";
             ((XRControl)this.lblCust).Text = s.PrintCustomerName ? (string.IsNullOrEmpty(customerName) ? "" : customerName) : "";
  
@@ -210,35 +210,17 @@ namespace Dyagnoz_Latest
  
             Font cellFont = new Font("Tahoma", 6.5f, FontStyle.Regular);
  
-            // ── Outer border — 4 explicit lines (avoids XRShape 1px rendering quirk) ──
-            // Top
-            XRLine borderTop = new XRLine();
-            borderTop.LineDirection = LineDirection.Horizontal;
-            borderTop.LocationFloat = new PointFloat(tableX, tableY);
-            borderTop.SizeF = new SizeF(tableW, 1f);
-            borderTop.ForeColor = Color.Black; borderTop.LineWidth = 1; borderTop.Borders = BorderSide.None;
-            ((XRControl)this.Detail).Controls.Add(borderTop);
-            // Bottom
-            XRLine borderBottom = new XRLine();
-            borderBottom.LineDirection = LineDirection.Horizontal;
-            borderBottom.LocationFloat = new PointFloat(tableX, tableY + tableH);
-            borderBottom.SizeF = new SizeF(tableW, 1f);
-            borderBottom.ForeColor = Color.Black; borderBottom.LineWidth = 1; borderBottom.Borders = BorderSide.None;
-            ((XRControl)this.Detail).Controls.Add(borderBottom);
-            // Left
-            XRLine borderLeft = new XRLine();
-            borderLeft.LineDirection = LineDirection.Vertical;
-            borderLeft.LocationFloat = new PointFloat(tableX, tableY);
-            borderLeft.SizeF = new SizeF(1f, tableH);
-            borderLeft.ForeColor = Color.Black; borderLeft.LineWidth = 1; borderLeft.Borders = BorderSide.None;
-            ((XRControl)this.Detail).Controls.Add(borderLeft);
-            // Right
-            XRLine borderRight = new XRLine();
-            borderRight.LineDirection = LineDirection.Vertical;
-            borderRight.LocationFloat = new PointFloat(tableX + tableW, tableY);
-            borderRight.SizeF = new SizeF(1f, tableH);
-            borderRight.ForeColor = Color.Black; borderRight.LineWidth = 1; borderRight.Borders = BorderSide.None;
-            ((XRControl)this.Detail).Controls.Add(borderRight);
+            // ── Outer border — rounded rectangle shape ────────────────────────────────
+            XRShape shapeTableBox = new XRShape();
+            shapeTableBox.LocationFloat = new PointFloat(tableX, tableY);
+            shapeTableBox.SizeF = new SizeF(tableW, tableH);
+            shapeTableBox.Shape = new ShapeRectangle() { Fillet = 20 };
+            shapeTableBox.FillColor = Color.Transparent;
+            shapeTableBox.ForeColor = Color.Black;
+            shapeTableBox.LineWidth = 1;
+            shapeTableBox.Borders = BorderSide.None;
+            shapeTableBox.BackColor = Color.Transparent;
+            ((XRControl)this.Detail).Controls.Add(shapeTableBox);
  
             // ── Main vertical divider — data rows only ────────────────────────────────
             XRLine vDivMain = new XRLine();
