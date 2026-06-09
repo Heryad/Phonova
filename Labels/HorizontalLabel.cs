@@ -339,18 +339,18 @@ namespace Dyagnoz_Latest
             float rowH = 14f;
             int ROWS = 5;
             float tableW = col1W + 1f + col2W;   // 266
-            float tableH = 74f;                   // increased to 74f to compensate for rounded corner inset
- 
+            float tableH = 104f;                 // merged height
+
             // Footer column widths
             float colAW = 90f;
             float colBW = 75f;
             float colCW = tableW - colAW - colBW - 2f;
- 
+
             float divX = tableX + col1W;
             float divAX = tableX + colAW;
             float divBX = divAX + 1f + colBW;
             float footerY = tableY + rowH * 4;
-            float footerRowH = tableH - rowH * 4; // dynamic footer height to reach bottom perfectly
+            float footerRowH = 18f; // Fixed height for footer row
  
             Font cellFont = new Font("Tahoma", 6.5f, FontStyle.Regular);
  
@@ -393,7 +393,7 @@ namespace Dyagnoz_Latest
             XRLine vDivA = new XRLine();
             vDivA.LineDirection = LineDirection.Vertical;
             vDivA.LocationFloat = new PointFloat(divAX, footerY);
-            vDivA.SizeF = new SizeF(1f, rowH);
+            vDivA.SizeF = new SizeF(1f, footerRowH);
             vDivA.ForeColor = Color.Black;
             vDivA.LineWidth = 1;
             vDivA.Borders = BorderSide.None;
@@ -402,11 +402,21 @@ namespace Dyagnoz_Latest
             XRLine vDivB = new XRLine();
             vDivB.LineDirection = LineDirection.Vertical;
             vDivB.LocationFloat = new PointFloat(divBX, footerY);
-            vDivB.SizeF = new SizeF(1f, rowH);
+            vDivB.SizeF = new SizeF(1f, footerRowH);
             vDivB.ForeColor = Color.Black;
             vDivB.LineWidth = 1;
             vDivB.Borders = BorderSide.None;
             ((XRControl)this.Detail).Controls.Add(vDivB);
+
+            // ── Divider between Footer and Notes ──────────────────────────────────────
+            XRLine hLineNotes = new XRLine();
+            hLineNotes.LineDirection = LineDirection.Horizontal;
+            hLineNotes.LocationFloat = new PointFloat(tableX, footerY + footerRowH);
+            hLineNotes.SizeF = new SizeF(tableW, 1f);
+            hLineNotes.ForeColor = Color.Black;
+            hLineNotes.LineWidth = 1;
+            hLineNotes.Borders = BorderSide.None;
+            ((XRControl)this.Detail).Controls.Add(hLineNotes);
  
             // ── Cell helper ───────────────────────────────────────────────────────────
             void PlaceCell(XRLabel lbl, float x, float y, float w, float h,
@@ -450,25 +460,13 @@ namespace Dyagnoz_Latest
  
             PlaceCell(this.lblCust, divBX + 1f, footerY, colCW, footerRowH, (TextAlignment)16);
  
-            // ── Below-table strip: Notes — now always full width ─────────────────────
-            float bottomY = tableY + tableH + 2f;   // 159f
-            float notesBoxH = 28f;                  // set to 26f to give extra breathing room while preventing page overflow
+            // ── Below-table strip: Notes — now merged ─────────────────────
+            float notesY = footerY + footerRowH;
+            float notesBoxH = tableH - (notesY - tableY); 
             float leftW = tableW;                   // always full width (266f)
  
-            // Draw a beautiful rounded box for the Notes
-            XRShape shapeNotesBox = new XRShape();
-            shapeNotesBox.LocationFloat = new PointFloat(tableX, bottomY);
-            shapeNotesBox.SizeF = new SizeF(leftW, notesBoxH);
-            shapeNotesBox.Shape = new ShapeRectangle() { Fillet = 20 };
-            shapeNotesBox.FillColor = Color.Transparent;
-            shapeNotesBox.ForeColor = Color.Black;
-            shapeNotesBox.LineWidth = 1;
-            shapeNotesBox.Borders = BorderSide.None;
-            shapeNotesBox.BackColor = Color.Transparent;
-            ((XRControl)this.Detail).Controls.Add(shapeNotesBox);
- 
             this.lblNotes.Font = new Font("Tahoma", 6.5f, FontStyle.Regular);
-            this.lblNotes.LocationFloat = new PointFloat(tableX + 4f, bottomY + 1f);
+            this.lblNotes.LocationFloat = new PointFloat(tableX + 4f, notesY + 1f);
             this.lblNotes.SizeF = new SizeF(leftW - 8f, notesBoxH - 2f);
             this.lblNotes.TextAlignment = (TextAlignment)16;
             this.lblNotes.Padding = new PaddingInfo(2, 2, 1, 1, 100f);
