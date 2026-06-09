@@ -55,6 +55,7 @@ namespace Dyagnoz_Latest
             string port,
             string notes = "",
             string customerName = "",
+            string testerName = "",
             bool isSynced = true)
         {
             InitializeComponent();
@@ -448,7 +449,8 @@ namespace Dyagnoz_Latest
             PlaceCell(this.lblDate, tableX, footerY, colAW, footerRowH);
  
             XRLabel lblBrand = new XRLabel();
-            lblBrand.Text = "Tester 1";
+            lblBrand.Text = s.PrintTesterName ? (string.IsNullOrEmpty(testerName) ? "" : testerName) : "";
+            if (!s.PrintTesterName) lblBrand.Visible = false;
             lblBrand.Font = new Font("Tahoma", 6.5f, FontStyle.Bold);
             lblBrand.LocationFloat = new PointFloat(divAX + 1f + 3f, footerY + 1f);
             lblBrand.SizeF = new SizeF(colBW - 4f, footerRowH - 2f);

@@ -636,7 +636,8 @@ namespace Dyagnoz_Latest
                         sim:          "Unlocked",
                         port:         "1",
                         notes:        "Test Print",
-                        customerName: "Sample Customer"
+                        customerName: "Sample Customer",
+                        testerName: "Sample Tester"
                     );
                 }
                 label.Print();
@@ -946,6 +947,128 @@ namespace Dyagnoz_Latest
                         CancelEditCustomerBtn_Click(sender, e);
                     }
                     LoadCustomersTable();
+                }
+            }
+        }
+
+        // Testers CRUD
+        private void LoadTestersTable()
+        {
+            if (TestersTablePanel == null) return;
+            TestersTablePanel.Children.Clear();
+            
+            var testers = App.Database.GetAllTesters();
+            foreach (var testerName in testers)
+            {
+                var grid = new Grid { Margin = new Thickness(0, 0, 0, 4) };
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
+
+                var border = new Border
+                {
+                    Background = Brushes.White,
+                    BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E5E7EB")),
+                    BorderThickness = new Thickness(0, 0, 0, 1),
+                    Padding = new Thickness(12, 10, 12, 10)
+                };
+
+                var nameBlock = new TextBlock { Text = testerName, VerticalAlignment = VerticalAlignment.Center };
+                border.Child = nameBlock;
+                Grid.SetColumn(border, 0);
+                grid.Children.Add(border);
+
+                var actionsPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+                Grid.SetColumn(actionsPanel, 1);
+                
+                var editBtn = new Button
+                {
+                    Content = new MaterialDesignThemes.Wpf.PackIcon { Kind = MaterialDesignThemes.Wpf.PackIconKind.Pencil, Width = 14, Height = 14 },
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F59E0B")),
+                    Background = Brushes.Transparent,
+                    BorderThickness = new Thickness(0),
+                    Width = 28, Height = 28, Padding = new Thickness(0),
+                    Tag = testerName,
+                    Cursor = System.Windows.Input.Cursors.Hand,
+                    Margin = new Thickness(0, 0, 8, 0)
+                };
+                editBtn.Click += EditTester_Click;
+                actionsPanel.Children.Add(editBtn);
+
+                var deleteBtn = new Button
+                {
+                    Content = new MaterialDesignThemes.Wpf.PackIcon { Kind = MaterialDesignThemes.Wpf.PackIconKind.Delete, Width = 14, Height = 14 },
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444")),
+                    Background = Brushes.Transparent,
+                    BorderThickness = new Thickness(0),
+                    Width = 28, Height = 28, Padding = new Thickness(0),
+                    Tag = testerName,
+                    Cursor = System.Windows.Input.Cursors.Hand
+                };
+                deleteBtn.Click += DeleteTester_Click;
+                actionsPanel.Children.Add(deleteBtn);
+
+                grid.Children.Add(actionsPanel);
+                TestersTablePanel.Children.Add(grid);
+            }
+        }
+
+        private string? _editingTesterName = null;
+
+        private void AddTesterBtn_Click(object sender, RoutedEventArgs e)
+        {
+            string testerName = NewTesterBox.Text?.Trim() ?? "";
+            if (string.IsNullOrWhiteSpace(testerName)) return;
+
+            if (!string.IsNullOrEmpty(_editingTesterName))
+            {
+                // Update
+                App.Database.UpdateTesterInLibrary(_editingTesterName, testerName);
+                _editingTesterName = null;
+                NewTesterBox.Text = "";
+                AddTesterBtnText.Text = "Add";
+                CancelEditTesterBtn.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                // Insert
+                App.Database.AddTesterToLibrary(testerName);
+                NewTesterBox.Text = "";
+            }
+            LoadTestersTable();
+        }
+
+        private void EditTester_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string testerName)
+            {
+                _editingTesterName = testerName;
+                NewTesterBox.Text = testerName;
+                AddTesterBtnText.Text = "Update";
+                CancelEditTesterBtn.Visibility = Visibility.Visible;
+                NewTesterBox.Focus();
+            }
+        }
+
+        private void CancelEditTesterBtn_Click(object sender, RoutedEventArgs e)
+        {
+            _editingTesterName = null;
+            NewTesterBox.Text = "";
+            AddTesterBtnText.Text = "Add";
+            CancelEditTesterBtn.Visibility = Visibility.Collapsed;
+        }
+
+        private void DeleteTester_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string testerName)
+            {
+                if (MessageBox.Show($"Delete tester '{testerName}'?", "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                {
+                    App.Database.DeleteTesterFromLibrary(testerName);
+                    if (_editingTesterName == testerName)
+                    {
+                        CancelEditTesterBtn_Click(sender, e);
+                    }
+                    LoadTestersTable();
                 }
             }
         }

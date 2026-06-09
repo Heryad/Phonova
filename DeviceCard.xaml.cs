@@ -1662,6 +1662,7 @@ namespace Dyagnoz_Latest
                         PortNumber.ToString(),
                         notes,
                         MainWindow.SelectedCustomer ?? "",
+                        MainWindow.SelectedTester ?? "",
                         isSynced
                     );
                 }

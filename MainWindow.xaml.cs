@@ -20,6 +20,7 @@ namespace Dyagnoz_Latest
         private readonly Dictionary<int, DeviceCard> _portCards = new();
         private readonly iOSCommander _iosCommander = new();
         public static string? SelectedCustomer { get; set; } = null;
+        public static string? SelectedTester { get; set; } = null;
         public static string? SelectedMmrComment { get; set; } = null;
 
         public MainWindow()
@@ -259,6 +260,41 @@ namespace Dyagnoz_Latest
             SelectedCustomer = null;
             UpdateCustomerHeaderUi();
             Debug.WriteLine("[MainWindow] Selected Customer cleared globally.");
+        }
+
+        private void UpdateTesterHeaderUi()
+        {
+            if (string.IsNullOrEmpty(SelectedTester))
+            {
+                HeaderTesterText.Text = "Select Tester";
+                HeaderTesterClearBtn.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                HeaderTesterText.Text = SelectedTester;
+                HeaderTesterClearBtn.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void HeaderTesterBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var testerWindow = new TesterSelectWindow(SelectedTester);
+            testerWindow.Owner = this;
+            testerWindow.ShowDialog();
+
+            if (testerWindow.Confirmed)
+            {
+                SelectedTester = testerWindow.SelectedTester;
+                UpdateTesterHeaderUi();
+                Debug.WriteLine($"[MainWindow] Selected Tester updated globally to: {SelectedTester ?? "None"}");
+            }
+        }
+
+        private void HeaderTesterClearBtn_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedTester = null;
+            UpdateTesterHeaderUi();
+            Debug.WriteLine("[MainWindow] Selected Tester cleared globally.");
         }
  
         private System.Windows.Threading.DispatcherTimer? _internetCheckTimer;
