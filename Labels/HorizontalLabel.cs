@@ -459,6 +459,7 @@ namespace Dyagnoz_Latest
             ((XRControl)this.Detail).Controls.Add(lblBrand);
  
             PlaceCell(this.lblCust, divBX + 1f, footerY, colCW, footerRowH, (TextAlignment)16);
+            this.lblCust.Font = new Font("Tahoma", 6.5f, FontStyle.Bold);
  
             // ── Below-table strip: Notes — now merged ─────────────────────
             float notesY = footerY + footerRowH;
