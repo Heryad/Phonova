@@ -1033,7 +1033,7 @@ namespace Dyagnoz_Latest
             var sfd = new SaveFileDialog
             {
                 Filter = "Excel CSV (*.csv)|*.csv",
-                FileName = $"Dyagnoz_Report_{DateTime.Now:yyyyMMdd_HHmm}.csv",
+                FileName = $"Phonova_Report_{DateTime.Now:yyyyMMdd_HHmm}.csv",
                 Title = "Export Detailed Reports to Excel"
             };
 
@@ -1262,7 +1262,7 @@ namespace Dyagnoz_Latest
 
             if (data.Count > 1)
             {
-                var polyline = new System.Windows.Shapes.Polyline { Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#da5e0bff")), StrokeThickness = 2, StrokeLineJoin = PenLineJoin.Round };
+                var polyline = new System.Windows.Shapes.Polyline { Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#007dfd")), StrokeThickness = 2, StrokeLineJoin = PenLineJoin.Round };
                 for (int i = 0; i < data.Count; i++)
                 {
                     double x = i * spacing;
@@ -1278,7 +1278,7 @@ namespace Dyagnoz_Latest
                 double y = height - ((data[i].Value / maxVal) * height) + 10;
 
                 // Point Circle
-                var dot = new System.Windows.Shapes.Ellipse { Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#da5e0bff")), Width = 6, Height = 6 };
+                var dot = new System.Windows.Shapes.Ellipse { Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#007dfd")), Width = 6, Height = 6 };
                 Canvas.SetLeft(dot, x - 3);
                 Canvas.SetTop(dot, y - 3);
                 LineChartCanvas.Children.Add(dot);

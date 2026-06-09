@@ -7,7 +7,7 @@
         xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
         xmlns:local="clr-namespace:Dyagnoz_Latest"
         mc:Ignorable="d"
-        Title="Dyagnoz - Diagnostic Management System" 
+        Title="Phonova - Diagnostic Management System" 
         Height="640" Width="980"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -19,7 +19,7 @@
         <!-- Your Brand Colors -->
         <Color x:Key="BrandPurple">#53427D</Color>
         <Color x:Key="SidebarDark">#1E293B</Color>
-        <Color x:Key="BrandGreen">#7FB679</Color>
+        <Color x:Key="BrandGreen">#007dfd</Color>
         <Color x:Key="LightBackground">#F5F6F8</Color>
         <Color x:Key="CardWhite">#FFFFFF</Color>
         <Color x:Key="TextPrimary">#1A1A2E</Color>
@@ -253,7 +253,7 @@
                 <Grid>
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="40">
                         <!-- Your Logo - 40% bigger -->
-                        <svgc:SvgViewbox Source="Assets/logo.svg" 
+                        <Image Source="Assets/app_logo.png" 
                                Height="68" Width="252" 
                                Stretch="Uniform" 
                                HorizontalAlignment="Center"

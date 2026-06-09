@@ -25,7 +25,7 @@
         <SolidColorBrush x:Key="ConnectedColor" Color="#10B981"/>
         <SolidColorBrush x:Key="MappedColor" Color="#3B82F6"/>
         <SolidColorBrush x:Key="UnmappedColor" Color="#9CA3AF"/>
-        <SolidColorBrush x:Key="BrandGreen" Color="#7FB679"/>
+        <SolidColorBrush x:Key="BrandGreen" Color="#007dfd"/>
         <SolidColorBrush x:Key="BrandPurple" Color="#53427D"/>
 
         <!-- Port Tile Style -->

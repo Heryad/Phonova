@@ -147,7 +147,7 @@ namespace Dyagnoz_Latest
                     if (icon != null) icon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Play;
                     
                     // Revert to original Green
-                    StartLearningBtn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#7FB679")); // BrandGreen
+                    StartLearningBtn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#007dfd")); // BrandGreen
 
                     UpdateStatus("Ready", false);
                 }

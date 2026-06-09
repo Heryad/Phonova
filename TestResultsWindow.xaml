@@ -25,7 +25,7 @@
         <SolidColorBrush x:Key="GreenColor" Color="#10B981"/>
         <SolidColorBrush x:Key="RedColor" Color="#EF4444"/>
         <SolidColorBrush x:Key="YellowColor" Color="#F59E0B"/>
-        <SolidColorBrush x:Key="BrandGreen" Color="#7FB679"/>
+        <SolidColorBrush x:Key="BrandGreen" Color="#007dfd"/>
         <SolidColorBrush x:Key="BrandPurple" Color="#53427D"/>
 
         <!-- Label Style -->

@@ -18,7 +18,7 @@
         <!-- Matching Color Palette -->
         <Color x:Key="SidebarDark">#1E293B</Color>
         <Color x:Key="BrandPurple">#53427D</Color>
-        <Color x:Key="BrandGreen">#7FB679</Color>
+        <Color x:Key="BrandGreen">#007dfd</Color>
         <Color x:Key="LightBackground">#F5F6F8</Color>
         <Color x:Key="TextPrimary">#1A1A2E</Color>
         <Color x:Key="TextSecondary">#6B7280</Color>
@@ -82,7 +82,7 @@
                     <Grid>
                         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="30">
                             <!-- Logo -->
-                            <svgc:SvgViewbox Source="Assets/logo.svg" 
+                            <Image Source="Assets/app_logo.png" 
                                    Height="56" Width="200" 
                                    Stretch="Uniform" 
                                    HorizontalAlignment="Center"/>
@@ -98,7 +98,7 @@
                             <Grid HorizontalAlignment="Center">
                                 <Ellipse Width="44" Height="44" 
                                          Stroke="#33FFFFFF" StrokeThickness="3"/>
-                                <Path Stroke="#7FB679" StrokeThickness="3"
+                                <Path Stroke="#007dfd" StrokeThickness="3"
                                       StrokeStartLineCap="Round"
                                       StrokeEndLineCap="Round"
                                       Data="M 22,0 A 22,22 0 0 1 44,22"
@@ -114,9 +114,9 @@
 
                             <!-- Loading Dots -->
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
-                                <Ellipse x:Name="Dot1" Width="6" Height="6" Fill="#7FB679" Margin="3,0" Opacity="0.3"/>
-                                <Ellipse x:Name="Dot2" Width="6" Height="6" Fill="#7FB679" Margin="3,0" Opacity="0.3"/>
-                                <Ellipse x:Name="Dot3" Width="6" Height="6" Fill="#7FB679" Margin="3,0" Opacity="0.3"/>
+                                <Ellipse x:Name="Dot1" Width="6" Height="6" Fill="#007dfd" Margin="3,0" Opacity="0.3"/>
+                                <Ellipse x:Name="Dot2" Width="6" Height="6" Fill="#007dfd" Margin="3,0" Opacity="0.3"/>
+                                <Ellipse x:Name="Dot3" Width="6" Height="6" Fill="#007dfd" Margin="3,0" Opacity="0.3"/>
                             </StackPanel>
                         </StackPanel>
 
@@ -169,7 +169,7 @@
                                             CornerRadius="3" 
                                             Width="0" 
                                             HorizontalAlignment="Left"
-                                            Background="#7FB679"/>
+                                            Background="#007dfd"/>
                                 </Grid>
 
                                 <!-- Status Text -->
@@ -188,7 +188,7 @@
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                         <Ellipse Width="6" Height="6" 
-                                                 Fill="#7FB679"
+                                                 Fill="#007dfd"
                                                  VerticalAlignment="Center"
                                                  Margin="0,0,10,0"/>
                                         <TextBlock Text="Core modules loaded" 
@@ -199,7 +199,7 @@
 
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                         <Ellipse Width="6" Height="6" 
-                                                 Fill="#7FB679"
+                                                 Fill="#007dfd"
                                                  VerticalAlignment="Center"
                                                  Margin="0,0,10,0"/>
                                         <TextBlock Text="Connecting to server" 
@@ -223,7 +223,7 @@
                         </Border>
 
                         <!-- Copyright at Bottom -->
-                        <TextBlock Text="© 2026 MOGY. All rights reserved." 
+                        <TextBlock Text="© 2026 Phonova. All rights reserved." 
                                    FontSize="10"
                                    Foreground="#9CA3AF"
                                    VerticalAlignment="Bottom"
@@ -244,7 +244,7 @@
                         
                         <TextBlock Text="APP ALREADY RUNNING" FontSize="12" FontWeight="Bold" Foreground="#EF4444" HorizontalAlignment="Center" Margin="0,0,0,8"/>
                         <TextBlock Text="Multiple Instances Detected" FontSize="24" FontWeight="SemiBold" Foreground="#1A1A2E" HorizontalAlignment="Center" Margin="0,0,0,16"/>
-                        <TextBlock Text="MOGY is already running on this machine. Please close the other instance before launching again." FontSize="14" Foreground="#6B7280" TextAlignment="Center" TextWrapping="Wrap" Width="400" Margin="0,0,0,32"/>
+                        <TextBlock Text="Phonova is already running on this machine. Please close the other instance before launching again." FontSize="14" Foreground="#6B7280" TextAlignment="Center" TextWrapping="Wrap" Width="400" Margin="0,0,0,32"/>
                         
                         <Button x:Name="ExitDuplicateBtn" 
                                 Content="Exit Application" 

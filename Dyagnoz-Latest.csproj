@@ -70,10 +70,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Assets\logo.svg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\label_logo.png">
+    <Content Include="Assets\app_logo.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\certificate_logo.png">

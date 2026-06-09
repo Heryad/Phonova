@@ -118,7 +118,7 @@
                             </ControlTemplate>
                         </Button.Template>
                     </Button>
-                    <Button Grid.Column="2" Content="Apply MMR Comments" Padding="16,8" Background="#7FB679" Foreground="White" BorderThickness="0" Cursor="Hand" Click="ApplyBtn_Click">
+                    <Button Grid.Column="2" Content="Apply MMR Comments" Padding="16,8" Background="#007dfd" Foreground="White" BorderThickness="0" Cursor="Hand" Click="ApplyBtn_Click">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
