@@ -1102,10 +1102,20 @@ namespace Dyagnoz_Latest
                 int designCap = ExtractIntFromXml(rawBatteryInfo, "DesignCapacity");
                 int currentCap = ExtractIntFromXml(rawBatteryInfo, "NominalChargeCapacity");
                 int cycleCount = ExtractIntFromXml(rawBatteryInfo, "CycleCount");
+                int iosSettingsHealth = ExtractIntFromXml(rawBatteryInfo, "MaximumCapacityPercent");
 
                 if (designCap > 0)
                 {
-                    int healthInt = (int)((double)currentCap / (double)designCap * 100.0);
+                    int healthInt;
+                    if (iosSettingsHealth > 0 && iosSettingsHealth <= 100)
+                    {
+                        healthInt = iosSettingsHealth;
+                    }
+                    else
+                    {
+                        healthInt = (int)((double)currentCap / (double)designCap * 100.0);
+                    }
+
                     if (healthInt > 100)
                         healthInt = 100;
                     else if (healthInt < 0)
