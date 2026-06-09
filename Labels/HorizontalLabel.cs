@@ -352,7 +352,7 @@ namespace Dyagnoz_Latest
             float footerY = tableY + rowH * 4;
             float footerRowH = tableH - rowH * 4; // dynamic footer height to reach bottom perfectly
  
-            Font cellFont = new Font("Tahoma", 7f, FontStyle.Regular);
+            Font cellFont = new Font("Tahoma", 6.5f, FontStyle.Regular);
  
             // ── Outer border — rounded rectangle shape ────────────────────────────────
             XRShape shapeTableBox = new XRShape();
@@ -393,7 +393,7 @@ namespace Dyagnoz_Latest
             XRLine vDivA = new XRLine();
             vDivA.LineDirection = LineDirection.Vertical;
             vDivA.LocationFloat = new PointFloat(divAX, footerY);
-            vDivA.SizeF = new SizeF(1f, footerRowH);
+            vDivA.SizeF = new SizeF(1f, rowH);
             vDivA.ForeColor = Color.Black;
             vDivA.LineWidth = 1;
             vDivA.Borders = BorderSide.None;
@@ -402,7 +402,7 @@ namespace Dyagnoz_Latest
             XRLine vDivB = new XRLine();
             vDivB.LineDirection = LineDirection.Vertical;
             vDivB.LocationFloat = new PointFloat(divBX, footerY);
-            vDivB.SizeF = new SizeF(1f, footerRowH);
+            vDivB.SizeF = new SizeF(1f, rowH);
             vDivB.ForeColor = Color.Black;
             vDivB.LineWidth = 1;
             vDivB.Borders = BorderSide.None;
@@ -452,7 +452,7 @@ namespace Dyagnoz_Latest
  
             // ── Below-table strip: Notes — now always full width ─────────────────────
             float bottomY = tableY + tableH + 2f;   // 159f
-            float notesBoxH = 25f;                  // reduced height for extra breathing room
+            float notesBoxH = 28f;                  // set to 26f to give extra breathing room while preventing page overflow
             float leftW = tableW;                   // always full width (266f)
  
             // Draw a beautiful rounded box for the Notes
