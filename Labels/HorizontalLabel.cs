@@ -393,7 +393,7 @@ namespace Dyagnoz_Latest
             XRLine vDivA = new XRLine();
             vDivA.LineDirection = LineDirection.Vertical;
             vDivA.LocationFloat = new PointFloat(divAX, footerY);
-            vDivA.SizeF = new SizeF(1f, rowH);
+            vDivA.SizeF = new SizeF(1f, footerRowH);
             vDivA.ForeColor = Color.Black;
             vDivA.LineWidth = 1;
             vDivA.Borders = BorderSide.None;
@@ -402,7 +402,7 @@ namespace Dyagnoz_Latest
             XRLine vDivB = new XRLine();
             vDivB.LineDirection = LineDirection.Vertical;
             vDivB.LocationFloat = new PointFloat(divBX, footerY);
-            vDivB.SizeF = new SizeF(1f, rowH);
+            vDivB.SizeF = new SizeF(1f, footerRowH);
             vDivB.ForeColor = Color.Black;
             vDivB.LineWidth = 1;
             vDivB.Borders = BorderSide.None;
