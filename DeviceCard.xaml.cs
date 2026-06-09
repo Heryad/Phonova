@@ -1572,7 +1572,7 @@ namespace Dyagnoz_Latest
                             }
                             else if (_isBatteryThresholdFail)
                             {
-                                failed.Add("Battery MSG Service");
+                                failed.Add("Battery Service");
                             }
                             else
                             {
