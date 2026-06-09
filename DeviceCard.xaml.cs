@@ -602,10 +602,10 @@ namespace Dyagnoz_Latest
                         {
                             Debug.WriteLine($"[Port {PortNumber}] Failed to parse Syslog Result JSON: {ex.Message}");
                         }
-                    }
 
-                    await Dispatcher.InvokeAsync(UpdatePassRateStatus);
-                    return StepOutcome.Success;
+                        await Dispatcher.InvokeAsync(UpdatePassRateStatus);
+                        return StepOutcome.Success;
+                    }
                 }
 
 
