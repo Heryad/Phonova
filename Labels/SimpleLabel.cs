@@ -39,8 +39,8 @@ namespace Dyagnoz_Latest
 
             // Header Row: Checkmark
             XRShape shapeCircle = new XRShape();
-            shapeCircle.LocationFloat = new PointFloat(128f, 8f);
-            shapeCircle.SizeF = new SizeF(20f, 20f);
+            shapeCircle.LocationFloat = new PointFloat(124f, 14f);
+            shapeCircle.SizeF = new SizeF(28f, 28f);
             shapeCircle.Shape = new ShapeEllipse();
             shapeCircle.FillColor = Color.Transparent;
             shapeCircle.ForeColor = Color.Black;
@@ -50,9 +50,9 @@ namespace Dyagnoz_Latest
 
             XRLabel lblCheck = new XRLabel();
             lblCheck.Text = "✔";
-            lblCheck.Font = new Font("Tahoma", 9f, FontStyle.Regular);
-            lblCheck.LocationFloat = new PointFloat(128f, 8f);
-            lblCheck.SizeF = new SizeF(20f, 20f);
+            lblCheck.Font = new Font("Tahoma", 12f, FontStyle.Regular);
+            lblCheck.LocationFloat = new PointFloat(124f, 14f);
+            lblCheck.SizeF = new SizeF(28f, 28f);
             lblCheck.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter;
             lblCheck.Borders = BorderSide.None;
             ((XRControl)this.Detail).Controls.Add(lblCheck);
@@ -61,18 +61,18 @@ namespace Dyagnoz_Latest
             XRLabel lblVerified = new XRLabel();
             lblVerified.Text = "V E R I F I E D   D E V I C E";
             lblVerified.Font = new Font("Tahoma", 6.5f, FontStyle.Bold);
-            lblVerified.LocationFloat = new PointFloat(0f, 30f);
-            lblVerified.SizeF = new SizeF(276f, 12f);
+            lblVerified.LocationFloat = new PointFloat(0f, 48f);
+            lblVerified.SizeF = new SizeF(276f, 14f);
             lblVerified.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter;
             lblVerified.Borders = BorderSide.None;
             ((XRControl)this.Detail).Controls.Add(lblVerified);
 
-            // Row 2: Phone Name (Smaller)
+            // Row 2: Phone Name
             XRLabel lblPhone = new XRLabel();
             lblPhone.Text = product;
-            lblPhone.Font = new Font("Tahoma", 14f, FontStyle.Bold);
-            lblPhone.LocationFloat = new PointFloat(0f, 44f);
-            lblPhone.SizeF = new SizeF(276f, 20f);
+            lblPhone.Font = new Font("Tahoma", 15f, FontStyle.Bold);
+            lblPhone.LocationFloat = new PointFloat(0f, 66f);
+            lblPhone.SizeF = new SizeF(276f, 24f);
             lblPhone.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter;
             lblPhone.Borders = BorderSide.None;
             ((XRControl)this.Detail).Controls.Add(lblPhone);
@@ -83,8 +83,8 @@ namespace Dyagnoz_Latest
             XRBarCode barcode = new XRBarCode();
             barcode.AutoModule = true;
             barcode.Font = new Font("Tahoma", 6f);
-            barcode.LocationFloat = new PointFloat(38f, 66f);
-            barcode.SizeF = new SizeF(200f, 26f);
+            barcode.LocationFloat = new PointFloat(38f, 94f);
+            barcode.SizeF = new SizeF(200f, 32f);
             barcode.Symbology = code128;
             barcode.TextAlignment = DevExpress.XtraPrinting.TextAlignment.BottomCenter;
             barcode.ShowText = false; // Hidden since IMEI is shown clearly at the bottom
@@ -97,15 +97,15 @@ namespace Dyagnoz_Latest
             XRLabel lblStatus = new XRLabel();
             lblStatus.Text = "Tested  •  " + workStatus;
             lblStatus.Font = new Font("Tahoma", 8f, FontStyle.Regular);
-            lblStatus.LocationFloat = new PointFloat(0f, 96f);
-            lblStatus.SizeF = new SizeF(276f, 14f);
+            lblStatus.LocationFloat = new PointFloat(0f, 132f);
+            lblStatus.SizeF = new SizeF(276f, 16f);
             lblStatus.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter;
             lblStatus.Borders = BorderSide.None;
             ((XRControl)this.Detail).Controls.Add(lblStatus);
 
             // Separator Line
             XRLine sepLine = new XRLine();
-            sepLine.LocationFloat = new PointFloat(24f, 116f);
+            sepLine.LocationFloat = new PointFloat(24f, 154f);
             sepLine.SizeF = new SizeF(228f, 2f);
             sepLine.LineWidth = 1;
             ((XRControl)this.Detail).Controls.Add(sepLine);
@@ -113,31 +113,31 @@ namespace Dyagnoz_Latest
             // Vertical Lines
             XRLine vLine1 = new XRLine();
             vLine1.LineDirection = LineDirection.Vertical;
-            vLine1.LocationFloat = new PointFloat(100f, 126f);
+            vLine1.LocationFloat = new PointFloat(106f, 166f);
             vLine1.SizeF = new SizeF(2f, 24f);
             vLine1.LineWidth = 1;
             ((XRControl)this.Detail).Controls.Add(vLine1);
 
             XRLine vLine2 = new XRLine();
             vLine2.LineDirection = LineDirection.Vertical;
-            vLine2.LocationFloat = new PointFloat(176f, 126f);
+            vLine2.LocationFloat = new PointFloat(168f, 166f);
             vLine2.SizeF = new SizeF(2f, 24f);
             vLine2.LineWidth = 1;
             ((XRControl)this.Detail).Controls.Add(vLine2);
 
             // Bottom Grid (3 Columns)
-            // Col 1: IMEI
-            XRLabel lblImeiTitle = new XRLabel { Text = "IMEI:", Font = new Font("Tahoma", 5.5f), LocationFloat = new PointFloat(24f, 126f), SizeF = new SizeF(72f, 12f), TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft, Borders = BorderSide.None };
-            XRLabel lblImeiVal = new XRLabel { Text = imei, Font = new Font("Tahoma", 7.5f), LocationFloat = new PointFloat(24f, 138f), SizeF = new SizeF(74f, 14f), TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft, Borders = BorderSide.None };
+            // Col 1: IMEI (Width 82f)
+            XRLabel lblImeiTitle = new XRLabel { Text = "IMEI:", Font = new Font("Tahoma", 5.5f), LocationFloat = new PointFloat(24f, 166f), SizeF = new SizeF(82f, 12f), TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft, Borders = BorderSide.None };
+            XRLabel lblImeiVal = new XRLabel { Text = imei, Font = new Font("Tahoma", 7.5f), LocationFloat = new PointFloat(24f, 178f), SizeF = new SizeF(82f, 14f), TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft, Borders = BorderSide.None };
             
-            // Col 2: Battery
-            XRLabel lblBatTitle = new XRLabel { Text = "BATTERY:", Font = new Font("Tahoma", 5.5f), LocationFloat = new PointFloat(104f, 126f), SizeF = new SizeF(68f, 12f), TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter, Borders = BorderSide.None };
-            XRLabel lblBatVal = new XRLabel { Text = battery ?? "-", Font = new Font("Tahoma", 7.5f), LocationFloat = new PointFloat(104f, 138f), SizeF = new SizeF(68f, 14f), TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter, Borders = BorderSide.None };
+            // Col 2: Battery (Width 60f)
+            XRLabel lblBatTitle = new XRLabel { Text = "BATTERY:", Font = new Font("Tahoma", 5.5f), LocationFloat = new PointFloat(108f, 166f), SizeF = new SizeF(60f, 12f), TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter, Borders = BorderSide.None };
+            XRLabel lblBatVal = new XRLabel { Text = battery ?? "-", Font = new Font("Tahoma", 7.5f), LocationFloat = new PointFloat(108f, 178f), SizeF = new SizeF(60f, 14f), TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter, Borders = BorderSide.None };
             
-            // Col 3: Warranty
-            XRLabel lblWarTitle = new XRLabel { Text = "WARRANTY:", Font = new Font("Tahoma", 5.5f), LocationFloat = new PointFloat(180f, 126f), SizeF = new SizeF(72f, 12f), TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter, Borders = BorderSide.None };
+            // Col 3: Warranty (Width 82f)
+            XRLabel lblWarTitle = new XRLabel { Text = "WARRANTY:", Font = new Font("Tahoma", 5.5f), LocationFloat = new PointFloat(170f, 166f), SizeF = new SizeF(82f, 12f), TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter, Borders = BorderSide.None };
             string warText = string.IsNullOrEmpty(s.WarrantyText) ? "30 DAYS" : s.WarrantyText.ToUpper();
-            XRLabel lblWarVal = new XRLabel { Text = warText, Font = new Font("Tahoma", 7.5f), LocationFloat = new PointFloat(180f, 138f), SizeF = new SizeF(72f, 14f), TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter, Borders = BorderSide.None };
+            XRLabel lblWarVal = new XRLabel { Text = warText, Font = new Font("Tahoma", 7.5f), LocationFloat = new PointFloat(170f, 178f), SizeF = new SizeF(82f, 14f), TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter, Borders = BorderSide.None };
 
             ((XRControl)this.Detail).Controls.AddRange(new XRControl[] { lblImeiTitle, lblImeiVal, lblBatTitle, lblBatVal, lblWarTitle, lblWarVal });
         }
