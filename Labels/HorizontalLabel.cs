@@ -75,7 +75,7 @@ namespace Dyagnoz_Latest
             ((XRControl)this.lbliCloud).Text = "FMI/iCloud: " + icloudVal;
  
             // FMI is replaced with SIM status
-            ((XRControl)this.lblFMI).Text = "SIM: " + (sim ?? "-");
+            ((XRControl)this.lblFMI).Text = "SIM: Unlocked";
  
             // MDM stays as MDM status
             ((XRControl)this.lblMDM).Text = "MDM: " + (mdm ?? "-");
@@ -352,7 +352,7 @@ namespace Dyagnoz_Latest
             float footerY = tableY + rowH * 4;
             float footerRowH = tableH - rowH * 4; // dynamic footer height to reach bottom perfectly
  
-            Font cellFont = new Font("Tahoma", 6.5f, FontStyle.Regular);
+            Font cellFont = new Font("Tahoma", 7f, FontStyle.Regular);
  
             // ── Outer border — rounded rectangle shape ────────────────────────────────
             XRShape shapeTableBox = new XRShape();
@@ -452,7 +452,7 @@ namespace Dyagnoz_Latest
  
             // ── Below-table strip: Notes — now always full width ─────────────────────
             float bottomY = tableY + tableH + 2f;   // 159f
-            float notesBoxH = 28f;                  // set to 26f to give extra breathing room while preventing page overflow
+            float notesBoxH = 25f;                  // reduced height for extra breathing room
             float leftW = tableW;                   // always full width (266f)
  
             // Draw a beautiful rounded box for the Notes
