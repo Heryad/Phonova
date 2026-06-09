@@ -67,10 +67,10 @@ namespace Dyagnoz_Latest
             lblVerified.Borders = BorderSide.None;
             ((XRControl)this.Detail).Controls.Add(lblVerified);
 
-            // Row 2: Phone Name
+            // Row 2: Phone Name (Smaller to fit storage)
             XRLabel lblPhone = new XRLabel();
             lblPhone.Text = product;
-            lblPhone.Font = new Font("Tahoma", 15f, FontStyle.Bold);
+            lblPhone.Font = new Font("Tahoma", 11.5f, FontStyle.Bold);
             lblPhone.LocationFloat = new PointFloat(0f, 66f);
             lblPhone.SizeF = new SizeF(276f, 24f);
             lblPhone.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter;
