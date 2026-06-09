@@ -53,6 +53,8 @@ namespace Dyagnoz_Latest
             PrintTesterNameToggle.IsChecked = s.PrintTesterName;
             PrintPortNumberToggle.IsChecked = s.PrintPortNumber;
             PrintLogoToggle.IsChecked = s.PrintLogo;
+            LabelFormatComboBox.SelectedIndex = s.LabelFormat == "Simple Label" ? 1 : 0;
+            WarrantyTextBox.Text = s.WarrantyText;
         }
 
         private void FlowToggle_Click(object sender, RoutedEventArgs e)
@@ -104,6 +106,22 @@ namespace Dyagnoz_Latest
             s.PrintPortNumber = PrintPortNumberToggle.IsChecked ?? false;
             s.PrintLogo = PrintLogoToggle.IsChecked ?? false;
 
+            SettingsManager.Save();
+        }
+
+        private void SettingComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            var s = SettingsManager.Current;
+            s.LabelFormat = LabelFormatComboBox.SelectedIndex == 1 ? "Simple Label" : "Standard";
+            SettingsManager.Save();
+        }
+
+        private void SettingTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            var s = SettingsManager.Current;
+            s.WarrantyText = WarrantyTextBox.Text;
             SettingsManager.Save();
         }
 
@@ -591,22 +609,36 @@ namespace Dyagnoz_Latest
         {
             try
             {
-                var label = new HorizontalLabel(
-                    imei:         "353456789012345",
-                    serial:       "C8QKF2ABCD12",
-                    model:        "iPhone 14 Pro",
-                    product:      "iPhone 14 Pro 256GB",
-                    color:        "Deep Purple",
-                    version:      "16.7.2",
-                    battery:      "94%",
-                    icloud:       "Off",
-                    fmi:          "Off",
-                    mdm:          "Off",
-                    sim:          "Unlocked",
-                    port:         "1",
-                    notes:        "Test Print",
-                    customerName: "Sample Customer"
-                );
+                var s = SettingsManager.Current;
+                XtraReport label;
+                if (s.LabelFormat == "Simple Label")
+                {
+                    label = new SimpleLabel(
+                        imei: "353456789012345",
+                        product: "iPhone 14 Pro",
+                        battery: "94%",
+                        notes: "Test Print"
+                    );
+                }
+                else
+                {
+                    label = new HorizontalLabel(
+                        imei:         "353456789012345",
+                        serial:       "C8QKF2ABCD12",
+                        model:        "iPhone 14 Pro",
+                        product:      "iPhone 14 Pro 256GB",
+                        color:        "Deep Purple",
+                        version:      "16.7.2",
+                        battery:      "94%",
+                        icloud:       "Off",
+                        fmi:          "Off",
+                        mdm:          "Off",
+                        sim:          "Unlocked",
+                        port:         "1",
+                        notes:        "Test Print",
+                        customerName: "Sample Customer"
+                    );
+                }
                 label.Print();
             }
             catch (Exception ex)

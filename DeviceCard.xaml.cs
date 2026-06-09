@@ -1623,23 +1623,38 @@ namespace Dyagnoz_Latest
                 bool isSynced = (sender == null || StatusText.Text == "Finished");
 
                 // Create the label report with merged data
-                var report = new HorizontalLabel(
-                    InternationalMobileEquipmentIdentity,
-                    SerialNumber,
-                    ModelText.Text,
-                    productTitle,
-                    displayColor,
-                    ProductVersion,
-                    BatteryHealth?.ToString() + "%",
-                    ICloudStatus,
-                    FmiStatus,
-                    MdmStatus,
-                    displaySim,
-                    PortNumber.ToString(),
-                    notes,
-                    MainWindow.SelectedCustomer ?? "",
-                    isSynced
-                );
+                DevExpress.XtraReports.UI.XtraReport report;
+                var sSet = Services.SettingsManager.Current;
+                if (sSet.LabelFormat == "Simple Label")
+                {
+                    report = new SimpleLabel(
+                        InternationalMobileEquipmentIdentity,
+                        productTitle,
+                        BatteryHealth?.ToString() + "%",
+                        notes,
+                        isSynced
+                    );
+                }
+                else
+                {
+                    report = new HorizontalLabel(
+                        InternationalMobileEquipmentIdentity,
+                        SerialNumber,
+                        ModelText.Text,
+                        productTitle,
+                        displayColor,
+                        ProductVersion,
+                        BatteryHealth?.ToString() + "%",
+                        ICloudStatus,
+                        FmiStatus,
+                        MdmStatus,
+                        displaySim,
+                        PortNumber.ToString(),
+                        notes,
+                        MainWindow.SelectedCustomer ?? "",
+                        isSynced
+                    );
+                }
                 report.Print();
 
                 Debug.WriteLine($"[Print] Label printed for Serial: {SerialNumber}");

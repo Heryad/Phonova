@@ -25,6 +25,8 @@ namespace Dyagnoz_Latest.Services
         public bool PrintTesterName { get; set; } = true;
         public bool PrintPortNumber { get; set; } = true;
         public bool PrintLogo { get; set; } = true;
+        public string LabelFormat { get; set; } = "Standard";
+        public string WarrantyText { get; set; } = "30 Days";
     }
 
     public class SettingsManager

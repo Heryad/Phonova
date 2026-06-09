@@ -732,6 +732,19 @@
                                             <TextBlock Text="Print logo" VerticalAlignment="Center"/>
                                             <ToggleButton x:Name="PrintLogoToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="SettingToggle_Click"/>
                                         </Grid>
+                                        <Grid Margin="0,12,0,12">
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <TextBlock Text="Label Format" VerticalAlignment="Center"/>
+                                            <ComboBox x:Name="LabelFormatComboBox" Grid.Column="1" Width="150" Height="28" SelectionChanged="SettingComboBox_SelectionChanged">
+                                                <ComboBoxItem Content="Standard"/>
+                                                <ComboBoxItem Content="Simple Label"/>
+                                            </ComboBox>
+                                        </Grid>
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <TextBlock Text="Warranty Text" VerticalAlignment="Center"/>
+                                            <TextBox x:Name="WarrantyTextBox" Grid.Column="1" Width="150" Height="28" Padding="6,4" BorderBrush="{StaticResource BorderColorBrush}" BorderThickness="1" Background="White" TextChanged="SettingTextBox_TextChanged"/>
+                                        </Grid>
                                     </StackPanel>
                                 </Border>
 
