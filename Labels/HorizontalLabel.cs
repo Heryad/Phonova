@@ -36,6 +36,7 @@ namespace Dyagnoz_Latest
         private XRLabel lblSIM;
         private XRLabel lblDate;
         private XRLabel lblCust;
+        private XRLabel lblTester;
  
         private XRLabel lblNotes;
         private XRLabel lblPort;
@@ -167,6 +168,9 @@ namespace Dyagnoz_Latest
             }
             ((XRControl)this.lblPort).Text = s.PrintPortNumber ? cleanPort : "";
             ((XRControl)this.lblCust).Text = s.PrintCustomerName ? (string.IsNullOrEmpty(customerName) ? "" : customerName) : "";
+
+            ((XRControl)this.lblTester).Text = s.PrintTesterName ? (string.IsNullOrEmpty(testerName) ? "" : testerName) : "";
+            if (!s.PrintTesterName) ((XRControl)this.lblTester).Visible = false;
  
             if (!s.PrintPortNumber)
             {
@@ -448,17 +452,15 @@ namespace Dyagnoz_Latest
             // ── Footer row ────────────────────────────────────────────────────────────
             PlaceCell(this.lblDate, tableX, footerY, colAW, footerRowH);
  
-            XRLabel lblBrand = new XRLabel();
-            lblBrand.Text = s.PrintTesterName ? (string.IsNullOrEmpty(testerName) ? "" : testerName) : "";
-            if (!s.PrintTesterName) lblBrand.Visible = false;
-            lblBrand.Font = new Font("Tahoma", 6.5f, FontStyle.Bold);
-            lblBrand.LocationFloat = new PointFloat(divAX + 1f + 3f, footerY + 1f);
-            lblBrand.SizeF = new SizeF(colBW - 4f, footerRowH - 2f);
-            lblBrand.TextAlignment = (TextAlignment)32;
-            lblBrand.Padding = new PaddingInfo(0, 0, 0, 0, 100f);
-            lblBrand.Borders = BorderSide.None;
-            lblBrand.BackColor = Color.Transparent;
-            ((XRControl)this.Detail).Controls.Add(lblBrand);
+            this.lblTester = new XRLabel();
+            this.lblTester.Font = new Font("Tahoma", 6.5f, FontStyle.Bold);
+            this.lblTester.LocationFloat = new PointFloat(divAX + 1f + 3f, footerY + 1f);
+            this.lblTester.SizeF = new SizeF(colBW - 4f, footerRowH - 2f);
+            this.lblTester.TextAlignment = (TextAlignment)32;
+            this.lblTester.Padding = new PaddingInfo(0, 0, 0, 0, 100f);
+            this.lblTester.Borders = BorderSide.None;
+            this.lblTester.BackColor = Color.Transparent;
+            ((XRControl)this.Detail).Controls.Add(this.lblTester);
  
             PlaceCell(this.lblCust, divBX + 1f, footerY, colCW, footerRowH, (TextAlignment)16);
             this.lblCust.Font = new Font("Tahoma", 6.5f, FontStyle.Bold);

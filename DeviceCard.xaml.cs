@@ -363,6 +363,11 @@ namespace Dyagnoz_Latest
 
                     await RunWithRetryAsync("Setup", 4, 2000, (token) => SkipSetupStepAsync(udid, token), ct);
                 }
+                else
+                {
+                    // Device is activated and setup is done, so just push WiFi
+                    await RunWithRetryAsync("WiFi", 2, 2000, (token) => PushWifiStepAsync(udid, token), ct);
+                }
 
                 if (s.FullTest)
                 {

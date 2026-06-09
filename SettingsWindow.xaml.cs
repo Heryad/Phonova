@@ -588,6 +588,7 @@ namespace Dyagnoz_Latest
             if (panelName == "Comments") LoadCommentsTable();
             if (panelName == "MmrComments") LoadMmrCommentsTable();
             if (panelName == "Customers") LoadCustomersTable();
+            if (panelName == "Testers") LoadTestersTable();
             if (panelName == "Reports") LoadReportsTable();
         }
 
@@ -597,6 +598,7 @@ namespace Dyagnoz_Latest
         private void NavComments_Click(object sender, RoutedEventArgs e) => ShowPanel("Comments", NavComments);
         private void NavMmrComments_Click(object sender, RoutedEventArgs e) => ShowPanel("MmrComments", NavMmrComments);
         private void NavCustomers_Click(object sender, RoutedEventArgs e) => ShowPanel("Customers", NavCustomers);
+        private void NavTesters_Click(object sender, RoutedEventArgs e) => ShowPanel("Testers", NavTesters);
 
         private void NavWifi_Click(object sender, RoutedEventArgs e) => ShowPanel("Wifi", NavWifi);
         private void NavTestFlow_Click(object sender, RoutedEventArgs e) => ShowPanel("TestFlow", NavTestFlow);
