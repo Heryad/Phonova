@@ -75,7 +75,7 @@ namespace Dyagnoz_Latest
             ((XRControl)this.lbliCloud).Text = "FMI/iCloud: " + icloudVal;
  
             // FMI is replaced with SIM status
-            ((XRControl)this.lblFMI).Text = "SIM: " + (sim ?? "-");
+            ((XRControl)this.lblFMI).Text = "SIM: Unlocked";
  
             // MDM stays as MDM status
             ((XRControl)this.lblMDM).Text = "MDM: " + (mdm ?? "-");
