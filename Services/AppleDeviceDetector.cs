@@ -315,8 +315,7 @@ namespace Dyagnoz_Latest.Services
             IntPtr buffer = IntPtr.Zero;
             try
             {
-                Guid nullGuid = Guid.Empty;
-                hDevInfo = SetupDiGetClassDevs(ref nullGuid, pnpDeviceId, IntPtr.Zero, DIGCF_ALLCLASSES | DIGCF_PRESENT);
+                hDevInfo = SetupDiGetClassDevs(IntPtr.Zero, pnpDeviceId, IntPtr.Zero, DIGCF_ALLCLASSES | DIGCF_PRESENT);
                 if (hDevInfo != new IntPtr(-1))
                 {
                     SP_DEVINFO_DATA devInfoData = new SP_DEVINFO_DATA();
@@ -427,7 +426,7 @@ namespace Dyagnoz_Latest.Services
         private static extern bool UnregisterDeviceNotification(IntPtr handle);
 
         [DllImport("setupapi.dll", CharSet = CharSet.Auto)]
-        private static extern IntPtr SetupDiGetClassDevs(ref Guid ClassGuid, string Enumerator, IntPtr hwndParent, uint Flags);
+        private static extern IntPtr SetupDiGetClassDevs(IntPtr ClassGuid, string Enumerator, IntPtr hwndParent, uint Flags);
 
         [DllImport("setupapi.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern bool SetupDiEnumDeviceInfo(IntPtr DeviceInfoSet, uint MemberIndex, ref SP_DEVINFO_DATA DeviceInfoData);
