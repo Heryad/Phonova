@@ -306,78 +306,53 @@ namespace Dyagnoz_Latest.Services
         #endregion
 
         #region Registry Location Lookup
+        #region SetupAPI Location Lookup
 
         private string GetPhysicalLocationPath(string pnpDeviceId)
         {
             if (string.IsNullOrWhiteSpace(pnpDeviceId)) return string.Empty;
 
+            IntPtr hDevInfo = IntPtr.Zero;
+            IntPtr buffer = IntPtr.Zero;
             try
             {
-                string? location = GetLocationFromRegistry(@"SYSTEM\CurrentControlSet\Enum\" + pnpDeviceId);
-                if (!string.IsNullOrWhiteSpace(location)) return location;
-
-                using (var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Enum\" + pnpDeviceId))
+                Guid nullGuid = Guid.Empty;
+                hDevInfo = SetupDiGetClassDevs(ref nullGuid, pnpDeviceId, IntPtr.Zero, DIGCF_ALLCLASSES | DIGCF_PRESENT);
+                if (hDevInfo != new IntPtr(-1))
                 {
-                    var parentId = key?.GetValue("ParentIdPrefix")?.ToString();
-                    if (!string.IsNullOrWhiteSpace(parentId))
+                    SP_DEVINFO_DATA devInfoData = new SP_DEVINFO_DATA();
+                    devInfoData.cbSize = (uint)Marshal.SizeOf(typeof(SP_DEVINFO_DATA));
+
+                    if (SetupDiEnumDeviceInfo(hDevInfo, 0, ref devInfoData))
                     {
-                        location = FindLocationByParentId(parentId);
-                        if (!string.IsNullOrWhiteSpace(location)) return location;
-                    }
-                }
-                return string.Empty;
-            }
-            catch { return string.Empty; }
-        }
-
-        private string? GetLocationFromRegistry(string registryPath)
-        {
-            try
-            {
-                using (var key = Registry.LocalMachine.OpenSubKey(registryPath))
-                {
-                    if (key == null) return null;
-
-                    // Strictly use LocationPaths to guarantee physical hardware ports only
-                    var locationPaths = key.GetValue("LocationPaths");
-                    if (locationPaths is string[] paths && paths.Length > 0) return paths[0];
-                    else if (locationPaths is string singlePath) return singlePath;
-                }
-            }
-            catch { }
-            return null;
-        }
-
-        private string? FindLocationByParentId(string parentId)
-        {
-            try
-            {
-                string usbEnumPath = @"SYSTEM\CurrentControlSet\Enum\USB";
-                using (var usbKey = Registry.LocalMachine.OpenSubKey(usbEnumPath))
-                {
-                    if (usbKey == null) return null;
-
-                    foreach (var vidPidKeyName in usbKey.GetSubKeyNames())
-                    {
-                        using (var vidPidKey = usbKey.OpenSubKey(vidPidKeyName))
+                        uint reqSize = 0;
+                        uint dataType = 0;
+                        SetupDiGetDeviceRegistryProperty(hDevInfo, ref devInfoData, SPDRP_LOCATION_PATHS, out dataType, IntPtr.Zero, 0, out reqSize);
+                        
+                        if (reqSize > 0)
                         {
-                            if (vidPidKey == null) continue;
-
-                            foreach (var instanceKeyName in vidPidKey.GetSubKeyNames())
+                            buffer = Marshal.AllocHGlobal((int)reqSize);
+                            if (SetupDiGetDeviceRegistryProperty(hDevInfo, ref devInfoData, SPDRP_LOCATION_PATHS, out dataType, buffer, reqSize, out reqSize))
                             {
-                                if (instanceKeyName.StartsWith(parentId, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    string fullPath = $@"SYSTEM\CurrentControlSet\Enum\USB\{vidPidKeyName}\{instanceKeyName}";
-                                    return GetLocationFromRegistry(fullPath);
-                                }
+                                // REG_MULTI_SZ returns double null terminated. PtrToStringAuto reads until the first null.
+                                string? location = Marshal.PtrToStringAuto(buffer);
+                                if (!string.IsNullOrWhiteSpace(location)) return location;
                             }
                         }
                     }
                 }
             }
             catch { }
-            return null;
+            finally
+            {
+                if (buffer != IntPtr.Zero) Marshal.FreeHGlobal(buffer);
+                if (hDevInfo != IntPtr.Zero && hDevInfo != new IntPtr(-1)) SetupDiDestroyDeviceInfoList(hDevInfo);
+            }
+
+            return string.Empty;
         }
+
+        // Removed Registry logic as SetupAPI is bulletproof.
 
         #endregion
 
@@ -433,11 +408,36 @@ namespace Dyagnoz_Latest.Services
             public char dbcc_name; // Declared as single char to prevent PtrToStructure AccessViolation bounds error
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        private struct SP_DEVINFO_DATA
+        {
+            public uint cbSize;
+            public Guid classGuid;
+            public uint devInst;
+            public IntPtr reserved;
+        }
+
+        private const uint DIGCF_PRESENT = 0x00000002;
+        private const uint DIGCF_ALLCLASSES = 0x00000004;
+        private const uint SPDRP_LOCATION_PATHS = 0x00000023;
+
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr RegisterDeviceNotification(IntPtr recipient, IntPtr notificationFilter, int flags);
 
         [DllImport("user32.dll")]
         private static extern bool UnregisterDeviceNotification(IntPtr handle);
+
+        [DllImport("setupapi.dll", CharSet = CharSet.Auto)]
+        private static extern IntPtr SetupDiGetClassDevs(ref Guid ClassGuid, string Enumerator, IntPtr hwndParent, uint Flags);
+
+        [DllImport("setupapi.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern bool SetupDiEnumDeviceInfo(IntPtr DeviceInfoSet, uint MemberIndex, ref SP_DEVINFO_DATA DeviceInfoData);
+
+        [DllImport("setupapi.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern bool SetupDiGetDeviceRegistryProperty(IntPtr DeviceInfoSet, ref SP_DEVINFO_DATA DeviceInfoData, uint Property, out uint PropertyRegDataType, IntPtr PropertyBuffer, uint PropertyBufferSize, out uint RequiredSize);
+
+        [DllImport("setupapi.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern bool SetupDiDestroyDeviceInfoList(IntPtr DeviceInfoSet);
 
         #endregion
     }
