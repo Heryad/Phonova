@@ -1097,6 +1097,45 @@ namespace Dyagnoz_Latest
                !string.IsNullOrWhiteSpace(DeviceEnclosureColor);
     }
 
+        private static readonly Dictionary<string, int> FallbackDesignCapacities = new Dictionary<string, int>
+        {
+            {"iPhone6,1", 1560}, {"iPhone6,2", 1560}, // 5s
+            {"iPhone7,1", 2915}, // 6 Plus
+            {"iPhone7,2", 1810}, // 6
+            {"iPhone8,1", 1715}, // 6s
+            {"iPhone8,2", 2750}, // 6s Plus
+            {"iPhone8,4", 1624}, // SE
+            {"iPhone9,1", 1960}, {"iPhone9,3", 1960}, // 7
+            {"iPhone9,2", 2900}, {"iPhone9,4", 2900}, // 7 Plus
+            {"iPhone10,1", 1821}, {"iPhone10,4", 1821}, // 8
+            {"iPhone10,2", 2691}, {"iPhone10,5", 2691}, // 8 Plus
+            {"iPhone10,3", 2716}, {"iPhone10,6", 2716}, // X
+            {"iPhone11,2", 2658}, // XS
+            {"iPhone11,4", 3174}, {"iPhone11,6", 3174}, // XS Max
+            {"iPhone11,8", 2942}, // XR
+            {"iPhone12,1", 3110}, // 11
+            {"iPhone12,3", 3046}, // 11 Pro
+            {"iPhone12,5", 3969}, // 11 Pro Max
+            {"iPhone12,8", 1821}, // SE (2020)
+            {"iPhone13,1", 2227}, // 12 mini
+            {"iPhone13,2", 2815}, // 12
+            {"iPhone13,3", 2815}, // 12 Pro
+            {"iPhone13,4", 3687}, // 12 Pro Max
+            {"iPhone14,2", 3095}, // 13 Pro
+            {"iPhone14,3", 4352}, // 13 Pro Max
+            {"iPhone14,4", 2406}, // 13 mini
+            {"iPhone14,5", 3227}, // 13
+            {"iPhone14,6", 2018}, // SE (3rd gen)
+            {"iPhone14,7", 3279}, // 14
+            {"iPhone14,8", 4325}, // 14 Plus
+            {"iPhone15,2", 3200}, // 14 Pro
+            {"iPhone15,3", 4323}, // 14 Pro Max
+            {"iPhone15,4", 3349}, // 15
+            {"iPhone15,5", 4383}, // 15 Plus
+            {"iPhone16,1", 3274}, // 15 Pro
+            {"iPhone16,2", 4422}  // 15 Pro Max
+        };
+
         private void ParseAndStoreBatteryInfo(string rawBatteryInfo)
         {
             if (string.IsNullOrWhiteSpace(rawBatteryInfo))
@@ -1105,21 +1144,27 @@ namespace Dyagnoz_Latest
             try
             {
                 int designCap = ExtractIntFromXml(rawBatteryInfo, "DesignCapacity");
+                
+                // Fallback to hardcoded list if device refuses to report DesignCapacity dynamically
+                if (designCap <= 0 && !string.IsNullOrEmpty(ProductType) && FallbackDesignCapacities.TryGetValue(ProductType, out int fallbackCap))
+                {
+                    designCap = fallbackCap;
+                }
+
                 int currentCap = ExtractIntFromXml(rawBatteryInfo, "NominalChargeCapacity");
+                
+                // Fallback to AppleRawMaxCapacity if NominalChargeCapacity is missing (like drfones does)
+                if (currentCap == 0)
+                {
+                    currentCap = ExtractIntFromXml(rawBatteryInfo, "AppleRawMaxCapacity");
+                }
+
                 int cycleCount = ExtractIntFromXml(rawBatteryInfo, "CycleCount");
-                int iosSettingsHealth = ExtractIntFromXml(rawBatteryInfo, "MaximumCapacityPercent");
 
                 if (designCap > 0)
                 {
-                    int healthInt;
-                    if (iosSettingsHealth > 0 && iosSettingsHealth <= 100)
-                    {
-                        healthInt = iosSettingsHealth;
-                    }
-                    else
-                    {
-                        healthInt = (int)((double)currentCap / (double)designCap * 100.0);
-                    }
+                    // drfones ALWAYS uses raw mathematical chemical health, ignoring the algorithmic MaximumCapacityPercent
+                    int healthInt = (int)((double)currentCap / (double)designCap * 100.0);
 
                     if (healthInt > 100)
                         healthInt = 100;
@@ -1543,8 +1588,37 @@ namespace Dyagnoz_Latest
         //<zone> Event handlers for UI interactions (buttons, header click for selection, etc.)
         private void Header_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            DeviceCheckbox.IsChecked = !DeviceCheckbox.IsChecked;
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                DeviceCheckbox.IsChecked = !DeviceCheckbox.IsChecked;
+            }
             OnSelectionChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void ComponentBadge_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left && sender is Border border)
+            {
+                switch (border.Name)
+                {
+                    case "ValScreen":
+                        LcdStatus = (LcdStatus == "Fail" || LcdStatus == "Error") ? "Pass" : "Fail";
+                        break;
+                    case "ValBattery":
+                        BatteryStatus = (BatteryStatus == "Fail" || BatteryStatus == "Error") ? "Pass" : "Fail";
+                        break;
+                    case "ValCamera":
+                        CameraStatus = (CameraStatus == "Fail" || CameraStatus == "Error") ? "Pass" : "Fail";
+                        break;
+                    case "ValFaceId":
+                        FaceIdStatus = (FaceIdStatus == "Fail" || FaceIdStatus == "Error") ? "Pass" : "Fail";
+                        break;
+                }
+                
+                // Immediately update UI. When the device fully finishes tests, 
+                // it will automatically save these updated values to the DB naturally.
+                ApplyDeviceInfoToUi();
+            }
         }
 
         private void PrintBtn_Click(object sender, RoutedEventArgs e)

@@ -1,8 +1,12 @@
+using System;
 using System.Collections.Concurrent;
-using System.Management;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Interop;
 using Microsoft.Win32;
 using Dyagnoz_Latest.Models;
-using System.Diagnostics;
 
 namespace Dyagnoz_Latest.Services
 {
@@ -22,24 +26,25 @@ namespace Dyagnoz_Latest.Services
     }
 
     /// <summary>
-    /// High-performance Apple device detector using WMI.
+    /// High-performance Apple device detector using interrupt-driven WM_DEVICECHANGE.
     /// </summary>
     public sealed class AppleDeviceDetector : IDisposable
     {
         #region Constants
 
-        private const string APPLE_VENDOR_ID = "05AC";
+        private const string APPLE_VENDOR_ID = "vid_05ac";
 
         #endregion
 
         #region Fields
 
-        private ManagementEventWatcher? _connectionWatcher;
-        private ManagementEventWatcher? _disconnectionWatcher;
         private readonly ConcurrentDictionary<string, DateTime> _activeLocations;
         private readonly SemaphoreSlim _watcherLock;
         private volatile bool _isRunning;
         private volatile bool _disposed;
+        
+        private HwndSource? _hwndSource;
+        private IntPtr _deviceNotifyHandle;
 
         #endregion
 
@@ -79,11 +84,37 @@ namespace Dyagnoz_Latest.Services
             {
                 if (_isRunning) return true;
 
-                if (!SetupConnectionWatcher()) return false;
-
-                if (!SetupDisconnectionWatcher())
+                // Create a message-only window for receiving hardware interrupts
+                var parameters = new HwndSourceParameters("AppleDeviceDetectorMsgWindow")
                 {
-                    CleanupWatchers();
+                    Width = 0,
+                    Height = 0,
+                    PositionX = -10000,
+                    PositionY = -10000,
+                    WindowStyle = 0
+                };
+                
+                _hwndSource = new HwndSource(parameters);
+                _hwndSource.AddHook(WndProc);
+
+                // Register for device notifications
+                var dbi = new DEV_BROADCAST_DEVICEINTERFACE
+                {
+                    dbcc_size = Marshal.SizeOf(typeof(DEV_BROADCAST_DEVICEINTERFACE)),
+                    dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE,
+                    dbcc_reserved = 0,
+                    dbcc_classguid = GUID_DEVINTERFACE_USB_DEVICE
+                };
+
+                IntPtr buffer = Marshal.AllocHGlobal(dbi.dbcc_size);
+                Marshal.StructureToPtr(dbi, buffer, true);
+
+                _deviceNotifyHandle = RegisterDeviceNotification(_hwndSource.Handle, buffer, DEVICE_NOTIFY_WINDOW_HANDLE);
+                Marshal.FreeHGlobal(buffer);
+
+                if (_deviceNotifyHandle == IntPtr.Zero)
+                {
+                    RaiseError("Failed to register device notification.");
                     return false;
                 }
 
@@ -125,228 +156,112 @@ namespace Dyagnoz_Latest.Services
 
         private void CleanupWatchers()
         {
-            if (_connectionWatcher != null)
+            if (_deviceNotifyHandle != IntPtr.Zero)
             {
-                try { _connectionWatcher.Stop(); _connectionWatcher.Dispose(); } catch { }
-                _connectionWatcher = null;
+                UnregisterDeviceNotification(_deviceNotifyHandle);
+                _deviceNotifyHandle = IntPtr.Zero;
             }
-
-            if (_disconnectionWatcher != null)
+            if (_hwndSource != null)
             {
-                try { _disconnectionWatcher.Stop(); _disconnectionWatcher.Dispose(); } catch { }
-                _disconnectionWatcher = null;
-            }
-        }
-
-        #endregion
-
-        #region WMI Watcher Setup
-
-        private bool SetupConnectionWatcher()
-        {
-            try
-            {
-                var query = new WqlEventQuery(
-                    "__InstanceCreationEvent",
-                    TimeSpan.FromSeconds(1),
-                    $"TargetInstance ISA 'Win32_PnPEntity' AND TargetInstance.PNPDeviceID LIKE 'USB\\\\VID_{APPLE_VENDOR_ID}%'"
-                );
-
-                _connectionWatcher = new ManagementEventWatcher(query);
-                _connectionWatcher.EventArrived += OnWmiConnectionEvent;
-                _connectionWatcher.Start();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                RaiseError($"Failed to setup connection watcher: {ex.Message}");
-                return false;
-            }
-        }
-
-        private bool SetupDisconnectionWatcher()
-        {
-            try
-            {
-                var query = new WqlEventQuery(
-                    "__InstanceDeletionEvent",
-                    TimeSpan.FromSeconds(1),
-                    $"TargetInstance ISA 'Win32_PnPEntity' AND TargetInstance.PNPDeviceID LIKE 'USB\\\\VID_{APPLE_VENDOR_ID}%'"
-                );
-
-                _disconnectionWatcher = new ManagementEventWatcher(query);
-                _disconnectionWatcher.EventArrived += OnWmiDisconnectionEvent;
-                _disconnectionWatcher.Start();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                RaiseError($"Failed to setup disconnection watcher: {ex.Message}");
-                return false;
+                _hwndSource.RemoveHook(WndProc);
+                _hwndSource.Dispose();
+                _hwndSource = null;
             }
         }
 
         #endregion
 
-        #region WMI Event Handlers (Non-Blocking)
+        #region WM_DEVICECHANGE Processor
 
-        private void OnWmiConnectionEvent(object sender, EventArrivedEventArgs e)
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
-            ManagementBaseObject? targetInstance = null;
-            try { targetInstance = e?.NewEvent?["TargetInstance"] as ManagementBaseObject; } catch { return; }
-
-            if (targetInstance == null) return;
-
-            var deviceData = ExtractDeviceData(targetInstance);
-            if (deviceData == null) return;
-
-            ThreadPool.QueueUserWorkItem(_ => ProcessConnectionAsync(deviceData.Value));
-        }
-
-        private void OnWmiDisconnectionEvent(object sender, EventArrivedEventArgs e)
-        {
-            ManagementBaseObject? targetInstance = null;
-            try { targetInstance = e?.NewEvent?["TargetInstance"] as ManagementBaseObject; } catch { return; }
-
-            if (targetInstance == null) return;
-
-            var deviceData = ExtractDeviceData(targetInstance);
-            if (deviceData == null) return;
-
-            ThreadPool.QueueUserWorkItem(_ => ProcessDisconnectionAsync(deviceData.Value));
-        }
-
-        #endregion
-
-        #region Device Processing
-
-        private readonly struct DeviceData
-        {
-            public readonly string PnpDeviceId;
-            public readonly string Description;
-            public readonly string Manufacturer;
-            public readonly string Status;
-            public readonly string LocationPath;
-
-            public DeviceData(string pnpDeviceId, string description, string manufacturer, string status, string locationPath)
+            if (msg == WM_DEVICECHANGE)
             {
-                PnpDeviceId = pnpDeviceId;
-                Description = description;
-                Manufacturer = manufacturer;
-                Status = status;
-                LocationPath = locationPath;
-            }
-        }
-
-        private DeviceData? ExtractDeviceData(ManagementBaseObject obj)
-        {
-            try
-            {
-                var pnpDeviceId = obj["PNPDeviceID"]?.ToString();
-                if (string.IsNullOrWhiteSpace(pnpDeviceId)) return null;
-
-                var description = obj["Description"]?.ToString() ?? "";
-
-                if (pnpDeviceId.Contains("&MI_", StringComparison.OrdinalIgnoreCase)) return null;
-
-                bool isAppleMobile = description.Contains("Apple Mobile Device", StringComparison.OrdinalIgnoreCase) ||
-                                     description.Contains("Apple iPhone", StringComparison.OrdinalIgnoreCase) ||
-                                     description.Contains("iPhone", StringComparison.OrdinalIgnoreCase) ||
-                                     description.Contains("iPad", StringComparison.OrdinalIgnoreCase);
-
-                if (!isAppleMobile) return null;
-
-                var locationPath = GetPhysicalLocationPath(pnpDeviceId);
-                if (string.IsNullOrWhiteSpace(locationPath)) return null;
-
-                return new DeviceData(
-                    pnpDeviceId,
-                    description,
-                    obj["Manufacturer"]?.ToString() ?? "Apple Inc.",
-                    obj["Status"]?.ToString() ?? "OK",
-                    locationPath
-                );
-            }
-            catch (Exception ex)
-            {
-                RaiseError($"Error extracting device data: {ex.Message}");
-                return null;
-            }
-        }
-
-        private void ProcessConnectionAsync(DeviceData data)
-        {
-            try
-            {
-                if (!_activeLocations.TryAdd(data.LocationPath, DateTime.UtcNow)) return;
-
-                var device = new UsbDevice
+                int eventType = wParam.ToInt32();
+                if (eventType == DBT_DEVICEARRIVAL || eventType == DBT_DEVICEREMOVECOMPLETE)
                 {
-                    PnpDeviceId = data.PnpDeviceId,
-                    LocationPath = data.LocationPath,
-                    Description = data.Description,
-                    Manufacturer = data.Manufacturer,
-                    Status = data.Status,
-                    IsAppleDevice = true,
-                    DetectedAt = DateTime.Now
-                };
-
-                if (!string.IsNullOrEmpty(data.PnpDeviceId))
-                {
-                    var lastSlashIndex = data.PnpDeviceId.LastIndexOf('\\');
-                    if (lastSlashIndex >= 0 && lastSlashIndex < data.PnpDeviceId.Length - 1)
+                    if (lParam != IntPtr.Zero)
                     {
-                        var potentialUdid = data.PnpDeviceId.Substring(lastSlashIndex + 1);
-                        
-                        if (potentialUdid.Length == 24 && potentialUdid.StartsWith("0000") && !potentialUdid.Contains("-"))
+                        var hdr = Marshal.PtrToStructure<DEV_BROADCAST_HDR>(lParam);
+                        if (hdr.dbcc_devicetype == DBT_DEVTYP_DEVICEINTERFACE)
                         {
-                            potentialUdid = potentialUdid.Insert(8, "-");
-                        }
+                            var devInterface = Marshal.PtrToStructure<DEV_BROADCAST_DEVICEINTERFACE>(lParam);
+                            string dbccName = new string(devInterface.dbcc_name).TrimEnd('\0');
 
-                        // Basic validation: UDIDs are alphanumeric and reasonably long
-                        if (potentialUdid.Length > 25)
-                        {
-                            device.Udid = potentialUdid.ToLower();
-                        }
-                        else
-                        {
-                            device.Udid = potentialUdid.ToUpper();
+                            if (dbccName.Contains(APPLE_VENDOR_ID, StringComparison.OrdinalIgnoreCase))
+                            {
+                                bool isConnected = (eventType == DBT_DEVICEARRIVAL);
+                                ThreadPool.QueueUserWorkItem(_ => ProcessDeviceEventAsync(dbccName, isConnected));
+                            }
                         }
                     }
                 }
-
-                DeviceConnected?.Invoke(this, new AppleDeviceEventArgs(device, true));
             }
-            catch (Exception ex)
-            {
-                RaiseError($"Error processing connection: {ex.Message}");
-            }
+            return IntPtr.Zero;
         }
 
-        private void ProcessDisconnectionAsync(DeviceData data)
+        private void ProcessDeviceEventAsync(string dbccName, bool isConnected)
         {
             try
             {
-                if (!_activeLocations.TryRemove(data.LocationPath, out _)) return;
+                // dbccName looks like \\?\usb#vid_05ac&pid_12a8#00008101-000E04001A04001E#{a5dcbf10-6530-11d2-901f-00c04fb951ed}
+                string[] parts = dbccName.Split('#');
+                if (parts.Length < 3) return;
+
+                // Ignore MI_ interfaces to avoid duplicate trigger
+                if (parts[1].Contains("&mi_", StringComparison.OrdinalIgnoreCase)) return;
+
+                string prefix = parts[0].StartsWith(@"\\?\") ? parts[0].Substring(4) : parts[0];
+                string pnpDeviceId = $"{prefix}\\{parts[1]}\\{parts[2]}".ToUpperInvariant();
+
+                string locationPath = GetPhysicalLocationPath(pnpDeviceId);
+                if (string.IsNullOrWhiteSpace(locationPath)) return;
 
                 var device = new UsbDevice
                 {
-                    PnpDeviceId = data.PnpDeviceId,
-                    LocationPath = data.LocationPath,
-                    Description = data.Description,
-                    Manufacturer = data.Manufacturer,
-                    Status = data.Status,
+                    PnpDeviceId = pnpDeviceId,
+                    LocationPath = locationPath,
+                    Description = "Apple Mobile Device",
+                    Manufacturer = "Apple Inc.",
+                    Status = "OK",
                     IsAppleDevice = true,
                     DetectedAt = DateTime.Now
                 };
 
-                DeviceDisconnected?.Invoke(this, new AppleDeviceEventArgs(device, false));
+                // Extract UDID from the last part of PnpDeviceId
+                string potentialUdid = parts[2].ToLowerInvariant();
+                if (potentialUdid.Length == 24 && potentialUdid.StartsWith("0000") && !potentialUdid.Contains("-"))
+                {
+                    potentialUdid = potentialUdid.Insert(8, "-");
+                }
+                if (potentialUdid.Length > 25)
+                {
+                    device.Udid = potentialUdid.ToLower();
+                }
+                else
+                {
+                    device.Udid = potentialUdid.ToUpper();
+                }
+
+                if (isConnected)
+                {
+                    // Smart Debounce logic that auto-recovers from missed disconnects
+                    if (_activeLocations.TryGetValue(locationPath, out var lastConnectTime))
+                    {
+                        if ((DateTime.UtcNow - lastConnectTime).TotalSeconds < 2) return;
+                    }
+                    _activeLocations[locationPath] = DateTime.UtcNow;
+                    DeviceConnected?.Invoke(this, new AppleDeviceEventArgs(device, true));
+                }
+                else
+                {
+                    _activeLocations.TryRemove(locationPath, out _);
+                    DeviceDisconnected?.Invoke(this, new AppleDeviceEventArgs(device, false));
+                }
             }
             catch (Exception ex)
             {
-                RaiseError($"Error processing disconnection: {ex.Message}");
+                RaiseError($"Error processing device event: {ex.Message}");
             }
         }
 
@@ -385,12 +300,10 @@ namespace Dyagnoz_Latest.Services
                 {
                     if (key == null) return null;
 
+                    // Strictly use LocationPaths to guarantee physical hardware ports only
                     var locationPaths = key.GetValue("LocationPaths");
                     if (locationPaths is string[] paths && paths.Length > 0) return paths[0];
                     else if (locationPaths is string singlePath) return singlePath;
-
-                    var locationInfo = key.GetValue("LocationInformation")?.ToString();
-                    if (!string.IsNullOrWhiteSpace(locationInfo)) return locationInfo;
                 }
             }
             catch { }
@@ -450,6 +363,44 @@ namespace Dyagnoz_Latest.Services
             _watcherLock.Dispose();
             GC.SuppressFinalize(this);
         }
+
+        #endregion
+
+        #region P/Invoke Definitions
+
+        private const int WM_DEVICECHANGE = 0x0219;
+        private const int DBT_DEVICEARRIVAL = 0x8000;
+        private const int DBT_DEVICEREMOVECOMPLETE = 0x8004;
+        private const int DBT_DEVTYP_DEVICEINTERFACE = 5;
+        private const int DEVICE_NOTIFY_WINDOW_HANDLE = 0;
+
+        // GUID for USB devices (A5DCBF10-6530-11D2-901F-00C04FB951ED)
+        private static readonly Guid GUID_DEVINTERFACE_USB_DEVICE = new Guid(0xA5DCBF10, 0x6530, 0x11D2, 0x90, 0x1F, 0x00, 0xC0, 0x4F, 0xB9, 0x51, 0xED);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct DEV_BROADCAST_HDR
+        {
+            public int dbcc_size;
+            public int dbcc_devicetype;
+            public int dbcc_reserved;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        private struct DEV_BROADCAST_DEVICEINTERFACE
+        {
+            public int dbcc_size;
+            public int dbcc_devicetype;
+            public int dbcc_reserved;
+            public Guid dbcc_classguid;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 255)]
+            public char[] dbcc_name;
+        }
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr RegisterDeviceNotification(IntPtr recipient, IntPtr notificationFilter, int flags);
+
+        [DllImport("user32.dll")]
+        private static extern bool UnregisterDeviceNotification(IntPtr handle);
 
         #endregion
     }

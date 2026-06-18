@@ -266,19 +266,19 @@
                 <StackPanel>
                     <TextBlock Text="COMPONENTS" Style="{StaticResource LabelSmall}" Margin="0,0,0,4"/>
                     <WrapPanel x:Name="ComponentsPanel" Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Border x:Name="ValScreen" Width="28" Height="28" Background="#F3F4F6" CornerRadius="4" Margin="2" ToolTip="Screen">
+                        <Border x:Name="ValScreen" Width="28" Height="28" Background="#F3F4F6" CornerRadius="4" Margin="2" ToolTip="Screen" MouseLeftButtonDown="ComponentBadge_MouseDown" Cursor="Hand">
                             <materialDesign:PackIcon Kind="Cellphone" Width="16" Height="16" Foreground="#9CA3AF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <Border x:Name="ValBattery" Width="28" Height="28" Background="#F3F4F6" CornerRadius="4" Margin="2" ToolTip="Battery">
+                        <Border x:Name="ValBattery" Width="28" Height="28" Background="#F3F4F6" CornerRadius="4" Margin="2" ToolTip="Battery" MouseLeftButtonDown="ComponentBadge_MouseDown" Cursor="Hand">
                             <materialDesign:PackIcon Kind="Battery" Width="16" Height="16" Foreground="#9CA3AF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <Border x:Name="ValCamera" Width="28" Height="28" Background="#F3F4F6" CornerRadius="4" Margin="2" ToolTip="Camera">
+                        <Border x:Name="ValCamera" Width="28" Height="28" Background="#F3F4F6" CornerRadius="4" Margin="2" ToolTip="Camera" MouseLeftButtonDown="ComponentBadge_MouseDown" Cursor="Hand">
                             <materialDesign:PackIcon Kind="Camera" Width="16" Height="16" Foreground="#9CA3AF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <Border x:Name="ValFaceId" Width="28" Height="28" Background="#F3F4F6" CornerRadius="4" Margin="2" ToolTip="Face ID">
+                        <Border x:Name="ValFaceId" Width="28" Height="28" Background="#F3F4F6" CornerRadius="4" Margin="2" ToolTip="Face ID" MouseLeftButtonDown="ComponentBadge_MouseDown" Cursor="Hand">
                             <materialDesign:PackIcon Kind="FaceRecognition" Width="16" Height="16" Foreground="#9CA3AF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <Border x:Name="ValNfc" Width="28" Height="28" Background="#F3F4F6" CornerRadius="4" Margin="2" ToolTip="NFC">
+                        <Border x:Name="ValNfc" Width="28" Height="28" Background="#F3F4F6" CornerRadius="4" Margin="2" ToolTip="NFC" MouseLeftButtonDown="ComponentBadge_MouseDown" Cursor="Hand">
                             <materialDesign:PackIcon Kind="Nfc" Width="16" Height="16" Foreground="#9CA3AF" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </WrapPanel>
