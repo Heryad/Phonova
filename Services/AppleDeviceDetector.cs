@@ -199,10 +199,11 @@ namespace Dyagnoz_Latest.Services
                         var hdr = Marshal.PtrToStructure<DEV_BROADCAST_HDR>(lParam);
                         if (hdr.dbcc_devicetype == DBT_DEVTYP_DEVICEINTERFACE)
                         {
-                            var devInterface = Marshal.PtrToStructure<DEV_BROADCAST_DEVICEINTERFACE>(lParam);
-                            string dbccName = new string(devInterface.dbcc_name).TrimEnd('\0');
+                            // Safely extract the variable-length string from offset 28
+                            IntPtr namePtr = new IntPtr(lParam.ToInt64() + 28);
+                            string dbccName = Marshal.PtrToStringAuto(namePtr);
 
-                            if (dbccName.Contains(APPLE_VENDOR_ID, StringComparison.OrdinalIgnoreCase))
+                            if (!string.IsNullOrEmpty(dbccName) && dbccName.Contains(APPLE_VENDOR_ID, StringComparison.OrdinalIgnoreCase))
                             {
                                 bool isConnected = (eventType == DBT_DEVICEARRIVAL);
                                 ThreadPool.QueueUserWorkItem(_ => ProcessDeviceEventAsync(dbccName, isConnected));
@@ -406,8 +407,7 @@ namespace Dyagnoz_Latest.Services
             public int dbcc_devicetype;
             public int dbcc_reserved;
             public Guid dbcc_classguid;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 255)]
-            public char[] dbcc_name;
+            public char dbcc_name; // Declared as single char to prevent PtrToStructure AccessViolation bounds error
         }
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
