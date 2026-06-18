@@ -270,8 +270,8 @@ namespace Dyagnoz_Latest
             string logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "label.png");
             this.picLogo.ImageUrl = logoPath;
             this.picLogo.Sizing = ImageSizeMode.ZoomImage;
-            this.picLogo.LocationFloat = new PointFloat(10f, topRowY + 6f);
-            this.picLogo.SizeF = new SizeF(logoW - 10, topRowH - 6f);
+            this.picLogo.LocationFloat = new PointFloat(5f, topRowY + 2f);
+            this.picLogo.SizeF = new SizeF(logoW, topRowH - 2f);
             this.picLogo.Borders = BorderSide.None;
             this.picLogo.BackColor = Color.Transparent;
             this.picLogo.Name = "picLogo";
