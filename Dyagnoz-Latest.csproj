@@ -67,6 +67,9 @@
     <Reference Include="DevExpress.XtraLayout.v18.1">
       <HintPath>DevExpress.XtraLayout.v18.1.dll</HintPath>
     </Reference>
+    <Reference Include="USBLib">
+      <HintPath>src_set\COMLib.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

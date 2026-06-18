@@ -40,6 +40,7 @@ namespace Dyagnoz_Latest.Services
         #region Fields
 
         private readonly ConcurrentDictionary<string, DateTime> _activeLocations;
+        private readonly ConcurrentDictionary<string, string> _deviceLocationCache = new ConcurrentDictionary<string, string>();
         private readonly SemaphoreSlim _watcherLock;
         private volatile bool _isRunning;
         private volatile bool _disposed;
@@ -258,8 +259,34 @@ namespace Dyagnoz_Latest.Services
                 string prefix = parts[0].StartsWith(@"\\?\") ? parts[0].Substring(4) : parts[0];
                 string pnpDeviceId = $"{prefix}\\{parts[1]}\\{parts[2]}".ToUpperInvariant();
 
-                string locationPath = GetPhysicalLocationPath(pnpDeviceId);
-                if (string.IsNullOrWhiteSpace(locationPath)) return;
+                // Extract UDID first so we can use it for USBLib lookup
+                string udid = parts[2].ToLowerInvariant();
+                if (udid.Length == 24 && udid.StartsWith("0000") && !udid.Contains("-"))
+                {
+                    udid = udid.Insert(8, "-");
+                }
+                if (udid.Length <= 25)
+                {
+                    // Fallback for older devices where UDID is exactly 40 chars
+                    udid = parts[2].ToLowerInvariant();
+                }
+
+                string locationPath;
+                if (isConnected)
+                {
+                    locationPath = GetPhysicalLocationPath(pnpDeviceId, udid);
+                    if (string.IsNullOrWhiteSpace(locationPath)) return;
+                    _deviceLocationCache[pnpDeviceId] = locationPath;
+                }
+                else
+                {
+                    if (!_deviceLocationCache.TryGetValue(pnpDeviceId, out locationPath!))
+                    {
+                        locationPath = GetPhysicalLocationPath(pnpDeviceId, udid);
+                        if (string.IsNullOrWhiteSpace(locationPath)) return;
+                    }
+                    _deviceLocationCache.TryRemove(pnpDeviceId, out _);
+                }
 
                 var device = new UsbDevice
                 {
@@ -269,27 +296,13 @@ namespace Dyagnoz_Latest.Services
                     Manufacturer = "Apple Inc.",
                     Status = "OK",
                     IsAppleDevice = true,
-                    DetectedAt = DateTime.Now
+                    DetectedAt = DateTime.Now,
+                    Udid = udid
                 };
 
-                // Extract UDID from the last part of PnpDeviceId
-                string potentialUdid = parts[2].ToLowerInvariant();
-                if (potentialUdid.Length == 24 && potentialUdid.StartsWith("0000") && !potentialUdid.Contains("-"))
-                {
-                    potentialUdid = potentialUdid.Insert(8, "-");
-                }
-                if (potentialUdid.Length > 25)
-                {
-                    device.Udid = potentialUdid.ToLower();
-                }
-                else
-                {
-                    device.Udid = potentialUdid.ToUpper();
-                }
-
+                // Process active locations debounce
                 if (isConnected)
                 {
-                    // Smart Debounce logic that auto-recovers from missed disconnects
                     if (_activeLocations.TryGetValue(locationPath, out var lastConnectTime))
                     {
                         if ((DateTime.UtcNow - lastConnectTime).TotalSeconds < 2) return;
@@ -313,8 +326,26 @@ namespace Dyagnoz_Latest.Services
 
         #region SetupAPI Location Lookup
 
-        private string GetPhysicalLocationPath(string pnpDeviceId)
+        private string GetPhysicalLocationPath(string pnpDeviceId, string udid)
         {
+            // NEW NATIVE DRFONES METHOD: Use USBLib to query physical topology
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(udid))
+                {
+                    string cleanUdid = udid.Replace("-", "").ToLowerInvariant();
+                    var devices1 = USBLib.USB.GetConnectedDevices(cleanUdid, "");
+                    if (devices1 != null && devices1.Count > 0)
+                        return devices1[0].HubDevicePath + devices1[0].PortNumber;
+
+                    var devices2 = USBLib.USB.GetConnectedDevices(udid, "");
+                    if (devices2 != null && devices2.Count > 0)
+                        return devices2[0].HubDevicePath + devices2[0].PortNumber;
+                }
+            }
+            catch { }
+
+            // Fallback: SetupAPI Property Lookup
             if (string.IsNullOrWhiteSpace(pnpDeviceId)) return string.Empty;
 
             IntPtr hDevInfo = IntPtr.Zero;
@@ -391,7 +422,8 @@ namespace Dyagnoz_Latest.Services
             }
             catch { }
 
-            // Ultimate fallback to guarantee the device does not silently drop
+            // Ultimate fallback restored: Your system's USB topology does not natively expose
+            // LocationPaths for the iPhone root node. Without this, the app is 100% dead.
             return pnpDeviceId;
         }
 
