@@ -75,7 +75,7 @@ namespace Dyagnoz_Latest.Services
 
         #region Start/Stop
 
-        public async Task<bool> StartAsync()
+        public async Task<bool> StartAsync(IntPtr mainWindowHandle)
         {
             ThrowIfDisposed();
 
@@ -86,20 +86,10 @@ namespace Dyagnoz_Latest.Services
 
                 bool success = false;
 
-                // Create a message-only window for receiving hardware interrupts.
-                // MUST run on the UI thread so it has an active message pump!
+                // Attach to the existing MainWindow's HwndSource so we are guaranteed to receive broadcast messages!
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    var parameters = new HwndSourceParameters("AppleDeviceDetectorMsgWindow")
-                    {
-                        Width = 0,
-                        Height = 0,
-                        PositionX = -10000,
-                        PositionY = -10000,
-                        WindowStyle = 0
-                    };
-                    
-                    _hwndSource = new HwndSource(parameters);
+                    _hwndSource = System.Windows.Interop.HwndSource.FromHwnd(mainWindowHandle);
                     _hwndSource.AddHook(WndProc);
 
                     // Register for device notifications
@@ -130,6 +120,10 @@ namespace Dyagnoz_Latest.Services
                 }
 
                 _isRunning = true;
+
+                // Run a one-time initial scan for devices that are already plugged in
+                _ = Task.Run(() => PerformInitialScan());
+
                 return true;
             }
             catch (Exception ex)
@@ -141,6 +135,34 @@ namespace Dyagnoz_Latest.Services
             finally
             {
                 _watcherLock.Release();
+            }
+        }
+
+        private void PerformInitialScan()
+        {
+            try
+            {
+                using var searcher = new System.Management.ManagementObjectSearcher(
+                    "SELECT DeviceID FROM Win32_PnPEntity WHERE DeviceID LIKE '%VID_05AC%'");
+                
+                foreach (System.Management.ManagementBaseObject managementBaseObject in searcher.Get())
+                {
+                    if (managementBaseObject is System.Management.ManagementObject obj)
+                    {
+                        var deviceId = obj["DeviceID"]?.ToString();
+                        if (!string.IsNullOrWhiteSpace(deviceId))
+                        {
+                            // Convert standard USB\VID format to the dbccName format expected by ProcessDeviceEventAsync
+                            string dbccName = @"\\?\" + deviceId.Replace('\\', '#');
+                            ThreadPool.QueueUserWorkItem(_ => ProcessDeviceEventAsync(dbccName, true));
+                        }
+                        obj.Dispose();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                RaiseError($"Initial device scan failed: {ex.Message}");
             }
         }
 
@@ -177,7 +199,7 @@ namespace Dyagnoz_Latest.Services
                 if (_hwndSource != null)
                 {
                     _hwndSource.RemoveHook(WndProc);
-                    _hwndSource.Dispose();
+                    // Do NOT dispose _hwndSource because it belongs to MainWindow!
                     _hwndSource = null;
                 }
             });

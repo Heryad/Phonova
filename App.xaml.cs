@@ -24,7 +24,6 @@ namespace Dyagnoz_Latest
             Database = new Services.DatabaseService();
 
             await PortMapper.LoadMappingAsync();
-            await DeviceDetector.StartAsync();
         }
 
         protected override async void OnExit(ExitEventArgs e)

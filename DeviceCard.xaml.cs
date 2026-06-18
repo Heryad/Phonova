@@ -1598,6 +1598,9 @@ namespace Dyagnoz_Latest
 
         private void ComponentBadge_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+            // Do not allow toggling if there is no device connected to this port
+            if (string.IsNullOrEmpty(DeviceId)) return;
+
             if (e.ChangedButton == MouseButton.Left && sender is Border border)
             {
                 switch (border.Name)

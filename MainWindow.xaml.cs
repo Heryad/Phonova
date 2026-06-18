@@ -30,6 +30,13 @@ namespace Dyagnoz_Latest
             StartInternetCheck();
         }
 
+        protected override async void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            await App.DeviceDetector.StartAsync(hwnd);
+        }
+
         private async void InitializeDashboard()
         {
             App.DeviceDetector.DeviceConnected += OnDeviceConnected;
