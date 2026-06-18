@@ -79,40 +79,51 @@ namespace Dyagnoz_Latest.Services
         {
             ThrowIfDisposed();
 
-            await _watcherLock.WaitAsync().ConfigureAwait(false);
+            await _watcherLock.WaitAsync();
             try
             {
                 if (_isRunning) return true;
 
-                // Create a message-only window for receiving hardware interrupts
-                var parameters = new HwndSourceParameters("AppleDeviceDetectorMsgWindow")
+                bool success = false;
+
+                // Create a message-only window for receiving hardware interrupts.
+                // MUST run on the UI thread so it has an active message pump!
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    Width = 0,
-                    Height = 0,
-                    PositionX = -10000,
-                    PositionY = -10000,
-                    WindowStyle = 0
-                };
-                
-                _hwndSource = new HwndSource(parameters);
-                _hwndSource.AddHook(WndProc);
+                    var parameters = new HwndSourceParameters("AppleDeviceDetectorMsgWindow")
+                    {
+                        Width = 0,
+                        Height = 0,
+                        PositionX = -10000,
+                        PositionY = -10000,
+                        WindowStyle = 0
+                    };
+                    
+                    _hwndSource = new HwndSource(parameters);
+                    _hwndSource.AddHook(WndProc);
 
-                // Register for device notifications
-                var dbi = new DEV_BROADCAST_DEVICEINTERFACE
-                {
-                    dbcc_size = Marshal.SizeOf(typeof(DEV_BROADCAST_DEVICEINTERFACE)),
-                    dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE,
-                    dbcc_reserved = 0,
-                    dbcc_classguid = GUID_DEVINTERFACE_USB_DEVICE
-                };
+                    // Register for device notifications
+                    var dbi = new DEV_BROADCAST_DEVICEINTERFACE
+                    {
+                        dbcc_size = Marshal.SizeOf(typeof(DEV_BROADCAST_DEVICEINTERFACE)),
+                        dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE,
+                        dbcc_reserved = 0,
+                        dbcc_classguid = GUID_DEVINTERFACE_USB_DEVICE
+                    };
 
-                IntPtr buffer = Marshal.AllocHGlobal(dbi.dbcc_size);
-                Marshal.StructureToPtr(dbi, buffer, true);
+                    IntPtr buffer = Marshal.AllocHGlobal(dbi.dbcc_size);
+                    Marshal.StructureToPtr(dbi, buffer, true);
 
-                _deviceNotifyHandle = RegisterDeviceNotification(_hwndSource.Handle, buffer, DEVICE_NOTIFY_WINDOW_HANDLE);
-                Marshal.FreeHGlobal(buffer);
+                    _deviceNotifyHandle = RegisterDeviceNotification(_hwndSource.Handle, buffer, DEVICE_NOTIFY_WINDOW_HANDLE);
+                    Marshal.FreeHGlobal(buffer);
 
-                if (_deviceNotifyHandle == IntPtr.Zero)
+                    if (_deviceNotifyHandle != IntPtr.Zero)
+                    {
+                        success = true;
+                    }
+                });
+
+                if (!success)
                 {
                     RaiseError("Failed to register device notification.");
                     return false;
@@ -135,7 +146,7 @@ namespace Dyagnoz_Latest.Services
 
         public async Task StopAsync()
         {
-            await _watcherLock.WaitAsync().ConfigureAwait(false);
+            await _watcherLock.WaitAsync();
             try
             {
                 if (!_isRunning) return;
@@ -156,17 +167,20 @@ namespace Dyagnoz_Latest.Services
 
         private void CleanupWatchers()
         {
-            if (_deviceNotifyHandle != IntPtr.Zero)
+            Application.Current.Dispatcher.Invoke(() => 
             {
-                UnregisterDeviceNotification(_deviceNotifyHandle);
-                _deviceNotifyHandle = IntPtr.Zero;
-            }
-            if (_hwndSource != null)
-            {
-                _hwndSource.RemoveHook(WndProc);
-                _hwndSource.Dispose();
-                _hwndSource = null;
-            }
+                if (_deviceNotifyHandle != IntPtr.Zero)
+                {
+                    UnregisterDeviceNotification(_deviceNotifyHandle);
+                    _deviceNotifyHandle = IntPtr.Zero;
+                }
+                if (_hwndSource != null)
+                {
+                    _hwndSource.RemoveHook(WndProc);
+                    _hwndSource.Dispose();
+                    _hwndSource = null;
+                }
+            });
         }
 
         #endregion
