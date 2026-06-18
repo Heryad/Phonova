@@ -282,6 +282,9 @@ namespace Dyagnoz_Latest
                     return;
                 }
 
+                // Delay to allow Apple lockdownd service to boot fully before we begin Pairing
+                await Task.Delay(2500, ct);
+
                 // Step 1: Pair (with retries)
                 var pairOutcome = await RunWithRetryAsync(
                     stepName: "Pairing",

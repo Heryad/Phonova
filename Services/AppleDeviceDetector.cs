@@ -231,10 +231,8 @@ namespace Dyagnoz_Latest.Services
                             if (parts.Length > 1 && parts[1].Contains("vid_05ac", StringComparison.OrdinalIgnoreCase))
                             {
                                 bool isConnected = (eventType == DBT_DEVICEARRIVAL);
-                                ThreadPool.QueueUserWorkItem(async _ => 
+                                ThreadPool.QueueUserWorkItem(_ => 
                                 {
-                                    // Delay to let Apple lockdown service boot fully before pipeline starts
-                                    if (isConnected) await Task.Delay(2500);
                                     ProcessDeviceEventAsync(dbccName, isConnected);
                                 });
                             }
