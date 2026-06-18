@@ -226,10 +226,16 @@ namespace Dyagnoz_Latest.Services
                             IntPtr namePtr = new IntPtr(lParam.ToInt64() + 28);
                             string dbccName = Marshal.PtrToStringAuto(namePtr);
 
-                            if (!string.IsNullOrEmpty(dbccName) && dbccName.Contains(APPLE_VENDOR_ID, StringComparison.OrdinalIgnoreCase))
+                            string[] parts = dbccName.Split('#');
+                            if (parts.Length > 1 && parts[1].Contains("vid_05ac", StringComparison.OrdinalIgnoreCase))
                             {
                                 bool isConnected = (eventType == DBT_DEVICEARRIVAL);
-                                ThreadPool.QueueUserWorkItem(_ => ProcessDeviceEventAsync(dbccName, isConnected));
+                                ThreadPool.QueueUserWorkItem(async _ => 
+                                {
+                                    // Delay to let Apple lockdown service boot fully before pipeline starts
+                                    if (isConnected) await Task.Delay(2500);
+                                    ProcessDeviceEventAsync(dbccName, isConnected);
+                                });
                             }
                         }
                     }
@@ -362,11 +368,82 @@ namespace Dyagnoz_Latest.Services
                 if (hDevInfo != IntPtr.Zero && hDevInfo != new IntPtr(-1)) SetupDiDestroyDeviceInfoList(hDevInfo);
             }
 
+            // Fallback 1: Direct Registry Lookup
+            try
+            {
+                string? loc = GetLocationFromRegistry(@"SYSTEM\CurrentControlSet\Enum\" + pnpDeviceId);
+                if (!string.IsNullOrWhiteSpace(loc)) return loc;
+            }
+            catch { }
+
+            // Fallback 2: ParentId Prefix Lookup
+            try
+            {
+                using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Enum\" + pnpDeviceId))
+                {
+                    var parentId = key?.GetValue("ParentIdPrefix")?.ToString();
+                    if (!string.IsNullOrWhiteSpace(parentId))
+                    {
+                        string? loc = FindLocationByParentId(parentId);
+                        if (!string.IsNullOrWhiteSpace(loc)) return loc;
+                    }
+                }
+            }
+            catch { }
+
             // Ultimate fallback to guarantee the device does not silently drop
             return pnpDeviceId;
         }
 
-        // Removed Registry logic as SetupAPI is bulletproof.
+        private string? GetLocationFromRegistry(string registryPath)
+        {
+            try
+            {
+                using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(registryPath))
+                {
+                    if (key == null) return null;
+                    var locationPaths = key.GetValue("LocationPaths");
+                    if (locationPaths is string[] paths && paths.Length > 0) return paths[0];
+                    else if (locationPaths is string singlePath) return singlePath;
+                    
+                    var locInfo = key.GetValue("LocationInformation")?.ToString();
+                    if (!string.IsNullOrWhiteSpace(locInfo)) return locInfo;
+                }
+            }
+            catch { }
+            return null;
+        }
+
+        private string? FindLocationByParentId(string parentId)
+        {
+            try
+            {
+                using (var usbKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Enum\USB"))
+                {
+                    if (usbKey == null) return null;
+
+                    foreach (var vidPid in usbKey.GetSubKeyNames())
+                    {
+                        using (var vidPidKey = usbKey.OpenSubKey(vidPid))
+                        {
+                            if (vidPidKey == null) continue;
+
+                            foreach (var instance in vidPidKey.GetSubKeyNames())
+                            {
+                                if (instance.StartsWith(parentId, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    string regPath = $@"SYSTEM\CurrentControlSet\Enum\USB\{vidPid}\{instance}";
+                                    string? loc = GetLocationFromRegistry(regPath);
+                                    if (!string.IsNullOrWhiteSpace(loc)) return loc;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+            return null;
+        }
 
         #endregion
 
