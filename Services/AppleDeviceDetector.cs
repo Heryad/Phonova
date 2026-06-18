@@ -325,14 +325,29 @@ namespace Dyagnoz_Latest.Services
                     {
                         uint reqSize = 0;
                         uint dataType = 0;
-                        SetupDiGetDeviceRegistryProperty(hDevInfo, ref devInfoData, SPDRP_LOCATION_PATHS, out dataType, IntPtr.Zero, 0, out reqSize);
                         
+                        // First try SPDRP_LOCATION_PATHS (35)
+                        SetupDiGetDeviceRegistryProperty(hDevInfo, ref devInfoData, SPDRP_LOCATION_PATHS, out dataType, IntPtr.Zero, 0, out reqSize);
                         if (reqSize > 0)
                         {
                             buffer = Marshal.AllocHGlobal((int)reqSize);
                             if (SetupDiGetDeviceRegistryProperty(hDevInfo, ref devInfoData, SPDRP_LOCATION_PATHS, out dataType, buffer, reqSize, out reqSize))
                             {
-                                // REG_MULTI_SZ returns double null terminated. PtrToStringAuto reads until the first null.
+                                string? location = Marshal.PtrToStringAuto(buffer);
+                                if (!string.IsNullOrWhiteSpace(location)) return location;
+                            }
+                            Marshal.FreeHGlobal(buffer);
+                            buffer = IntPtr.Zero;
+                        }
+
+                        // Fallback to SPDRP_LOCATION_INFORMATION (13) like drfones
+                        reqSize = 0;
+                        SetupDiGetDeviceRegistryProperty(hDevInfo, ref devInfoData, 13, out dataType, IntPtr.Zero, 0, out reqSize);
+                        if (reqSize > 0)
+                        {
+                            buffer = Marshal.AllocHGlobal((int)reqSize);
+                            if (SetupDiGetDeviceRegistryProperty(hDevInfo, ref devInfoData, 13, out dataType, buffer, reqSize, out reqSize))
+                            {
                                 string? location = Marshal.PtrToStringAuto(buffer);
                                 if (!string.IsNullOrWhiteSpace(location)) return location;
                             }
@@ -347,7 +362,8 @@ namespace Dyagnoz_Latest.Services
                 if (hDevInfo != IntPtr.Zero && hDevInfo != new IntPtr(-1)) SetupDiDestroyDeviceInfoList(hDevInfo);
             }
 
-            return string.Empty;
+            // Ultimate fallback to guarantee the device does not silently drop
+            return pnpDeviceId;
         }
 
         // Removed Registry logic as SetupAPI is bulletproof.
