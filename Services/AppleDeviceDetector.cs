@@ -265,11 +265,8 @@ namespace Dyagnoz_Latest.Services
                 {
                     udid = udid.Insert(8, "-");
                 }
-                if (udid.Length <= 25)
-                {
-                    // Fallback for older devices where UDID is exactly 40 chars
-                    udid = parts[2].ToLowerInvariant();
-                }
+                
+                string finalUdid = udid.Length > 25 ? udid.ToLowerInvariant() : udid.ToUpperInvariant();
 
                 string locationPath;
                 if (isConnected)
@@ -297,7 +294,7 @@ namespace Dyagnoz_Latest.Services
                     Status = "OK",
                     IsAppleDevice = true,
                     DetectedAt = DateTime.Now,
-                    Udid = udid
+                    Udid = finalUdid
                 };
 
                 // Process active locations debounce
