@@ -510,6 +510,13 @@ namespace Dyagnoz_Latest
             var result = await Task.Run(() =>
             {
                 ct.ThrowIfCancellationRequested();
+
+                // To fix Invalid HostID (-21) errors just like drfones, we force clear the 
+                // lockdown keys and explicitly unpair before pairing.
+                _iosCommander.CleanLockDown(udid);
+                _iosCommander.UnpairDevice(udid);
+                System.Threading.Thread.Sleep(500);
+
                 return _iosCommander.PairDevice(udid);
             }, ct).ConfigureAwait(false);
 

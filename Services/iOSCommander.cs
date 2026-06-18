@@ -63,9 +63,40 @@ namespace Dyagnoz_Latest.Services
             if (PairingResulr.Contains("SUCCESS"))
                 return "Paired";
             else if (PairingResulr.Contains("ERROR"))
-            return "Error";
+                return "Error";
             else
                 return "Unexpected response from pairing process: " + PairingResulr;
+        }
+
+        public string UnpairDevice(string deviceUDID)
+        {
+            try
+            {
+                return LaunchExternalExecutable(toolboxPath + IDEVICE_PAIR, $"unpair --udid {deviceUDID}");
+            }
+            catch
+            {
+                return "Error";
+            }
+        }
+
+        public void CleanLockDown(string deviceUDID)
+        {
+            try
+            {
+                string programData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+                string lockdownPath = System.IO.Path.Combine(programData, "Apple", "Lockdown");
+                if (System.IO.Directory.Exists(lockdownPath))
+                {
+                    // Target the specific UDID if possible, otherwise clear all like drfones
+                    string specificFile = System.IO.Path.Combine(lockdownPath, $"{deviceUDID}.plist");
+                    if (System.IO.File.Exists(specificFile))
+                    {
+                        System.IO.File.Delete(specificFile);
+                    }
+                }
+            }
+            catch { }
         }
 
         public string GetDeviceInfo(string deviceUDID)
