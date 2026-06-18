@@ -450,7 +450,7 @@ namespace Dyagnoz_Latest
             PlaceCell(this.lblSIM, divX + 1f, tableY + rowH * 3, col2W, rowH);
  
             // ── Footer row ────────────────────────────────────────────────────────────
-            PlaceCell(this.lblDate, tableX, footerY, colAW, footerRowH);
+            PlaceCell(this.lblCust, tableX, footerY, colAW, footerRowH);
  
             this.lblTester = new XRLabel();
             this.lblTester.Font = new Font("Tahoma", 6.5f, FontStyle.Bold);
@@ -462,8 +462,8 @@ namespace Dyagnoz_Latest
             this.lblTester.BackColor = Color.Transparent;
             ((XRControl)this.Detail).Controls.Add(this.lblTester);
  
-            PlaceCell(this.lblCust, divBX + 1f, footerY, colCW, footerRowH, (TextAlignment)16);
-            this.lblCust.Font = new Font("Tahoma", 6.5f, FontStyle.Bold);
+            PlaceCell(this.lblDate, divBX + 1f, footerY, colCW, footerRowH, (TextAlignment)16);
+            this.lblDate.Font = new Font("Tahoma", 6.5f, FontStyle.Bold);
  
             // ── Below-table strip: Notes — now merged ─────────────────────
             float notesY = footerY + footerRowH;
