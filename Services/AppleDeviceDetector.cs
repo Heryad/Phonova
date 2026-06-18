@@ -305,7 +305,6 @@ namespace Dyagnoz_Latest.Services
 
         #endregion
 
-        #region Registry Location Lookup
         #region SetupAPI Location Lookup
 
         private string GetPhysicalLocationPath(string pnpDeviceId)
