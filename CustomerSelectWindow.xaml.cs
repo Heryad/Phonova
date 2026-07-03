@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Dyagnoz_Latest.Services;
+using Phonova.Services;
 
-namespace Dyagnoz_Latest
+namespace Phonova
 {
     public partial class CustomerSelectWindow : Window
     {

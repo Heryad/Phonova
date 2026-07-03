@@ -7,7 +7,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Printing;
 
-namespace Dyagnoz_Latest
+namespace Phonova
 {
     public class SimpleLabel : XtraReport
     {

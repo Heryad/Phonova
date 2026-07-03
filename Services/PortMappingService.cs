@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Dyagnoz_Latest.Models;
+using Phonova.Models;
 
-namespace Dyagnoz_Latest.Services
+namespace Phonova.Services
 {
     /// <summary>
     /// High-performance port mapping service with learning mode.
@@ -62,7 +62,7 @@ namespace Dyagnoz_Latest.Services
         {
             // Use ProgramData for system-wide read/write access (Standard for installed apps)
             var programData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-            var dyagnozDataFolder = Path.Combine(programData, "Dyagnoz");
+            var dyagnozDataFolder = Path.Combine(programData, "Phonova");
 
             try
             {

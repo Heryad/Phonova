@@ -3,7 +3,7 @@ using System.IO;
 using System.Text.Json;
 using System.Diagnostics;
 
-namespace Dyagnoz_Latest.Services
+namespace Phonova.Services
 {
     public class AppSettings
     {
@@ -31,7 +31,7 @@ namespace Dyagnoz_Latest.Services
 
     public class SettingsManager
     {
-        private static readonly string ConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Dyagnoz", "GlobalSettings.json");
+        private static readonly string ConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Phonova", "GlobalSettings.json");
         private static AppSettings _current;
 
         public static AppSettings Current

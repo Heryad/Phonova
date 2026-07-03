@@ -1,4 +1,4 @@
-namespace Dyagnoz_Latest.Models
+namespace Phonova.Models
 {
     public class UsbDevice
     {

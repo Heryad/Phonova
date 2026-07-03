@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dyagnoz_Latest.Services
+namespace Phonova.Services
 {
     public class IosCommandResult
     {

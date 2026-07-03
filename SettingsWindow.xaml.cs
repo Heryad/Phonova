@@ -4,14 +4,14 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Dyagnoz_Latest.Services;
+using Phonova.Services;
 using MaterialDesignThemes.Wpf;
 using System.IO;
 using System.Text;
 using Microsoft.Win32;
 using DevExpress.XtraReports.UI;
 
-namespace Dyagnoz_Latest
+namespace Phonova
 {
     public partial class SettingsWindow : Window
     {
@@ -25,7 +25,7 @@ namespace Dyagnoz_Latest
         public SettingsWindow()
         {
             InitializeComponent();
-            _configPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Dyagnoz");
+            _configPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Phonova");
             if (!System.IO.Directory.Exists(_configPath)) System.IO.Directory.CreateDirectory(_configPath);
             _activeNavButton = NavDashboard;
             
@@ -1419,7 +1419,7 @@ namespace Dyagnoz_Latest
 
             if (data.Count > 1)
             {
-                var polyline = new System.Windows.Shapes.Polyline { Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#007dfd")), StrokeThickness = 2, StrokeLineJoin = PenLineJoin.Round };
+                var polyline = new System.Windows.Shapes.Polyline { Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#027dfe")), StrokeThickness = 2, StrokeLineJoin = PenLineJoin.Round };
                 for (int i = 0; i < data.Count; i++)
                 {
                     double x = i * spacing;
@@ -1435,7 +1435,7 @@ namespace Dyagnoz_Latest
                 double y = height - ((data[i].Value / maxVal) * height) + 10;
 
                 // Point Circle
-                var dot = new System.Windows.Shapes.Ellipse { Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#007dfd")), Width = 6, Height = 6 };
+                var dot = new System.Windows.Shapes.Ellipse { Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#027dfe")), Width = 6, Height = 6 };
                 Canvas.SetLeft(dot, x - 3);
                 Canvas.SetTop(dot, y - 3);
                 LineChartCanvas.Children.Add(dot);

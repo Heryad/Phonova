@@ -5,7 +5,7 @@ using System.IO;
 using System.Text.Json;
 using System.Data.SQLite;
 
-namespace Dyagnoz_Latest.Services
+namespace Phonova.Services
 {
     public class DatabaseService
     {
@@ -14,10 +14,10 @@ namespace Dyagnoz_Latest.Services
 
         public DatabaseService()
         {
-            string appData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Dyagnoz");
+            string appData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Phonova");
             if (!Directory.Exists(appData)) Directory.CreateDirectory(appData);
             
-            _dbPath = Path.Combine(appData, "dyagnoz.db");
+            _dbPath = Path.Combine(appData, "phonova.db");
             _connectionString = $"Data Source={_dbPath};Version=3;";
             
             InitializeDatabase();

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Dyagnoz.Models
+namespace Phonova.Models
 {
     public static class DeviceColorMap
     {

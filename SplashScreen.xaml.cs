@@ -5,10 +5,10 @@ using System.Windows.Media.Animation;
 using System.Threading;
 using System.Diagnostics;
 
-namespace Dyagnoz_Latest
+namespace Phonova
 {
     /// <summary>
-    /// A spectacular animated splash screen for Dyagnoz application
+    /// A spectacular animated splash screen for Phonova application
     /// </summary>
     public partial class SplashScreen : Window
     {
@@ -36,7 +36,7 @@ namespace Dyagnoz_Latest
 
         private void CheckInstances()
         {
-            const string mutexName = "Global\\Dyagnoz-SingleInstance-Mutex";
+            const string mutexName = "Global\\Phonova-SingleInstance-Mutex";
             _mutex = new Mutex(true, mutexName, out bool createdNew);
 
             if (!createdNew)

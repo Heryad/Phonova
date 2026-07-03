@@ -4,9 +4,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Dyagnoz_Latest.Services;
+using Phonova.Services;
 
-namespace Dyagnoz_Latest
+namespace Phonova
 {
     public partial class PortMapWindow : Window
     {
@@ -147,7 +147,7 @@ namespace Dyagnoz_Latest
                     if (icon != null) icon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Play;
                     
                     // Revert to original Green
-                    StartLearningBtn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#007dfd")); // BrandGreen
+                    StartLearningBtn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#027dfe")); // BrandPrimary
 
                     UpdateStatus("Ready", false);
                 }

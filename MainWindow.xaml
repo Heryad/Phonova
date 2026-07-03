@@ -1,11 +1,11 @@
-<Window x:Class="Dyagnoz_Latest.MainWindow"
+<Window x:Class="Phonova.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
-        xmlns:local="clr-namespace:Dyagnoz_Latest"
+        xmlns:local="clr-namespace:Phonova"
         mc:Ignorable="d"
         Title="Phonova - Dashboard" 
         WindowStyle="None"
@@ -17,7 +17,7 @@
     <Window.Resources>
         <!-- Colors -->
         <SolidColorBrush x:Key="SidebarDarkBrush" Color="#1E293B"/>
-        <SolidColorBrush x:Key="BrandGreenBrush" Color="#007dfd"/>
+        <SolidColorBrush x:Key="BrandPrimaryBrush" Color="#027dfe"/>
         <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1A1A2E"/>
         <SolidColorBrush x:Key="TextSecondaryBrush" Color="#6B7280"/>
         <SolidColorBrush x:Key="BorderColorBrush" Color="#E5E7EB"/>
@@ -55,7 +55,7 @@
 
         <!-- Green Icon Button -->
         <Style x:Key="GreenIconBtn" TargetType="Button" BasedOn="{StaticResource IconBtn}">
-            <Setter Property="Background" Value="#007dfd"/>
+            <Setter Property="Background" Value="#027dfe"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -126,7 +126,7 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
                     <Border Background="#334155" CornerRadius="4" Padding="10,6">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="CellphoneLink" Width="16" Height="16" Foreground="#007dfd" VerticalAlignment="Center"/>
+                            <materialDesign:PackIcon Kind="CellphoneLink" Width="16" Height="16" Foreground="#027dfe" VerticalAlignment="Center"/>
                             <TextBlock x:Name="DeviceCountText" Text="0" FontSize="13" FontWeight="SemiBold" Foreground="White" Margin="6,0,0,0" VerticalAlignment="Center"/>
                             <TextBlock Text="devices" FontSize="11" Foreground="#94A3B8" Margin="4,0,0,0" VerticalAlignment="Center"/>
                             <TextBlock Text="•" FontSize="11" Foreground="#475569" Margin="8,0" VerticalAlignment="Center"/>
@@ -168,7 +168,7 @@
 
                     <Button x:Name="HeaderCustomerBtn" Style="{StaticResource IconBtn}" Width="Auto" Padding="12,0" ToolTip="Select Customer" Click="HeaderCustomerBtn_Click">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Account" Width="16" Height="16" VerticalAlignment="Center" Foreground="#007dfd"/>
+                            <materialDesign:PackIcon Kind="Account" Width="16" Height="16" VerticalAlignment="Center" Foreground="#027dfe"/>
                             <TextBlock x:Name="HeaderCustomerText" Text="Select Customer" FontSize="12" Margin="6,0,12,0" VerticalAlignment="Center" Foreground="White"/>
                         </StackPanel>
                     </Button>

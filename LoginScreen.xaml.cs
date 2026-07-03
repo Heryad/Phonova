@@ -2,7 +2,7 @@ using System.Windows;
 using System.Windows.Input;
 using MaterialDesignThemes.Wpf;
 
-namespace Dyagnoz_Latest
+namespace Phonova
 {
     public partial class LoginScreen : Window
     {

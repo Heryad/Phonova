@@ -16,7 +16,7 @@
     <Version>1.0.0.0</Version>
     <AssemblyTitle>Dyagnoz Professional Diagnostic Suite</AssemblyTitle>
     <Company>Heryad</Company>
-    <Product>Dyagnoz-Latest</Product>
+    <Product>Phonova</Product>
     <Description>Professional diagnostic and reporting tool for iOS devices.</Description>
     <Copyright>Copyright © 2026 Heryad</Copyright>
   </PropertyGroup>

@@ -7,9 +7,9 @@ using System.Linq;
 using DevExpress.XtraPrinting;
 using DevExpress.XtraPrinting.Drawing;
 using DevExpress.XtraReports.UI;
-using Dyagnoz_Latest.Services;
+using Phonova.Services;
 
-namespace Dyagnoz_Latest.Labels
+namespace Phonova.Labels
 {
     public class DeviceCertificate : XtraReport
     {

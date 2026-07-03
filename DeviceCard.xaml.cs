@@ -1,4 +1,4 @@
-using Dyagnoz_Latest.Services;
+using Phonova.Services;
 using System;
 using System.Diagnostics;
 using System.Text.Json;
@@ -15,7 +15,7 @@ using System.Xml;
 using DevExpress.XtraReports.UI;
 using System.Windows.Input;
 
-namespace Dyagnoz_Latest
+namespace Phonova
 {
     public partial class DeviceCard : UserControl
     {
@@ -643,7 +643,7 @@ namespace Dyagnoz_Latest
         {
             try
             {
-                string configPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Dyagnoz", "wifi-sys.mobileconfig");
+                string configPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Phonova", "wifi-sys.mobileconfig");
                 if (!System.IO.File.Exists(configPath))
                 {
                     Debug.WriteLine($"[Port {PortNumber}] WiFi config file missing at: {configPath}");
@@ -1243,7 +1243,7 @@ namespace Dyagnoz_Latest
             // Device name (header) + storage
             try
             {
-                var friendlyName = Dyagnoz.Models.DeviceModelMap.GetShortDeviceName(ProductType);
+                var friendlyName = Phonova.Models.DeviceModelMap.GetShortDeviceName(ProductType);
                 var storageLabel = GetRoundedStorageLabel(TotalDiskCapacity);
                 
                 if (!string.IsNullOrWhiteSpace(friendlyName))
@@ -1282,11 +1282,11 @@ namespace Dyagnoz_Latest
             // Color (marketing name) based on ProductType + enclosure code
             try
             {
-                var colorName = Dyagnoz.Models.DeviceColorMap.GetColorName(ProductType, DeviceEnclosureColor);
+                var colorName = Phonova.Models.DeviceColorMap.GetColorName(ProductType, DeviceEnclosureColor);
                 if (!string.IsNullOrWhiteSpace(colorName))
                     ColorText.Text = colorName;
 
-                var hex = Dyagnoz.Models.DeviceColorMap.GetColorHex(ProductType, DeviceEnclosureColor);
+                var hex = Phonova.Models.DeviceColorMap.GetColorHex(ProductType, DeviceEnclosureColor);
                 if (!string.IsNullOrWhiteSpace(hex) && hex != "Transparent")
                 {
                     try
@@ -1643,7 +1643,7 @@ namespace Dyagnoz_Latest
 
             try
             {
-                var friendlyName = Dyagnoz.Models.DeviceModelMap.GetShortDeviceName(ProductType);
+                var friendlyName = Phonova.Models.DeviceModelMap.GetShortDeviceName(ProductType);
                 var storageLabel = GetRoundedStorageLabel(TotalDiskCapacity);
                 string productTitle = !string.IsNullOrWhiteSpace(friendlyName) ? $"{friendlyName} {storageLabel}" : ProductType;
 
@@ -1721,7 +1721,7 @@ namespace Dyagnoz_Latest
                 }
 
                 // Map Color and SIM Name
-                var displayColor = Dyagnoz.Models.DeviceColorMap.GetColorName(ProductType, DeviceEnclosureColor);
+                var displayColor = Phonova.Models.DeviceColorMap.GetColorName(ProductType, DeviceEnclosureColor);
                 var displaySim = SIMStatus == "kCTSIMSupportSIMStatusReady" ? "Unlocked" : "Locked";
                 bool isSynced = (sender == null || StatusText.Text == "Finished");
 
@@ -1773,7 +1773,7 @@ namespace Dyagnoz_Latest
         {
             try
             {
-                var friendlyName = Dyagnoz.Models.DeviceModelMap.GetShortDeviceName(ProductType);
+                var friendlyName = Phonova.Models.DeviceModelMap.GetShortDeviceName(ProductType);
                 var storageLabel = GetRoundedStorageLabel(TotalDiskCapacity);
                 string deviceName = !string.IsNullOrWhiteSpace(friendlyName) ? $"{friendlyName}" : DeviceId;
 
@@ -1856,10 +1856,10 @@ namespace Dyagnoz_Latest
         {
             if (string.IsNullOrEmpty(DeviceId)) return;
 
-            string configPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Dyagnoz", "wifi-sys.mobileconfig");
+            string configPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Phonova", "wifi-sys.mobileconfig");
             if (!System.IO.File.Exists(configPath))
             {
-                MessageBox.Show("WiFi config file not found in ProgramData\\Dyagnoz\\", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("WiFi config file not found in ProgramData\\Phonova\\", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -1911,7 +1911,7 @@ namespace Dyagnoz_Latest
                     Debug.WriteLine($"[Port {PortNumber}] Skipping manual save as it was already saved.");
                     return;
                 }
-                var friendlyName = Dyagnoz.Models.DeviceModelMap.GetShortDeviceName(ProductType);
+                var friendlyName = Phonova.Models.DeviceModelMap.GetShortDeviceName(ProductType);
                 var storageLabel = GetRoundedStorageLabel(TotalDiskCapacity);
                 string deviceName = !string.IsNullOrWhiteSpace(friendlyName) ? $"{friendlyName}" : DeviceId;
 

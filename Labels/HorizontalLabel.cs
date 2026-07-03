@@ -12,7 +12,7 @@ using System.Windows;
 using FontStyle = System.Drawing.FontStyle;
 using TextAlignment = DevExpress.XtraPrinting.TextAlignment;
  
-namespace Dyagnoz_Latest
+namespace Phonova
 {
     public class HorizontalLabel : XtraReport
     {

@@ -6,10 +6,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Interop;
 using Microsoft.Win32;
-using Dyagnoz_Latest.Models;
+using Phonova.Models;
 using System.Windows;
 
-namespace Dyagnoz_Latest.Services
+namespace Phonova.Services
 {
     /// <summary>
     /// Event arguments for Apple device connection/disconnection events

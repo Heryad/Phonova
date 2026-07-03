@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Dyagnoz.Models
+namespace Phonova.Models
 {
     /// <summary>
     /// Maps Apple device model identifiers (e.g., iPhone14,6) to their marketing names (e.g., iPhone SE 3rd Gen)

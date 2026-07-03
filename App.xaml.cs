@@ -1,9 +1,9 @@
 using System.Configuration;
 using System.Data;
 using System.Windows;
-using Dyagnoz_Latest.Services;
+using Phonova.Services;
 
-namespace Dyagnoz_Latest
+namespace Phonova
 {
     /// <summary>
     /// Interaction logic for App.xaml

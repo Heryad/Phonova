@@ -4,12 +4,12 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Text.Json;
-using Dyagnoz_Latest.Services;
+using Phonova.Services;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Media;
 
-namespace Dyagnoz_Latest
+namespace Phonova
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

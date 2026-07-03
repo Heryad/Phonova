@@ -4,10 +4,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Linq;
-using Dyagnoz_Latest.Services;
+using Phonova.Services;
 using MaterialDesignThemes.Wpf;
 
-namespace Dyagnoz_Latest
+namespace Phonova
 {
     public partial class TestResultsWindow : Window
     {
@@ -104,7 +104,7 @@ namespace Dyagnoz_Latest
             try {
                 // Use the shared mapping logic from DeviceColorMap
                 // Prefer EnclosureCode if productType is present, otherwise fallback to marketing name
-                string hex = Dyagnoz.Models.DeviceColorMap.GetColorHex(productType, enclosureCode ?? color);
+                string hex = Phonova.Models.DeviceColorMap.GetColorHex(productType, enclosureCode ?? color);
                 
                 if (!string.IsNullOrWhiteSpace(hex) && hex != "Transparent")
                 {

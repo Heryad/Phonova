@@ -1,4 +1,4 @@
-using Dyagnoz_Latest.Models;
+using Phonova.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dyagnoz_Latest.Services
+namespace Phonova.Services
 {
     internal class iOSCommander
     {
@@ -34,7 +34,7 @@ namespace Dyagnoz_Latest.Services
             {
                 try
                 {
-                    string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Dyagnoz", "wifi-sys.mobileconfig");
+                    string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Phonova", "wifi-sys.mobileconfig");
                     if (File.Exists(filePath))
                     {
                         string content = File.ReadAllText(filePath);
@@ -223,7 +223,7 @@ namespace Dyagnoz_Latest.Services
 
         public async Task<string> PushTestConfigurationProfileAsync(string deviceUDID)
         {
-            string testConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Dyagnoz", "CustomTestList.json");
+            string testConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Phonova", "CustomTestList.json");
             if (!File.Exists(testConfigPath))
             {   
                 Debug.WriteLine("[WARN] Config file not found, skipping push.");
