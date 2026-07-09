@@ -33,7 +33,6 @@ namespace Phonova
             
             LoadAndEnsureTestProfile();
             LoadTestListUI();
-            LoadCommentsTable();
             LoadSavedProfiles();
             SyncSettingsToUi();
             LoadDashboardStats();
@@ -649,6 +648,9 @@ namespace Phonova
             }
         }
         
+        private string? _editingCommentId = null;
+        private string? _editingComment = null;
+
         // Comments CRUD
         private async void LoadCommentsTable()
         {
@@ -660,14 +662,34 @@ namespace Phonova
             {
                 var grid = new Grid { Margin = new Thickness(0, 0, 0, 1) };
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) });
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
 
                 var textBorder = new Border { Background = Brushes.White, Padding = new Thickness(12, 10, 12, 10) };
                 textBorder.Child = new TextBlock { Text = comment.content, FontSize = 13, VerticalAlignment = VerticalAlignment.Center };
                 Grid.SetColumn(textBorder, 0);
                 grid.Children.Add(textBorder);
 
-                var actionBorder = new Border { Background = Brushes.White, Padding = new Thickness(12, 10, 12, 10) };
+                var actionBorder = new Border { Background = Brushes.White, Padding = new Thickness(12, 10, 12, 10), HorizontalAlignment = HorizontalAlignment.Center };
+                var actionStack = new StackPanel { Orientation = Orientation.Horizontal };
+
+                // Edit Button
+                var editBtn = new Button
+                {
+                    Content = new PackIcon { Kind = PackIconKind.Pencil, Width = 18, Height = 18 },
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F59E0B")),
+                    Background = Brushes.Transparent,
+                    BorderThickness = new Thickness(0),
+                    Width = 32,
+                    Height = 32,
+                    Padding = new Thickness(0),
+                    Tag = comment,
+                    Cursor = System.Windows.Input.Cursors.Hand,
+                    Margin = new Thickness(0, 0, 8, 0)
+                };
+                editBtn.Click += EditComment_Click;
+                actionStack.Children.Add(editBtn);
+
+                // Delete Button
                 var deleteBtn = new Button
                 {
                     Content = new PackIcon { Kind = PackIconKind.Delete, Width = 18, Height = 18 },
@@ -681,7 +703,9 @@ namespace Phonova
                     Cursor = System.Windows.Input.Cursors.Hand
                 };
                 deleteBtn.Click += DeleteComment_Click;
-                actionBorder.Child = deleteBtn;
+                actionStack.Children.Add(deleteBtn);
+
+                actionBorder.Child = actionStack;
                 Grid.SetColumn(actionBorder, 1);
                 grid.Children.Add(actionBorder);
 
@@ -694,9 +718,43 @@ namespace Phonova
             string newComment = NewCommentBox.Text?.Trim() ?? "";
             if (string.IsNullOrWhiteSpace(newComment)) return;
 
-            await ApiService.AddCommentAsync(newComment);
-            NewCommentBox.Text = "";
+            if (!string.IsNullOrEmpty(_editingCommentId))
+            {
+                await ApiService.UpdateCommentAsync(_editingCommentId, newComment);
+                _editingComment = null;
+                _editingCommentId = null;
+                NewCommentBox.Text = "";
+                AddCommentBtnText.Text = "Add";
+                CancelEditCommentBtn.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                await ApiService.AddCommentAsync(newComment);
+                NewCommentBox.Text = "";
+            }
             LoadCommentsTable();
+        }
+
+        private void EditComment_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is ApiService.CommentModel comment)
+            {
+                _editingComment = comment.content;
+                _editingCommentId = comment.id;
+                NewCommentBox.Text = comment.content;
+                AddCommentBtnText.Text = "Update";
+                CancelEditCommentBtn.Visibility = Visibility.Visible;
+                NewCommentBox.Focus();
+            }
+        }
+
+        private void CancelEditCommentBtn_Click(object sender, RoutedEventArgs e)
+        {
+            _editingComment = null;
+            _editingCommentId = null;
+            NewCommentBox.Text = "";
+            AddCommentBtnText.Text = "Add";
+            CancelEditCommentBtn.Visibility = Visibility.Collapsed;
         }
 
         private async void DeleteComment_Click(object sender, RoutedEventArgs e)
@@ -706,6 +764,10 @@ namespace Phonova
                 if (MessageBox.Show($"Are you sure you want to delete '{comment.content}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
                     await ApiService.DeleteCommentAsync(comment.id);
+                    if (_editingCommentId == comment.id)
+                    {
+                        CancelEditCommentBtn_Click(sender, e);
+                    }
                     LoadCommentsTable();
                 }
             }

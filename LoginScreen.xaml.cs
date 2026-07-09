@@ -44,6 +44,19 @@ namespace Phonova
                 Phonova.Services.SettingsManager.Current.SavedCompanyEmail = companyEmail;
                 Phonova.Services.SettingsManager.Save();
                 
+                try
+                {
+                    var config = await Phonova.Services.ApiService.GetConfigAsync();
+                    if (config != null)
+                    {
+                        Phonova.Services.ApiService.CurrentConfig = config.Client;
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error fetching config on login: {ex.Message}");
+                }
+
                 var mainWindow = new MainWindow();
                 mainWindow.Show();
                 this.Close();

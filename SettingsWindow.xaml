@@ -455,15 +455,19 @@
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <Border Grid.Column="0" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="6" Background="White" Margin="0,0,8,0">
                                                 <TextBox x:Name="NewCommentBox" BorderThickness="0" Padding="12,10" FontSize="13" VerticalAlignment="Center" materialDesign:HintAssist.Hint="Enter new comment template..."/>
                                             </Border>
-                                            <Button Grid.Column="1" Style="{StaticResource ActionBtn}" Click="AddCommentBtn_Click">
+                                            <Button Grid.Column="1" x:Name="AddCommentBtn" Style="{StaticResource ActionBtn}" Click="AddCommentBtn_Click">
                                                 <StackPanel Orientation="Horizontal">
                                                     <materialDesign:PackIcon Kind="Plus" Width="16" Height="16" VerticalAlignment="Center"/>
-                                                    <TextBlock Text="Add" Margin="8,0,0,0"/>
+                                                    <TextBlock x:Name="AddCommentBtnText" Text="Add" Margin="8,0,0,0"/>
                                                 </StackPanel>
+                                            </Button>
+                                            <Button Grid.Column="2" x:Name="CancelEditCommentBtn" Style="{StaticResource SecondaryBtn}" Margin="8,0,0,0" Visibility="Collapsed" Click="CancelEditCommentBtn_Click">
+                                                <TextBlock Text="Cancel" />
                                             </Button>
                                         </Grid>
                                         <!-- Comments table -->
@@ -477,7 +481,7 @@
                                                 <Grid Grid.Row="0" Background="#F9FAFB">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="80"/>
+                                                        <ColumnDefinition Width="120"/>
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock Grid.Column="0" Text="Comment" FontWeight="SemiBold" Padding="12,10"/>
                                                     <TextBlock Grid.Column="1" Text="Actions" FontWeight="SemiBold" Padding="12,10"/>

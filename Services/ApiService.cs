@@ -30,6 +30,7 @@ namespace Phonova.Services
         private static readonly HttpClient _httpClient;
         public static string CurrentToken { get; private set; }
         public static string Username { get; set; }
+        public static ClientConfigModel? CurrentConfig { get; set; }
 
         static ApiService()
         {
@@ -251,5 +252,33 @@ namespace Phonova.Services
         public static async Task<bool> AddCustomerAsync(string name, string phone = "") => await PostAsync("/desktop/customers", new { name, phone });
         public static async Task<bool> UpdateCustomerAsync(string id, string name, string phone = "") => await PutAsync($"/desktop/customers/{id}", new { name, phone });
         public static async Task<bool> DeleteCustomerAsync(string id) => await DeleteAsync($"/desktop/customers/{id}");
+
+        // --- Config / Sync ---
+        public class ClientConfigModel
+        {
+            public string companyName { get; set; } = string.Empty;
+            public string? logoUrl { get; set; }
+            public int fuel { get; set; }
+            public bool isUnlimitedTesting { get; set; }
+            public string? unlimitedTestingEndDate { get; set; }
+            public int maxConcurrentDevices { get; set; }
+            public bool canDoMMR { get; set; }
+            public bool canDoRecovery { get; set; }
+            public bool canDoBlacklistCheck { get; set; }
+            public bool canDoSimLockCheck { get; set; }
+            public bool canDoMDMCheck { get; set; }
+            public bool canFlashSoftware { get; set; }
+        }
+
+        public class ConfigResponse
+        {
+            [JsonProperty("client")]
+            public ClientConfigModel Client { get; set; }
+        }
+
+        public static async Task<ConfigResponse?> GetConfigAsync()
+        {
+            return await GetAsync<ConfigResponse>("/desktop/sync/config");
+        }
     }
 }

@@ -49,6 +49,29 @@ namespace Phonova
             UpdateSelectedCount();  
             UpdateCustomerHeaderUi();  
             UpdateMmrHeaderVisibility();
+            UpdateCompanyAndFuelUi();
+        }
+
+        private void UpdateCompanyAndFuelUi()
+        {
+            var config = ApiService.CurrentConfig;
+            if (config != null)
+            {
+                CompanyText.Text = config.companyName;
+                if (config.isUnlimitedTesting)
+                {
+                    FuelText.Text = "Unlimited Fuel";
+                }
+                else
+                {
+                    FuelText.Text = $"Fuel: {config.fuel}";
+                }
+            }
+            else
+            {
+                CompanyText.Text = "Unknown Client";
+                FuelText.Text = "Fuel: --";
+            }
         }
 
         private void OnDeviceConnected(object? sender, AppleDeviceEventArgs e)
