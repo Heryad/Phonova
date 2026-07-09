@@ -13,25 +13,37 @@ namespace Phonova
             InitializeComponent();
         }
 
-        private void LoginButton_Click(object sender, RoutedEventArgs e)
+        private async void LoginButton_Click(object sender, RoutedEventArgs e)
         {
             string username = UsernameBox.Text;
-            string selectedTestor = TestorComboBox.Text;
+            string companyEmail = CompanyEmailBox.Text;
             string password = PasswordBox.Password;
 
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(selectedTestor) || string.IsNullOrEmpty(password))
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(companyEmail) || string.IsNullOrEmpty(password))
             {
-                MessageBox.Show("Please enter Username, Password and select a Tester to proceed.", 
-                    "Access Denied", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                MessageBox.Show("Please enter Company Email, Username, and Password.", 
+                    "Validation Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                 return;
             }
 
-            // TODO: Validate credentials against database
-            
-            // Open main window and close login
-            var mainWindow = new MainWindow();
-            mainWindow.Show();
-            this.Close();
+            var btnContent = ((System.Windows.Controls.Button)sender).Content;
+            ((System.Windows.Controls.Button)sender).Content = "Signing in...";
+            ((System.Windows.Controls.Button)sender).IsEnabled = false;
+
+            var response = await Phonova.Services.ApiService.LoginAsync(companyEmail, username, password);
+
+            if (!string.IsNullOrEmpty(response.Token))
+            {
+                var mainWindow = new MainWindow();
+                mainWindow.Show();
+                this.Close();
+            }
+            else
+            {
+                ((System.Windows.Controls.Button)sender).Content = btnContent;
+                ((System.Windows.Controls.Button)sender).IsEnabled = true;
+                MessageBox.Show(response.Error ?? "Login failed.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)

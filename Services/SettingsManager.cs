@@ -7,6 +7,9 @@ namespace Phonova.Services
 {
     public class AppSettings
     {
+        // API Configuration
+        public string ApiBaseUrl { get; set; } = "https://phonova-api.vercel.app";
+
         // Test Flow
         public bool FullTest { get; set; } = true;
         public bool ActivationOnly { get; set; } = false;

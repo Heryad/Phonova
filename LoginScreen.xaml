@@ -403,21 +403,16 @@
                             </Button>
                         </Grid>
 
-                        <!-- Workstation -->
-                        <TextBlock Text="Workstation / Tester" 
+                        <!-- Company Email -->
+                        <TextBlock Text="Company Email" 
                                    FontSize="12"
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource TextSecondaryBrush}"
                                    FontFamily="Segoe UI"
                                    Margin="0,0,0,6"/>
                         <Grid Margin="0,0,0,24">
-                            <ComboBox x:Name="TestorComboBox" Style="{StaticResource CleanComboBox}">
-                                <ComboBoxItem Content="Tester Station A1" IsSelected="True"/>
-                                <ComboBoxItem Content="Tester Station A2"/>
-                                <ComboBoxItem Content="Tester Station B1"/>
-                                <ComboBoxItem Content="Lab Supervisor Terminal"/>
-                            </ComboBox>
-                            <materialDesign:PackIcon Kind="Monitor" 
+                            <TextBox x:Name="CompanyEmailBox" Style="{StaticResource CleanInput}"/>
+                            <materialDesign:PackIcon Kind="EmailOutline" 
                                                    Width="18" Height="18"
                                                    Foreground="{StaticResource TextSecondaryBrush}"
                                                    VerticalAlignment="Center"
