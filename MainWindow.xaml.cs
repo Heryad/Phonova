@@ -37,6 +37,8 @@ namespace Phonova
             await App.DeviceDetector.StartAsync(hwnd);
         }
 
+        private bool _wasConnected = false;
+
         private async void InitializeDashboard()
         {
             App.DeviceDetector.DeviceConnected += OnDeviceConnected;
@@ -50,6 +52,59 @@ namespace Phonova
             UpdateCustomerHeaderUi();  
             UpdateMmrHeaderVisibility();
             UpdateCompanyAndFuelUi();
+
+            // Wire up offline sync events
+            OfflineSyncManager.Instance.QueueChanged += OnSyncQueueChanged;
+            OfflineSyncManager.Instance.SyncSucceeded += OnSyncSucceeded;
+            OfflineSyncManager.Instance.FuelExhausted += OnFuelExhausted;
+
+            // Trigger immediate sync if there are any cached pending items from a previous session
+            if (OfflineSyncManager.Instance.PendingCount > 0)
+            {
+                OnSyncQueueChanged(OfflineSyncManager.Instance.PendingCount);
+                _ = Task.Run(() => OfflineSyncManager.Instance.TrySyncAsync());
+            }
+        }
+
+        private void OnSyncQueueChanged(int pendingCount)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (pendingCount > 0)
+                {
+                    SyncStatusText.Text = $"• {pendingCount} pending";
+                    SyncStatusText.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    SyncStatusText.Visibility = Visibility.Collapsed;
+                }
+            });
+        }
+
+        private void OnFuelExhausted(int required, int available)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                FuelBannerHeldText.Text = $"{OfflineSyncManager.Instance.PendingCount} tests held";
+                FuelBannerSubText.Text = $"Your account has run out of fuel ({available} available, {required} required). Test results are being held locally and will sync automatically once fuel is added.";
+                FuelBanner.Visibility = Visibility.Visible;
+            });
+        }
+
+        private void OnSyncSucceeded(int? remainingFuel)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                // Hide the fuel banner on successful sync
+                FuelBanner.Visibility = Visibility.Collapsed;
+
+                if (remainingFuel.HasValue && ApiService.CurrentConfig != null)
+                {
+                    ApiService.CurrentConfig.fuel = remainingFuel.Value;
+                    UpdateCompanyAndFuelUi();
+                }
+            });
         }
 
         private void UpdateCompanyAndFuelUi()
@@ -66,11 +121,35 @@ namespace Phonova
                 {
                     FuelText.Text = $"Fuel: {config.fuel}";
                 }
+
+                if (!string.IsNullOrEmpty(config.logoUrl))
+                {
+                    try
+                    {
+                        var uri = new Uri(config.logoUrl, UriKind.Absolute);
+                        var bmi = new System.Windows.Media.Imaging.BitmapImage(uri);
+                        CompanyLogoImage.Source = bmi;
+                        CompanyLogoImage.Visibility = Visibility.Visible;
+                        CompanyLogoPlaceholder.Visibility = Visibility.Collapsed;
+                    }
+                    catch
+                    {
+                        CompanyLogoImage.Visibility = Visibility.Collapsed;
+                        CompanyLogoPlaceholder.Visibility = Visibility.Visible;
+                    }
+                }
+                else
+                {
+                    CompanyLogoImage.Visibility = Visibility.Collapsed;
+                    CompanyLogoPlaceholder.Visibility = Visibility.Visible;
+                }
             }
             else
             {
                 CompanyText.Text = "Unknown Client";
                 FuelText.Text = "Fuel: --";
+                CompanyLogoImage.Visibility = Visibility.Collapsed;
+                CompanyLogoPlaceholder.Visibility = Visibility.Visible;
             }
         }
 
@@ -326,22 +405,7 @@ namespace Phonova
  
         private async Task CheckInternetStatusAsync()
         {
-            bool isConnected = false;
-            try
-            {
-                using (var client = new System.Net.Http.HttpClient())
-                {
-                    client.Timeout = TimeSpan.FromSeconds(2);
-                    using (var response = await client.GetAsync("https://www.google.com", System.Net.Http.HttpCompletionOption.ResponseHeadersRead))
-                    {
-                        isConnected = response.IsSuccessStatusCode;
-                    }
-                }
-            }
-            catch
-            {
-                isConnected = false;
-            }
+            bool isConnected = await ApiService.CheckServerHealthAsync();
  
             Dispatcher.Invoke(() =>
             {
@@ -349,15 +413,23 @@ namespace Phonova
                 {
                     InternetStatusIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Wifi;
                     InternetStatusIcon.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981"));
-                    InternetStatusBorder.ToolTip = "Internet Connected";
+                    InternetStatusBorder.ToolTip = "Server Connected";
                 }
                 else
                 {
                     InternetStatusIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.WifiOff;
                     InternetStatusIcon.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444"));
-                    InternetStatusBorder.ToolTip = "Internet Offline";
+                    InternetStatusBorder.ToolTip = "Server Offline";
                 }
             });
+
+            // If server just came back online AND we have pending items, flush them now
+            bool justReconnected = isConnected && !_wasConnected;
+            _wasConnected = isConnected;
+            if (justReconnected && OfflineSyncManager.Instance.PendingCount > 0)
+            {
+                _ = Task.Run(() => OfflineSyncManager.Instance.TrySyncAsync());
+            }
         }
 
         private void UpdateMmrHeaderVisibility()

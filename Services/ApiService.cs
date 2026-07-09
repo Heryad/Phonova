@@ -59,6 +59,21 @@ namespace Phonova.Services
             }
         }
 
+        public static async Task<bool> CheckServerHealthAsync()
+        {
+            try
+            {
+                using (var response = await _httpClient.GetAsync("health"))
+                {
+                    return response.IsSuccessStatusCode;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public static string GetHardwareId()
         {
             string cpuInfo = string.Empty;
@@ -317,6 +332,87 @@ namespace Phonova.Services
         public static async Task<KpiResponse?> GetKpiAsync()
         {
             return await GetAsync<KpiResponse>("/desktop/kpi");
+        }
+
+        // --- Result Sync ---
+        public class SyncResult
+        {
+            [JsonProperty("customerId")]
+            public string customerId { get; set; }
+            [JsonProperty("devicename")]
+            public string devicename { get; set; }
+            [JsonProperty("model")]
+            public string model { get; set; }
+            [JsonProperty("serialnumber")]
+            public string serialnumber { get; set; }
+            [JsonProperty("imei1")]
+            public string imei1 { get; set; }
+            [JsonProperty("imei2")]
+            public string imei2 { get; set; }
+            [JsonProperty("color")]
+            public string color { get; set; }
+            [JsonProperty("storage")]
+            public string storage { get; set; }
+            [JsonProperty("battery")]
+            public string battery { get; set; }
+            [JsonProperty("icloud")]
+            public string icloud { get; set; }
+            [JsonProperty("mdm")]
+            public string mdm { get; set; }
+            [JsonProperty("blacklist")]
+            public string blacklist { get; set; }
+            [JsonProperty("simlock")]
+            public string simlock { get; set; }
+            [JsonProperty("kernel_results")]
+            public object kernel_results { get; set; }
+            [JsonProperty("test_results")]
+            public object test_results { get; set; }
+            [JsonProperty("finalGrade")]
+            public string finalGrade { get; set; }
+            [JsonProperty("comments")]
+            public System.Collections.Generic.List<string> comments { get; set; }
+            [JsonProperty("mmrComments")]
+            public System.Collections.Generic.List<string> mmrComments { get; set; }
+        }
+
+        public class SubmitResultsResponse
+        {
+            [JsonProperty("message")]
+            public string message { get; set; }
+            [JsonProperty("syncedCount")]
+            public int syncedCount { get; set; }
+            [JsonProperty("remainingFuel")]
+            public int? remainingFuel { get; set; }
+            [JsonProperty("error")]
+            public string error { get; set; }
+            [JsonProperty("required")]
+            public int? required { get; set; }
+            [JsonProperty("available")]
+            public int? available { get; set; }
+            public int HttpStatusCode { get; set; }
+        }
+
+        public static async Task<SubmitResultsResponse?> SubmitResultsAsync(System.Collections.Generic.List<SyncResult> results)
+        {
+            try
+            {
+                var payload = new { results = results };
+                var json = JsonConvert.SerializeObject(payload);
+                using (var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"))
+                {
+                    using (var response = await _httpClient.PostAsync("/desktop/sync/results", content))
+                    {
+                        var resStr = await response.Content.ReadAsStringAsync();
+                        var result = JsonConvert.DeserializeObject<SubmitResultsResponse>(resStr) ?? new SubmitResultsResponse();
+                        result.HttpStatusCode = (int)response.StatusCode;
+                        return result;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return new SubmitResultsResponse { error = ex.Message, HttpStatusCode = 0 };
+            }
         }
     }
 }

@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using System.Text;
 using Microsoft.Win32;
 using DevExpress.XtraReports.UI;
+using System.Diagnostics;
 
 namespace Phonova
 {
@@ -66,6 +67,8 @@ namespace Phonova
                     MmrModeToggle.IsChecked = false;
                     MmrModeToggle.IsEnabled = false;
                     NavMmrComments.Visibility = Visibility.Collapsed;
+                    MmrModeRow.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FEF2F2"));
+                    MmrModeLockIcon.Visibility = Visibility.Visible;
                     if (s.MmrMode)
                     {
                         s.MmrMode = false;
@@ -76,12 +79,16 @@ namespace Phonova
                 {
                     MmrModeToggle.IsEnabled = true;
                     NavMmrComments.Visibility = Visibility.Visible;
+                    MmrModeRow.Background = Brushes.Transparent;
+                    MmrModeLockIcon.Visibility = Visibility.Collapsed;
                 }
 
                 if (!config.canFlashSoftware)
                 {
                     AutoWipeToggle.IsChecked = false;
                     AutoWipeToggle.IsEnabled = false;
+                    AutoWipeRow.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FEF2F2"));
+                    AutoWipeLockIcon.Visibility = Visibility.Visible;
                     if (s.AutoWipe)
                     {
                         s.AutoWipe = false;
@@ -91,7 +98,16 @@ namespace Phonova
                 else
                 {
                     AutoWipeToggle.IsEnabled = true;
+                    AutoWipeRow.Background = Brushes.Transparent;
+                    AutoWipeLockIcon.Visibility = Visibility.Collapsed;
                 }
+            }
+            else
+            {
+                MmrModeRow.Background = Brushes.Transparent;
+                MmrModeLockIcon.Visibility = Visibility.Collapsed;
+                AutoWipeRow.Background = Brushes.Transparent;
+                AutoWipeLockIcon.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -1383,6 +1399,18 @@ namespace Phonova
                 if (config != null)
                 {
                     ApiService.CurrentConfig = config.Client;
+
+                    // If fuel was previously exhausted, check if it's now been topped up
+                    if (Phonova.Services.OfflineSyncManager.Instance.IsFuelExhausted)
+                    {
+                        bool hasFuel = config.Client.isUnlimitedTesting || config.Client.fuel > 0;
+                        if (hasFuel)
+                        {
+                            // Reset and retry sync — the fuel banner will auto-hide on success
+                            Phonova.Services.OfflineSyncManager.Instance.IsFuelExhausted = false;
+                            _ = System.Threading.Tasks.Task.Run(() => Phonova.Services.OfflineSyncManager.Instance.TrySyncAsync());
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -1399,6 +1427,29 @@ namespace Phonova
             if (config != null)
             {
                 LicenseCompanyNameText.Text = config.companyName;
+
+                if (!string.IsNullOrEmpty(config.logoUrl))
+                {
+                    try
+                    {
+                        var uri = new Uri(config.logoUrl, UriKind.Absolute);
+                        var bmi = new System.Windows.Media.Imaging.BitmapImage(uri);
+                        LicenseCompanyLogoImage.Source = bmi;
+                        LicenseCompanyLogoImage.Visibility = Visibility.Visible;
+                        LicenseCompanyLogoPlaceholder.Visibility = Visibility.Collapsed;
+                    }
+                    catch
+                    {
+                        LicenseCompanyLogoImage.Visibility = Visibility.Collapsed;
+                        LicenseCompanyLogoPlaceholder.Visibility = Visibility.Visible;
+                    }
+                }
+                else
+                {
+                    LicenseCompanyLogoImage.Visibility = Visibility.Collapsed;
+                    LicenseCompanyLogoPlaceholder.Visibility = Visibility.Visible;
+                }
+
                 LicenseCompanyStatusText.Text = config.isUnlimitedTesting ? "Premium Enterprise Partner" : "Verified Partner";
                 LicenseCompanyStatusText.Foreground = config.isUnlimitedTesting 
                     ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#6366F1")) 

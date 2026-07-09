@@ -661,11 +661,21 @@
                                             <ToggleButton x:Name="ActivationOnlyToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="FlowToggle_Click"/>
                                         </Grid>
                                         <Border Height="1" Background="{StaticResource BorderColor}" Margin="0,0,0,16"/>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                            <StackPanel><TextBlock Text="MMR Mode" FontWeight="SemiBold"/><TextBlock Text="Perform specialized MMR diagnostic check" Foreground="{StaticResource TextSecondary}" FontSize="12"/></StackPanel>
-                                            <ToggleButton x:Name="MmrModeToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="FlowToggle_Click"/>
-                                        </Grid>
+                                        <Border x:Name="MmrModeRow" Padding="8,6" CornerRadius="4">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="MMR Mode" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="Perform specialized MMR diagnostic check" Foreground="{StaticResource TextSecondary}" FontSize="12"/>
+                                                </StackPanel>
+                                                <materialDesign:PackIcon x:Name="MmrModeLockIcon" Kind="Lock" Width="16" Height="16" Foreground="#EF4444" VerticalAlignment="Center" Margin="0,0,8,0" Grid.Column="1" Visibility="Collapsed"/>
+                                                <ToggleButton x:Name="MmrModeToggle" Grid.Column="2" Style="{StaticResource ToggleStyle}" Click="FlowToggle_Click"/>
+                                            </Grid>
+                                        </Border>
                                     </StackPanel>
                                 </Border>
 
@@ -679,11 +689,21 @@
                                             <ToggleButton x:Name="AutoPrintToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="SettingToggle_Click"/>
                                         </Grid>
                                         <Border Height="1" Background="{StaticResource BorderColor}" Margin="0,0,0,16"/>
-                                        <Grid Margin="0,0,0,16">
-                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                            <StackPanel><TextBlock Text="Wipe Device" FontWeight="SemiBold"/><TextBlock Text="Factory reset after processing" Foreground="{StaticResource TextSecondary}" FontSize="12"/></StackPanel>
-                                            <ToggleButton x:Name="AutoWipeToggle" Grid.Column="1" Style="{StaticResource ToggleStyle}" Click="SettingToggle_Click"/>
-                                        </Grid>
+                                        <Border x:Name="AutoWipeRow" Padding="8,6" CornerRadius="4">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="Wipe Device" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="Factory reset after processing" Foreground="{StaticResource TextSecondary}" FontSize="12"/>
+                                                </StackPanel>
+                                                <materialDesign:PackIcon x:Name="AutoWipeLockIcon" Kind="Lock" Width="16" Height="16" Foreground="#EF4444" VerticalAlignment="Center" Margin="0,0,8,0" Grid.Column="1" Visibility="Collapsed"/>
+                                                <ToggleButton x:Name="AutoWipeToggle" Grid.Column="2" Style="{StaticResource ToggleStyle}" Click="SettingToggle_Click"/>
+                                            </Grid>
+                                        </Border>
                                         <Border Height="1" Background="{StaticResource BorderColor}" Margin="0,0,0,16"/>
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
@@ -785,10 +805,13 @@
                                             <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0" Width="56" Height="56" Background="#F1F5F9" CornerRadius="8" Margin="0,0,16,0" Padding="8">
-                                            <materialDesign:PackIcon Kind="Domain" Width="36" Height="36" Foreground="{StaticResource BrandPrimary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="0" Width="56" Height="56" Background="#F1F5F9" CornerRadius="8" Margin="0,0,16,0">
+                                            <Grid>
+                                                <materialDesign:PackIcon x:Name="LicenseCompanyLogoPlaceholder" Kind="Domain" Width="36" Height="36" Foreground="{StaticResource BrandPrimary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <Image x:Name="LicenseCompanyLogoImage" Width="56" Height="56" Stretch="UniformToFill" Visibility="Collapsed"/>
+                                            </Grid>
                                         </Border>
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0">
                                             <TextBlock x:Name="LicenseCompanyNameText" Text="Company Name" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
                                             <TextBlock x:Name="LicenseCompanyStatusText" Text="Verified Partner" FontSize="12" Foreground="#10B981" FontWeight="SemiBold" Margin="0,2,0,0"/>
                                         </StackPanel>

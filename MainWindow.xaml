@@ -101,6 +101,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -185,10 +186,18 @@
 
                 <!-- Right Side - Dashboard & Window Controls -->
                 <StackPanel Grid.Column="3" Orientation="Horizontal">
-                    <!-- Company & Fuel Details -->
-                    <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="0,0,16,0">
-                        <TextBlock x:Name="CompanyText" Text="Company" FontSize="11" FontWeight="Bold" Foreground="White" HorizontalAlignment="Right"/>
-                        <TextBlock x:Name="FuelText" Text="Fuel: --" FontSize="10" Foreground="#A0AEC0" HorizontalAlignment="Right"/>
+                    <!-- Company & Fuel Details with Logo -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                        <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="0,0,8,0">
+                            <TextBlock x:Name="CompanyText" Text="Company" FontSize="11" FontWeight="Bold" Foreground="White" HorizontalAlignment="Right"/>
+                            <TextBlock x:Name="FuelText" Text="Fuel: --" FontSize="10" Foreground="#A0AEC0" HorizontalAlignment="Right"/>
+                        </StackPanel>
+                        <Border Width="28" Height="28" Background="#1E293B" CornerRadius="4" VerticalAlignment="Center" Margin="8,0,0,0">
+                            <Grid>
+                                <materialDesign:PackIcon x:Name="CompanyLogoPlaceholder" Kind="Domain" Width="18" Height="18" Foreground="#94A3B8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Image x:Name="CompanyLogoImage" Width="28" Height="28" Stretch="UniformToFill" Visibility="Collapsed"/>
+                            </Grid>
+                        </Border>
                     </StackPanel>
 
                     <!-- Internet Status Indicator -->
@@ -196,21 +205,17 @@
                         <materialDesign:PackIcon x:Name="InternetStatusIcon" Kind="Wifi" Width="20" Height="20" Foreground="#10B981"/>
                     </Border>
 
+                    <TextBlock x:Name="SyncStatusText" Text="• 0 pending" Foreground="#FB923C" FontSize="11" Margin="4,0" VerticalAlignment="Center" Visibility="Collapsed"/>
+
                     <!-- Divider after Internet Status -->
                     <Border Width="1" Background="#475569" Margin="6,8"/>
 
-                    <Button x:Name="SettingsBtn" Style="{StaticResource GreenIconBtn}" Width="128" Padding="16,0" ToolTip="Settings" Click="SettingsBtn_Click" Margin="6,0,0,0">
-                        <StackPanel Orientation="Horizontal" Margin="4,0">
-                            <materialDesign:PackIcon Kind="Gear" Width="16" Height="16" VerticalAlignment="Center"/>
-                            <TextBlock Text="Settings" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                        </StackPanel>
+                    <Button x:Name="SettingsBtn" Style="{StaticResource GreenIconBtn}" Width="36" Padding="0" ToolTip="Settings" Click="SettingsBtn_Click" Margin="6,0,0,0">
+                        <materialDesign:PackIcon Kind="Gear" Width="18" Height="18"/>
                     </Button>
                     
-                    <Button x:Name="PortmapBtn" Style="{StaticResource GreenIconBtn}" Width="128" Padding="16,0" ToolTip="Portmap" Click="PortmapBtn_Click" Margin="6,0,0,0">
-                        <StackPanel Orientation="Horizontal" Margin="4,0">
-                            <materialDesign:PackIcon Kind="UsbPort" Width="16" Height="16" VerticalAlignment="Center"/>
-                            <TextBlock Text="Portmap" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                        </StackPanel>
+                    <Button x:Name="PortmapBtn" Style="{StaticResource GreenIconBtn}" Width="36" Padding="0" ToolTip="Portmap" Click="PortmapBtn_Click" Margin="6,0,0,0">
+                        <materialDesign:PackIcon Kind="UsbPort" Width="18" Height="18"/>
                     </Button>
  
                     <Border Width="1" Background="#475569" Margin="12,8"/>
@@ -225,8 +230,53 @@
             </Grid>
         </Border>
 
+        <!-- Insufficient Fuel Banner -->
+        <Border x:Name="FuelBanner"
+                Grid.Row="1"
+                Visibility="Collapsed"
+                Padding="0">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#7F1D1D" Offset="0"/>
+                    <GradientStop Color="#991B1B" Offset="0.5"/>
+                    <GradientStop Color="#7F1D1D" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Grid Margin="24,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Banner Content -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,10">
+                    <Border Background="#EF4444" CornerRadius="20" Width="28" Height="28" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="AlertOctagon" Width="16" Height="16" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Orientation="Vertical" Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Insufficient Fuel" FontSize="13" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock x:Name="FuelBannerSubText"
+                                   Text="Your account has run out of test fuel. Test results are being held locally and will sync automatically once fuel is added."
+                                   FontSize="11" Foreground="#FCA5A5" TextWrapping="NoWrap"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Right side: held count pill + action -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                    <Border Background="#EF4444" CornerRadius="12" Padding="10,4" VerticalAlignment="Center" Margin="0,0,12,0">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="DatabaseClock" Width="13" Height="13" Foreground="White" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="FuelBannerHeldText" Text="0 tests held" FontSize="11" FontWeight="SemiBold" Foreground="White" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Text="Contact your administrator to top up fuel."
+                               FontSize="11" Foreground="#FECACA" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
         <!-- Device Cards Grid Area -->
-        <Border Grid.Row="1" Padding="16">
+        <Border Grid.Row="2" Padding="16">
             <Grid>
                 <!-- Scrollable Device Cards -->
                 <ScrollViewer VerticalScrollBarVisibility="Hidden" 

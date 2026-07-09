@@ -1952,9 +1952,9 @@ namespace Phonova
                     DateTime = DateTime.Now
                 };
 
-                // App.Database.SaveProcessedDevice(device); // TODO: Wait for submission endpoint
+                Phonova.Services.OfflineSyncManager.Instance.QueueResult(device);
                 _isSaved = true; // Mark as saved
-                Debug.WriteLine($"[Port {PortNumber}] Device saved locally (submission pending API).");
+                Debug.WriteLine($"[Port {PortNumber}] Device queued for sync.");
             }
             catch (Exception ex)
             {
