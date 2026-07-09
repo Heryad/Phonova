@@ -215,12 +215,7 @@
                                 <TextBlock Text="Customers" Margin="12,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
-                        <Button x:Name="NavTesters" Style="{StaticResource NavBtn}" Click="NavTesters_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="AccountTie" Width="20" Height="20" VerticalAlignment="Center"/>
-                                <TextBlock Text="Testers" Margin="12,0,0,0" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
+
                         <Button x:Name="NavWifi" Style="{StaticResource NavBtn}" Click="NavWifi_Click">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="Wifi" Width="20" Height="20" VerticalAlignment="Center"/>
@@ -599,56 +594,7 @@
                                 </Border>
                             </StackPanel>
 
-                            <!-- Testers Panel -->
-                            <StackPanel x:Name="PanelTesters" Visibility="Collapsed">
-                                <TextBlock Text="Testers Library" Style="{StaticResource SectionTitle}"/>
-                                <Border Style="{StaticResource CardStyle}">
-                                    <StackPanel>
-                                        <!-- Add/Update tester -->
-                                        <Grid Margin="0,0,0,16">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Border Grid.Column="0" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="6" Background="White" Margin="0,0,8,0">
-                                                <TextBox x:Name="NewTesterBox" BorderThickness="0" Padding="12,10" FontSize="13" VerticalAlignment="Center" materialDesign:HintAssist.Hint="Enter tester name..."/>
-                                            </Border>
-                                            <Button Grid.Column="1" x:Name="AddTesterBtn" Style="{StaticResource ActionBtn}" Click="AddTesterBtn_Click">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <materialDesign:PackIcon Kind="Plus" Width="16" Height="16" VerticalAlignment="Center"/>
-                                                    <TextBlock x:Name="AddTesterBtnText" Text="Add" Margin="8,0,0,0"/>
-                                                </StackPanel>
-                                            </Button>
-                                            <Button Grid.Column="2" x:Name="CancelEditTesterBtn" Style="{StaticResource SecondaryBtn}" Margin="8,0,0,0" Visibility="Collapsed" Click="CancelEditTesterBtn_Click">
-                                                <TextBlock Text="Cancel" />
-                                            </Button>
-                                        </Grid>
-                                        <!-- Testers table -->
-                                        <Border BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="6">
-                                            <Grid>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto"/>
-                                                    <RowDefinition Height="Auto"/>
-                                                </Grid.RowDefinitions>
-                                                <!-- Header -->
-                                                <Grid Grid.Row="0" Background="#F9FAFB">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="120"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Grid.Column="0" Text="Tester Name" FontWeight="SemiBold" Padding="12,10"/>
-                                                    <TextBlock Grid.Column="1" Text="Actions" FontWeight="SemiBold" Padding="12,10" HorizontalAlignment="Center"/>
-                                                </Grid>
-                                                <!-- Dynamic rows -->
-                                                <StackPanel x:Name="TestersTablePanel" Grid.Row="1">
-                                                    <!-- Rows will be added dynamically -->
-                                                </StackPanel>
-                                            </Grid>
-                                        </Border>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
+
 
                             <!-- WiFi Panel -->
                             <StackPanel x:Name="PanelWifi" Visibility="Collapsed">

@@ -138,7 +138,6 @@ namespace Phonova.Services
                 }
                 else
                 {
-                    // If error like 401, 403, 404
                     var errorData = JsonConvert.DeserializeObject<LoginResponse>(responseStr);
                     return errorData ?? new LoginResponse { Error = "Unknown error occurred during login." };
                 }
@@ -148,5 +147,108 @@ namespace Phonova.Services
                 return new LoginResponse { Error = $"Network error: {ex.Message}" };
             }
         }
+
+        // Generic wrapper for API calls to handle tokens and JSON serialization
+        private static async Task<T> GetAsync<T>(string endpoint)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(endpoint);
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<T>(json);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"API GET Error on {endpoint}: {ex.Message}");
+            }
+            return default(T);
+        }
+
+        private static async Task<bool> PostAsync(string endpoint, object data)
+        {
+            try
+            {
+                string json = JsonConvert.SerializeObject(data);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync(endpoint, content);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"API POST Error on {endpoint}: {ex.Message}");
+                return false;
+            }
+        }
+
+        private static async Task<bool> PutAsync(string endpoint, object data)
+        {
+            try
+            {
+                string json = JsonConvert.SerializeObject(data);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PutAsync(endpoint, content);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"API PUT Error on {endpoint}: {ex.Message}");
+                return false;
+            }
+        }
+
+        private static async Task<bool> DeleteAsync(string endpoint)
+        {
+            try
+            {
+                var response = await _httpClient.DeleteAsync(endpoint);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"API DELETE Error on {endpoint}: {ex.Message}");
+                return false;
+            }
+        }
+
+        // --- Comments ---
+        public class CommentModel { public string id { get; set; } public string content { get; set; } }
+        public class CommentsResponse { public System.Collections.Generic.List<CommentModel> comments { get; set; } }
+        
+        public static async Task<System.Collections.Generic.List<CommentModel>> GetCommentsAsync()
+        {
+            var res = await GetAsync<CommentsResponse>("/desktop/comments");
+            return res?.comments ?? new System.Collections.Generic.List<CommentModel>();
+        }
+        public static async Task<bool> AddCommentAsync(string content) => await PostAsync("/desktop/comments", new { content });
+        public static async Task<bool> UpdateCommentAsync(string id, string content) => await PutAsync($"/desktop/comments/{id}", new { content });
+        public static async Task<bool> DeleteCommentAsync(string id) => await DeleteAsync($"/desktop/comments/{id}");
+
+        // --- MMR Comments ---
+        public class MmrCommentsResponse { public System.Collections.Generic.List<CommentModel> mmrComments { get; set; } }
+        
+        public static async Task<System.Collections.Generic.List<CommentModel>> GetMmrCommentsAsync()
+        {
+            var res = await GetAsync<MmrCommentsResponse>("/desktop/mmr-comments");
+            return res?.mmrComments ?? new System.Collections.Generic.List<CommentModel>();
+        }
+        public static async Task<bool> AddMmrCommentAsync(string content) => await PostAsync("/desktop/mmr-comments", new { content });
+        public static async Task<bool> UpdateMmrCommentAsync(string id, string content) => await PutAsync($"/desktop/mmr-comments/{id}", new { content });
+        public static async Task<bool> DeleteMmrCommentAsync(string id) => await DeleteAsync($"/desktop/mmr-comments/{id}");
+
+        // --- Customers ---
+        public class CustomerModel { public string id { get; set; } public string name { get; set; } public string phone { get; set; } }
+        public class CustomersResponse { public System.Collections.Generic.List<CustomerModel> customers { get; set; } }
+
+        public static async Task<System.Collections.Generic.List<CustomerModel>> GetCustomersAsync()
+        {
+            var res = await GetAsync<CustomersResponse>("/desktop/customers");
+            return res?.customers ?? new System.Collections.Generic.List<CustomerModel>();
+        }
+        public static async Task<bool> AddCustomerAsync(string name, string phone = "") => await PostAsync("/desktop/customers", new { name, phone });
+        public static async Task<bool> UpdateCustomerAsync(string id, string name, string phone = "") => await PutAsync($"/desktop/customers/{id}", new { name, phone });
+        public static async Task<bool> DeleteCustomerAsync(string id) => await DeleteAsync($"/desktop/customers/{id}");
     }
 }

@@ -21,7 +21,7 @@ namespace Phonova
             LoadComments(existingComments ?? new List<string>());
         }
         
-        private void LoadComments(List<string>? preselectedComments = null)
+        private async void LoadComments(List<string>? preselectedComments = null)
         {
             var currentlyChecked = new HashSet<string>();
             if (preselectedComments != null)
@@ -41,7 +41,9 @@ namespace Phonova
 
             CommentsListPanel.Children.Clear();
             
-            var templates = App.Database.GetAllComments();
+            var models = await ApiService.GetCommentsAsync();
+            var templates = new List<string>();
+            foreach (var m in models) templates.Add(m.content);
             
             foreach (var template in templates)
             {
@@ -119,13 +121,23 @@ namespace Phonova
             }
         }
 
-        private void AddQuickComment()
+        private async void AddQuickComment()
         {
             string comment = QuickCommentBox.Text?.Trim() ?? "";
             if (string.IsNullOrWhiteSpace(comment)) return;
 
-            App.Database.AddCommentToLibrary(comment);
+            await ApiService.AddCommentAsync(comment);
             QuickCommentBox.Text = "";
+            LoadComments();
+        }
+
+        private async void AddCommentBtn_Click(object sender, RoutedEventArgs e)
+        {
+            string comment = NewCommentBox.Text?.Trim() ?? "";
+            if (string.IsNullOrWhiteSpace(comment)) return;
+            
+            await ApiService.AddCommentAsync(comment);
+            NewCommentBox.Text = "";
             LoadComments();
         }
 

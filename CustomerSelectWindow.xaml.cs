@@ -20,9 +20,9 @@ namespace Phonova
             LoadCustomers(existingCustomer);
         }
         
-        private string? _editingCustomer = null;
+        private string? _editingCustomerId = null;
 
-        private void LoadCustomers(string? preselected = null)
+        private async void LoadCustomers(string? preselected = null)
         {
             CustomersListPanel.Children.Clear();
             
@@ -58,9 +58,9 @@ namespace Phonova
             };
             CustomersListPanel.Children.Add(noneBorder);
 
-            var templates = App.Database.GetAllCustomers();
+            var customers = await ApiService.GetCustomersAsync();
             
-            foreach (var template in templates)
+            foreach (var template in customers)
             {
                 var border = new Border
                 {
@@ -78,15 +78,15 @@ namespace Phonova
 
                 var radioButton = new RadioButton
                 {
-                    Content = template,
-                    IsChecked = (template == preselected),
-                    Tag = template,
+                    Content = template.name,
+                    IsChecked = (template.name == preselected),
+                    Tag = template.name,
                     FontSize = 13,
                     GroupName = "Customers",
                     VerticalAlignment = VerticalAlignment.Center
                 };
                 
-                radioButton.Checked += (s, e) => UpdateSelectedText(template);
+                radioButton.Checked += (s, e) => UpdateSelectedText(template.name);
                 Grid.SetColumn(radioButton, 0);
                 grid.Children.Add(radioButton);
 
@@ -176,16 +176,17 @@ namespace Phonova
             }
         }
 
-        private void AddQuickCustomer()
+        private async void AddQuickCustomer()
         {
-            string customer = QuickCustomerBox.Text?.Trim() ?? "";
-            if (string.IsNullOrWhiteSpace(customer)) return;
+            string customerName = QuickCustomerBox.Text?.Trim() ?? "";
+            if (string.IsNullOrWhiteSpace(customerName)) return;
 
-            if (!string.IsNullOrEmpty(_editingCustomer))
+            if (!string.IsNullOrEmpty(_editingCustomerId))
             {
-                App.Database.UpdateCustomerInLibrary(_editingCustomer, customer);
-                string? prevSelected = (_selectedCustomer == _editingCustomer) ? customer : _selectedCustomer;
+                await ApiService.UpdateCustomerAsync(_editingCustomerId, customerName);
+                string? prevSelected = (_selectedCustomer == _editingCustomer) ? customerName : _selectedCustomer;
                 _editingCustomer = null;
+                _editingCustomerId = null;
                 QuickCustomerBox.Text = "";
                 AddQuickCustomerBtn.Content = "Add";
                 CancelEditBtn.Visibility = Visibility.Collapsed;
@@ -193,18 +194,19 @@ namespace Phonova
             }
             else
             {
-                App.Database.AddCustomerToLibrary(customer);
+                await ApiService.AddCustomerAsync(customerName);
                 QuickCustomerBox.Text = "";
-                LoadCustomers(customer);
+                LoadCustomers(customerName);
             }
         }
 
         private void EditCustomer_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.Tag is string customer)
+            if (sender is Button btn && btn.Tag is ApiService.CustomerModel customer)
             {
-                _editingCustomer = customer;
-                QuickCustomerBox.Text = customer;
+                _editingCustomer = customer.name;
+                _editingCustomerId = customer.id;
+                QuickCustomerBox.Text = customer.name;
                 AddQuickCustomerBtn.Content = "Update";
                 CancelEditBtn.Visibility = Visibility.Visible;
                 QuickCustomerBox.Focus();
@@ -214,19 +216,20 @@ namespace Phonova
         private void CancelEditBtn_Click(object sender, RoutedEventArgs e)
         {
             _editingCustomer = null;
+            _editingCustomerId = null;
             QuickCustomerBox.Text = "";
             AddQuickCustomerBtn.Content = "Add";
             CancelEditBtn.Visibility = Visibility.Collapsed;
         }
 
-        private void DeleteCustomer_Click(object sender, RoutedEventArgs e)
+        private async void DeleteCustomer_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.Tag is string customer)
+            if (sender is Button btn && btn.Tag is ApiService.CustomerModel customer)
             {
-                if (MessageBox.Show($"Are you sure you want to delete '{customer}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                if (MessageBox.Show($"Are you sure you want to delete '{customer.name}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
-                    App.Database.DeleteCustomerFromLibrary(customer);
-                    if (_selectedCustomer == customer)
+                    await ApiService.DeleteCustomerAsync(customer.id);
+                    if (_selectedCustomer == customer.name)
                     {
                         _selectedCustomer = null;
                         SelectedCustomerText.Text = "No customer selected";

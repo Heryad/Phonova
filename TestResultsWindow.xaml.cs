@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Linq;
 using Phonova.Services;
+using Phonova.Models;
 using MaterialDesignThemes.Wpf;
 
 namespace Phonova

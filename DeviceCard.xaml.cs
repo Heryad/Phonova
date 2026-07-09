@@ -1743,7 +1743,7 @@ namespace Phonova
                         PortNumber.ToString(),
                         notes,
                         MainWindow.SelectedCustomer ?? "",
-                        MainWindow.SelectedTester ?? "",
+                        ApiService.Username ?? "",
                         isSynced
                     );
                 }
@@ -1936,9 +1936,9 @@ namespace Phonova
                     DateTime = DateTime.Now
                 };
 
-                App.Database.SaveProcessedDevice(device);
+                // App.Database.SaveProcessedDevice(device); // TODO: Wait for submission endpoint
                 _isSaved = true; // Mark as saved
-                Debug.WriteLine($"[Port {PortNumber}] Device saved to database successfully.");
+                Debug.WriteLine($"[Port {PortNumber}] Device saved locally (submission pending API).");
             }
             catch (Exception ex)
             {

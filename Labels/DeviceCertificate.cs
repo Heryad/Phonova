@@ -8,6 +8,7 @@ using DevExpress.XtraPrinting;
 using DevExpress.XtraPrinting.Drawing;
 using DevExpress.XtraReports.UI;
 using Phonova.Services;
+using Phonova.Models;
 
 namespace Phonova.Labels
 {

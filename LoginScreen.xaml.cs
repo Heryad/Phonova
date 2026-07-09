@@ -17,7 +17,7 @@ namespace Phonova
         {
             string username = UsernameBox.Text;
             string companyEmail = CompanyEmailBox.Text;
-            string password = PasswordBox.Password;
+            string password = isPasswordVisible ? VisiblePasswordBox.Text : PasswordBox.Password;
 
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(companyEmail) || string.IsNullOrEmpty(password))
             {
@@ -26,9 +26,14 @@ namespace Phonova
                 return;
             }
 
-            var btnContent = ((System.Windows.Controls.Button)sender).Content;
-            ((System.Windows.Controls.Button)sender).Content = "Signing in...";
-            ((System.Windows.Controls.Button)sender).IsEnabled = false;
+            var button = sender as System.Windows.Controls.Button;
+            object originalContent = null;
+            if (button != null)
+            {
+                originalContent = button.Content;
+                button.Content = "Signing in...";
+                button.IsEnabled = false;
+            }
 
             var response = await Phonova.Services.ApiService.LoginAsync(companyEmail, username, password);
 
@@ -40,8 +45,11 @@ namespace Phonova
             }
             else
             {
-                ((System.Windows.Controls.Button)sender).Content = btnContent;
-                ((System.Windows.Controls.Button)sender).IsEnabled = true;
+                if (button != null)
+                {
+                    button.Content = originalContent;
+                    button.IsEnabled = true;
+                }
                 MessageBox.Show(response.Error ?? "Login failed.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -71,12 +79,16 @@ namespace Phonova
             if (isPasswordVisible)
             {
                 PasswordVisibilityIcon.Kind = PackIconKind.Eye;
-                // Note: Actual password visibility toggle would require a TextBox overlay
-                // For now, we just change the icon as a visual indicator
+                VisiblePasswordBox.Text = PasswordBox.Password;
+                VisiblePasswordBox.Visibility = Visibility.Visible;
+                PasswordBox.Visibility = Visibility.Collapsed;
             }
             else
             {
                 PasswordVisibilityIcon.Kind = PackIconKind.EyeOff;
+                PasswordBox.Password = VisiblePasswordBox.Text;
+                VisiblePasswordBox.Visibility = Visibility.Collapsed;
+                PasswordBox.Visibility = Visibility.Visible;
             }
         }
     }

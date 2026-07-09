@@ -20,7 +20,7 @@ namespace Phonova
             LoadMmrComments(existingComments ?? new List<string>());
         }
         
-        private void LoadMmrComments(List<string>? preselectedComments = null)
+        private async void LoadMmrComments(List<string>? preselectedComments = null)
         {
             var currentlyChecked = new HashSet<string>();
             if (preselectedComments != null)
@@ -40,7 +40,9 @@ namespace Phonova
 
             MmrCommentsListPanel.Children.Clear();
             
-            var templates = App.Database.GetAllMmrComments();
+            var models = await ApiService.GetMmrCommentsAsync();
+            var templates = new List<string>();
+            foreach (var m in models) templates.Add(m.content);
             
             foreach (var template in templates)
             {
@@ -118,12 +120,12 @@ namespace Phonova
             }
         }
 
-        private void AddQuickMmrComment()
+        private async void AddQuickMmrComment()
         {
             string comment = QuickMmrCommentBox.Text?.Trim() ?? "";
             if (string.IsNullOrWhiteSpace(comment)) return;
 
-            App.Database.AddMmrCommentToLibrary(comment);
+            await ApiService.AddMmrCommentAsync(comment);
             QuickMmrCommentBox.Text = "";
             LoadMmrComments();
         }

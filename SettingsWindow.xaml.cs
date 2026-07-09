@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Phonova.Services;
+using Phonova.Models;
 using MaterialDesignThemes.Wpf;
 using System.IO;
 using Newtonsoft.Json;
@@ -588,7 +589,6 @@ namespace Phonova
             if (panelName == "Comments") LoadCommentsTable();
             if (panelName == "MmrComments") LoadMmrCommentsTable();
             if (panelName == "Customers") LoadCustomersTable();
-            if (panelName == "Testers") LoadTestersTable();
             if (panelName == "Reports") LoadReportsTable();
         }
 
@@ -598,7 +598,6 @@ namespace Phonova
         private void NavComments_Click(object sender, RoutedEventArgs e) => ShowPanel("Comments", NavComments);
         private void NavMmrComments_Click(object sender, RoutedEventArgs e) => ShowPanel("MmrComments", NavMmrComments);
         private void NavCustomers_Click(object sender, RoutedEventArgs e) => ShowPanel("Customers", NavCustomers);
-        private void NavTesters_Click(object sender, RoutedEventArgs e) => ShowPanel("Testers", NavTesters);
 
         private void NavWifi_Click(object sender, RoutedEventArgs e) => ShowPanel("Wifi", NavWifi);
         private void NavTestFlow_Click(object sender, RoutedEventArgs e) => ShowPanel("TestFlow", NavTestFlow);
@@ -651,12 +650,12 @@ namespace Phonova
         }
         
         // Comments CRUD
-        private void LoadCommentsTable()
+        private async void LoadCommentsTable()
         {
             if (CommentsTablePanel == null) return;
             CommentsTablePanel.Children.Clear();
 
-            var comments = App.Database.GetAllComments();
+            var comments = await ApiService.GetCommentsAsync();
             foreach (var comment in comments)
             {
                 var grid = new Grid { Margin = new Thickness(0, 0, 0, 1) };
@@ -664,7 +663,7 @@ namespace Phonova
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) });
 
                 var textBorder = new Border { Background = Brushes.White, Padding = new Thickness(12, 10, 12, 10) };
-                textBorder.Child = new TextBlock { Text = comment, FontSize = 13, VerticalAlignment = VerticalAlignment.Center };
+                textBorder.Child = new TextBlock { Text = comment.content, FontSize = 13, VerticalAlignment = VerticalAlignment.Center };
                 Grid.SetColumn(textBorder, 0);
                 grid.Children.Add(textBorder);
 
@@ -690,35 +689,36 @@ namespace Phonova
             }
         }
 
-        private void AddCommentBtn_Click(object sender, RoutedEventArgs e)
+        private async void AddCommentBtn_Click(object sender, RoutedEventArgs e)
         {
             string newComment = NewCommentBox.Text?.Trim() ?? "";
             if (string.IsNullOrWhiteSpace(newComment)) return;
 
-            App.Database.AddCommentToLibrary(newComment);
+            await ApiService.AddCommentAsync(newComment);
             NewCommentBox.Text = "";
             LoadCommentsTable();
         }
 
-        private void DeleteComment_Click(object sender, RoutedEventArgs e)
+        private async void DeleteComment_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.Tag is string comment)
+            if (sender is Button btn && btn.Tag is ApiService.CommentModel comment)
             {
-                if (MessageBox.Show($"Are you sure you want to delete '{comment}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                if (MessageBox.Show($"Are you sure you want to delete '{comment.content}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
-                    App.Database.DeleteCommentFromLibrary(comment);
+                    await ApiService.DeleteCommentAsync(comment.id);
                     LoadCommentsTable();
                 }
             }
         }
 
-        // MMR Comments CRUD
-        private void LoadMmrCommentsTable()
+        private string? _editingMmrCommentId = null;
+
+        private async void LoadMmrCommentsTable()
         {
             if (MmrCommentsTablePanel == null) return;
             MmrCommentsTablePanel.Children.Clear();
 
-            var comments = App.Database.GetAllMmrComments();
+            var comments = await ApiService.GetMmrCommentsAsync();
             foreach (var comment in comments)
             {
                 var grid = new Grid { Margin = new Thickness(0, 0, 0, 1) };
@@ -726,7 +726,7 @@ namespace Phonova
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
 
                 var textBorder = new Border { Background = Brushes.White, Padding = new Thickness(12, 10, 12, 10) };
-                textBorder.Child = new TextBlock { Text = comment, FontSize = 13, VerticalAlignment = VerticalAlignment.Center };
+                textBorder.Child = new TextBlock { Text = comment.content, FontSize = 13, VerticalAlignment = VerticalAlignment.Center };
                 Grid.SetColumn(textBorder, 0);
                 grid.Children.Add(textBorder);
 
@@ -774,22 +774,23 @@ namespace Phonova
             }
         }
 
-        private void AddMmrCommentBtn_Click(object sender, RoutedEventArgs e)
+        private async void AddMmrCommentBtn_Click(object sender, RoutedEventArgs e)
         {
             string newComment = NewMmrCommentBox.Text?.Trim() ?? "";
             if (string.IsNullOrWhiteSpace(newComment)) return;
 
-            if (!string.IsNullOrEmpty(_editingMmrComment))
+            if (!string.IsNullOrEmpty(_editingMmrCommentId))
             {
-                App.Database.UpdateMmrCommentInLibrary(_editingMmrComment, newComment);
+                await ApiService.UpdateMmrCommentAsync(_editingMmrCommentId, newComment);
                 _editingMmrComment = null;
+                _editingMmrCommentId = null;
                 NewMmrCommentBox.Text = "";
                 AddMmrCommentBtnText.Text = "Add";
                 CancelEditMmrCommentBtn.Visibility = Visibility.Collapsed;
             }
             else
             {
-                App.Database.AddMmrCommentToLibrary(newComment);
+                await ApiService.AddMmrCommentAsync(newComment);
                 NewMmrCommentBox.Text = "";
             }
             LoadMmrCommentsTable();
@@ -797,10 +798,11 @@ namespace Phonova
 
         private void EditMmrComment_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.Tag is string comment)
+            if (sender is Button btn && btn.Tag is ApiService.MmrCommentModel comment)
             {
-                _editingMmrComment = comment;
-                NewMmrCommentBox.Text = comment;
+                _editingMmrComment = comment.content;
+                _editingMmrCommentId = comment.id;
+                NewMmrCommentBox.Text = comment.content;
                 AddMmrCommentBtnText.Text = "Update";
                 CancelEditMmrCommentBtn.Visibility = Visibility.Visible;
                 NewMmrCommentBox.Focus();
@@ -810,19 +812,20 @@ namespace Phonova
         private void CancelEditMmrCommentBtn_Click(object sender, RoutedEventArgs e)
         {
             _editingMmrComment = null;
+            _editingMmrCommentId = null;
             NewMmrCommentBox.Text = "";
             AddMmrCommentBtnText.Text = "Add";
             CancelEditMmrCommentBtn.Visibility = Visibility.Collapsed;
         }
 
-        private void DeleteMmrComment_Click(object sender, RoutedEventArgs e)
+        private async void DeleteMmrComment_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.Tag is string comment)
+            if (sender is Button btn && btn.Tag is ApiService.MmrCommentModel comment)
             {
-                if (MessageBox.Show($"Are you sure you want to delete '{comment}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                if (MessageBox.Show($"Are you sure you want to delete '{comment.content}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
-                    App.Database.DeleteMmrCommentFromLibrary(comment);
-                    if (_editingMmrComment == comment)
+                    await ApiService.DeleteMmrCommentAsync(comment.id);
+                    if (_editingMmrCommentId == comment.id)
                     {
                         CancelEditMmrCommentBtn_Click(sender, e);
                     }
@@ -832,12 +835,14 @@ namespace Phonova
         }
         
         // Customers CRUD
-        private void LoadCustomersTable()
+        private string? _editingCustomerId = null;
+
+        private async void LoadCustomersTable()
         {
             if (CustomersTablePanel == null) return;
             CustomersTablePanel.Children.Clear();
 
-            var customers = App.Database.GetAllCustomers();
+            var customers = await ApiService.GetCustomersAsync();
             foreach (var customer in customers)
             {
                 var grid = new Grid { Margin = new Thickness(0, 0, 0, 1) };
@@ -845,7 +850,7 @@ namespace Phonova
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
 
                 var textBorder = new Border { Background = Brushes.White, Padding = new Thickness(12, 10, 12, 10) };
-                textBorder.Child = new TextBlock { Text = customer, FontSize = 13, VerticalAlignment = VerticalAlignment.Center };
+                textBorder.Child = new TextBlock { Text = customer.name, FontSize = 13, VerticalAlignment = VerticalAlignment.Center };
                 Grid.SetColumn(textBorder, 0);
                 grid.Children.Add(textBorder);
 
@@ -894,16 +899,17 @@ namespace Phonova
             }
         }
 
-        private void AddCustomerBtn_Click(object sender, RoutedEventArgs e)
+        private async void AddCustomerBtn_Click(object sender, RoutedEventArgs e)
         {
             string customerName = NewCustomerBox.Text?.Trim() ?? "";
             if (string.IsNullOrWhiteSpace(customerName)) return;
 
-            if (!string.IsNullOrEmpty(_editingCustomerName))
+            if (!string.IsNullOrEmpty(_editingCustomerId))
             {
                 // Update mode
-                App.Database.UpdateCustomerInLibrary(_editingCustomerName, customerName);
+                await ApiService.UpdateCustomerAsync(_editingCustomerId, customerName);
                 _editingCustomerName = null;
+                _editingCustomerId = null;
                 NewCustomerBox.Text = "";
                 AddCustomerBtnText.Text = "Add";
                 CancelEditCustomerBtn.Visibility = Visibility.Collapsed;
@@ -911,7 +917,7 @@ namespace Phonova
             else
             {
                 // Add mode
-                App.Database.AddCustomerToLibrary(customerName);
+                await ApiService.AddCustomerAsync(customerName);
                 NewCustomerBox.Text = "";
             }
             LoadCustomersTable();
@@ -919,10 +925,11 @@ namespace Phonova
 
         private void EditCustomer_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.Tag is string customerName)
+            if (sender is Button btn && btn.Tag is ApiService.CustomerModel customer)
             {
-                _editingCustomerName = customerName;
-                NewCustomerBox.Text = customerName;
+                _editingCustomerName = customer.name;
+                _editingCustomerId = customer.id;
+                NewCustomerBox.Text = customer.name;
                 AddCustomerBtnText.Text = "Update";
                 CancelEditCustomerBtn.Visibility = Visibility.Visible;
                 NewCustomerBox.Focus();
@@ -932,19 +939,20 @@ namespace Phonova
         private void CancelEditCustomerBtn_Click(object sender, RoutedEventArgs e)
         {
             _editingCustomerName = null;
+            _editingCustomerId = null;
             NewCustomerBox.Text = "";
             AddCustomerBtnText.Text = "Add";
             CancelEditCustomerBtn.Visibility = Visibility.Collapsed;
         }
 
-        private void DeleteCustomer_Click(object sender, RoutedEventArgs e)
+        private async void DeleteCustomer_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.Tag is string customerName)
+            if (sender is Button btn && btn.Tag is ApiService.CustomerModel customer)
             {
-                if (MessageBox.Show($"Are you sure you want to delete '{customerName}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                if (MessageBox.Show($"Are you sure you want to delete '{customer.name}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
-                    App.Database.DeleteCustomerFromLibrary(customerName);
-                    if (_editingCustomerName == customerName)
+                    await ApiService.DeleteCustomerAsync(customer.id);
+                    if (_editingCustomerId == customer.id)
                     {
                         CancelEditCustomerBtn_Click(sender, e);
                     }
@@ -954,126 +962,7 @@ namespace Phonova
         }
 
         // Testers CRUD
-        private void LoadTestersTable()
-        {
-            if (TestersTablePanel == null) return;
-            TestersTablePanel.Children.Clear();
-            
-            var testers = App.Database.GetAllTesters();
-            foreach (var testerName in testers)
-            {
-                var grid = new Grid { Margin = new Thickness(0, 0, 0, 4) };
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
 
-                var border = new Border
-                {
-                    Background = Brushes.White,
-                    BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E5E7EB")),
-                    BorderThickness = new Thickness(0, 0, 0, 1),
-                    Padding = new Thickness(12, 10, 12, 10)
-                };
-
-                var nameBlock = new TextBlock { Text = testerName, VerticalAlignment = VerticalAlignment.Center };
-                border.Child = nameBlock;
-                Grid.SetColumn(border, 0);
-                grid.Children.Add(border);
-
-                var actionsPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
-                Grid.SetColumn(actionsPanel, 1);
-                
-                var editBtn = new Button
-                {
-                    Content = new MaterialDesignThemes.Wpf.PackIcon { Kind = MaterialDesignThemes.Wpf.PackIconKind.Pencil, Width = 14, Height = 14 },
-                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F59E0B")),
-                    Background = Brushes.Transparent,
-                    BorderThickness = new Thickness(0),
-                    Width = 28, Height = 28, Padding = new Thickness(0),
-                    Tag = testerName,
-                    Cursor = System.Windows.Input.Cursors.Hand,
-                    Margin = new Thickness(0, 0, 8, 0)
-                };
-                editBtn.Click += EditTester_Click;
-                actionsPanel.Children.Add(editBtn);
-
-                var deleteBtn = new Button
-                {
-                    Content = new MaterialDesignThemes.Wpf.PackIcon { Kind = MaterialDesignThemes.Wpf.PackIconKind.Delete, Width = 14, Height = 14 },
-                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444")),
-                    Background = Brushes.Transparent,
-                    BorderThickness = new Thickness(0),
-                    Width = 28, Height = 28, Padding = new Thickness(0),
-                    Tag = testerName,
-                    Cursor = System.Windows.Input.Cursors.Hand
-                };
-                deleteBtn.Click += DeleteTester_Click;
-                actionsPanel.Children.Add(deleteBtn);
-
-                grid.Children.Add(actionsPanel);
-                TestersTablePanel.Children.Add(grid);
-            }
-        }
-
-        private string? _editingTesterName = null;
-
-        private void AddTesterBtn_Click(object sender, RoutedEventArgs e)
-        {
-            string testerName = NewTesterBox.Text?.Trim() ?? "";
-            if (string.IsNullOrWhiteSpace(testerName)) return;
-
-            if (!string.IsNullOrEmpty(_editingTesterName))
-            {
-                // Update
-                App.Database.UpdateTesterInLibrary(_editingTesterName, testerName);
-                _editingTesterName = null;
-                NewTesterBox.Text = "";
-                AddTesterBtnText.Text = "Add";
-                CancelEditTesterBtn.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                // Insert
-                App.Database.AddTesterToLibrary(testerName);
-                NewTesterBox.Text = "";
-            }
-            LoadTestersTable();
-        }
-
-        private void EditTester_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.Tag is string testerName)
-            {
-                _editingTesterName = testerName;
-                NewTesterBox.Text = testerName;
-                AddTesterBtnText.Text = "Update";
-                CancelEditTesterBtn.Visibility = Visibility.Visible;
-                NewTesterBox.Focus();
-            }
-        }
-
-        private void CancelEditTesterBtn_Click(object sender, RoutedEventArgs e)
-        {
-            _editingTesterName = null;
-            NewTesterBox.Text = "";
-            AddTesterBtnText.Text = "Add";
-            CancelEditTesterBtn.Visibility = Visibility.Collapsed;
-        }
-
-        private void DeleteTester_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.Tag is string testerName)
-            {
-                if (MessageBox.Show($"Delete tester '{testerName}'?", "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
-                {
-                    App.Database.DeleteTesterFromLibrary(testerName);
-                    if (_editingTesterName == testerName)
-                    {
-                        CancelEditTesterBtn_Click(sender, e);
-                    }
-                    LoadTestersTable();
-                }
-            }
-        }
         
         // Reports table loading
         private void LoadReportsTable()
@@ -1088,7 +977,8 @@ namespace Phonova
             // Adjust end date to include the whole day
             if (end.HasValue) end = end.Value.Date.AddDays(1).AddTicks(-1);
             
-            _lastFetchedReports = App.Database.GetProcessedDevices(search, start, end);
+            // Mock empty list instead of App.Database.GetProcessedDevices
+            _lastFetchedReports = new List<Phonova.Models.ProcessedDevice>();
             var reports = _lastFetchedReports;
 
             int total = reports.Count;
@@ -1101,20 +991,16 @@ namespace Phonova
                 bool isPass = true;
                 foreach (var test in report.KernelTests.Values)
                 {
-                    if (test == "Fail" || test == "1") { isPass = false; break; }
+                    if (test == "Fail") { isPass = false; break; }
                 }
-                if (isPass)
+                foreach (var test in report.AppTests.Values)
                 {
-                    foreach (var test in report.AppTests.Values)
-                    {
-                        if (test == "Fail" || test == "1" || test == "No") { isPass = false; break; }
-                    }
+                    if (test == "Fail") { isPass = false; break; }
                 }
 
                 if (isPass) passed++;
                 else failed++;
 
-                // Build Table Row (keep existing logic)
                 var grid = new Grid { Margin = new Thickness(0, 0, 0, 1) };
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
@@ -1300,7 +1186,8 @@ namespace Phonova
         {
             try
             {
-                var reports = App.Database.GetProcessedDevices();
+                // Mock empty list until backend stats endpoint is implemented
+                var reports = new List<Phonova.Models.ProcessedDevice>();
                 int total = reports.Count;
                 int passed = 0;
                 int failed = 0;

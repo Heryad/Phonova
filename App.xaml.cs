@@ -12,7 +12,6 @@ namespace Phonova
     {
         public static Services.AppleDeviceDetector DeviceDetector { get; private set; }
         public static Services.PortMappingService PortMapper { get; private set; }
-        public static Services.DatabaseService Database { get; private set; }
 
         protected override async void OnStartup(StartupEventArgs e)
         {
@@ -21,7 +20,6 @@ namespace Phonova
             // Initialize Services
             DeviceDetector = new Services.AppleDeviceDetector();
             PortMapper = new Services.PortMappingService();
-            Database = new Services.DatabaseService();
 
             await PortMapper.LoadMappingAsync();
         }
