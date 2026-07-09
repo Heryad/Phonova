@@ -10,8 +10,10 @@ namespace Phonova
     public partial class CustomerSelectWindow : Window
     {
         private string? _selectedCustomer = null;
+        private string? _selectedCustomerId = null;
         
         public string? SelectedCustomer => _selectedCustomer;
+        public string? SelectedCustomerId => _selectedCustomerId;
         public bool Confirmed { get; private set; } = false;
         
         public CustomerSelectWindow(string? existingCustomer = null)
@@ -49,7 +51,7 @@ namespace Phonova
                 Foreground = Brushes.Gray,
                 VerticalAlignment = VerticalAlignment.Center
             };
-            noneRadioButton.Checked += (s, e) => UpdateSelectedText("");
+            noneRadioButton.Checked += (s, e) => UpdateSelectedText("", null);
             noneGrid.Children.Add(noneRadioButton);
             noneBorder.Child = noneGrid;
             noneBorder.MouseLeftButtonUp += (s, e) => 
@@ -87,7 +89,7 @@ namespace Phonova
                     VerticalAlignment = VerticalAlignment.Center
                 };
                 
-                radioButton.Checked += (s, e) => UpdateSelectedText(template.name);
+                radioButton.Checked += (s, e) => UpdateSelectedText(template.name, template.id);
                 Grid.SetColumn(radioButton, 0);
                 grid.Children.Add(radioButton);
 
@@ -149,9 +151,10 @@ namespace Phonova
             }
         }
         
-        private void UpdateSelectedText(string customer)
+        private void UpdateSelectedText(string customer, string? customerId = null)
         {
             _selectedCustomer = string.IsNullOrEmpty(customer) ? null : customer;
+            _selectedCustomerId = string.IsNullOrEmpty(customer) ? null : customerId;
             SelectedCustomerText.Text = string.IsNullOrEmpty(customer) ? "No customer selected" : $"Selected: {customer}";
         }
         

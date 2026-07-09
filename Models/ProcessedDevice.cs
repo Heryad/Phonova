@@ -11,6 +11,7 @@ namespace Phonova.Models
         public string? Storage { get; set; }
         public string? Serial { get; set; }
         public string? Imei { get; set; }
+        public string? Imei2 { get; set; }
         public string? IcloudStatus { get; set; }
         public string? FmiStatus { get; set; }
         public string? SimStatus { get; set; }
@@ -25,6 +26,7 @@ namespace Phonova.Models
         public Dictionary<string, string> AppTests { get; set; } = new();
         public List<string> Comments { get; set; } = new();
         public string? Customer { get; set; }
+        public string? CustomerId { get; set; }
         public string? Tester { get; set; }
         public DateTime DateTime { get; set; }
     }

@@ -20,6 +20,7 @@ namespace Phonova
         private readonly Dictionary<int, DeviceCard> _portCards = new();
         private readonly iOSCommander _iosCommander = new();
         public static string? SelectedCustomer { get; set; } = null;
+        public static string? SelectedCustomerId { get; set; } = null;
 
         public static string? SelectedMmrComment { get; set; } = null;
 
@@ -378,6 +379,7 @@ namespace Phonova
             if (customerWindow.Confirmed)
             {
                 SelectedCustomer = customerWindow.SelectedCustomer;
+                SelectedCustomerId = customerWindow.SelectedCustomerId;
                 UpdateCustomerHeaderUi();
                 Debug.WriteLine($"[MainWindow] Selected Customer updated globally to: {SelectedCustomer ?? "None"}");
             }
@@ -386,6 +388,7 @@ namespace Phonova
         private void HeaderCustomerClearBtn_Click(object sender, RoutedEventArgs e)
         {
             SelectedCustomer = null;
+            SelectedCustomerId = null;
             UpdateCustomerHeaderUi();
             Debug.WriteLine("[MainWindow] Selected Customer cleared globally.");
         }

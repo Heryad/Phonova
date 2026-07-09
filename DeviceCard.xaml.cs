@@ -325,7 +325,7 @@ namespace Phonova
 
                     await Dispatcher.InvokeAsync(() =>
                     {
-                        if (s.AutoPrint && !string.IsNullOrEmpty(SerialNumber))
+                        if (s.AutoPrint && !string.IsNullOrEmpty(SerialNumber) && !Phonova.Services.OfflineSyncManager.Instance.IsFuelExhausted)
                         {
                             PrintBtn_Click(null, null);
                         }
@@ -438,7 +438,7 @@ namespace Phonova
                     await Dispatcher.InvokeAsync(() =>
                     {
                         // CRITICAL FIX: Ensure device wasn't cleared/unplugged resulting in empty data
-                        if (s.AutoPrint && !string.IsNullOrEmpty(SerialNumber)) 
+                        if (s.AutoPrint && !string.IsNullOrEmpty(SerialNumber) && !Phonova.Services.OfflineSyncManager.Instance.IsFuelExhausted)
                             PrintBtn_Click(null, null);
                     });
 
@@ -1644,6 +1644,21 @@ namespace Phonova
             if (string.IsNullOrEmpty(SerialNumber)) 
                 return;
 
+            // Fuel check: block print if account has no fuel
+            if (Phonova.Services.OfflineSyncManager.Instance.IsFuelExhausted)
+            {
+                // Only show dialog if the user clicked manually (sender != null)
+                if (sender != null)
+                {
+                    MessageBox.Show(
+                        $"Your account has insufficient fuel to print.\n\nTest results are being held locally and will sync once fuel is added.",
+                        "Insufficient Fuel",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                }
+                return;
+            }
+
             try
             {
                 var friendlyName = Phonova.Models.DeviceModelMap.GetShortDeviceName(ProductType);
@@ -1796,6 +1811,7 @@ namespace Phonova
                     Storage = storageLabel,
                     Serial = SerialNumber,
                     Imei = InternationalMobileEquipmentIdentity,
+                    Imei2 = InternationalMobileEquipmentIdentity2,
                     IcloudStatus = ICloudStatus,
                     FmiStatus = FmiStatus,
                     SimStatus = SimlockText.Text,
@@ -1810,6 +1826,7 @@ namespace Phonova
                     AppTests = SyslogTestResults,
                     Comments = DeviceComments,
                     Customer = MainWindow.SelectedCustomer,
+                    CustomerId = MainWindow.SelectedCustomerId,
                     DateTime = DateTime.Now
                 };
 
@@ -1935,6 +1952,7 @@ namespace Phonova
                     Storage = storageLabel,
                     Serial = SerialNumber,
                     Imei = InternationalMobileEquipmentIdentity,
+                    Imei2 = InternationalMobileEquipmentIdentity2,
                     IcloudStatus = ICloudStatus,
                     FmiStatus = FmiStatus,
                     SimStatus = SimlockText.Text,
@@ -1949,6 +1967,7 @@ namespace Phonova
                     AppTests = SyslogTestResults,
                     Comments = DeviceComments,
                     Customer = MainWindow.SelectedCustomer,
+                    CustomerId = MainWindow.SelectedCustomerId,
                     DateTime = DateTime.Now
                 };
 

@@ -44,16 +44,18 @@ namespace Phonova.Services
         {
             var syncItem = new ApiService.SyncResult
             {
-                customerId = null, // customer name stored separately; no id available client-side
+                customerId = device.CustomerId, // null if no customer selected
                 devicename = device.DeviceName,
                 model = device.Model,
                 serialnumber = device.Serial,
-                imei1 = device.Imei,
+                imei1 = device.Imei ?? "",
+                imei2 = device.Imei2 ?? "",
                 color = device.Color,
                 storage = device.Storage,
                 battery = device.BatteryHealth != null ? $"{device.BatteryHealth}% (Cycles: {device.BatteryCycles})" : "--",
                 icloud = device.IcloudStatus,
                 mdm = device.MdmStatus,
+                blacklist = "N/A",   // no blacklist check on client
                 simlock = device.SimStatus,
                 finalGrade = DetermineFinalGrade(device),
                 comments = device.Comments ?? new System.Collections.Generic.List<string>(),
