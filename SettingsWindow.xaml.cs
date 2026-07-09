@@ -56,6 +56,43 @@ namespace Phonova
             PrintLogoToggle.IsChecked = s.PrintLogo;
             LabelFormatComboBox.SelectedIndex = s.LabelFormat == "Simple Label" ? 1 : 0;
             WarrantyTextBox.Text = s.WarrantyText;
+
+            // Enforce Permissions from ApiService.CurrentConfig
+            var config = ApiService.CurrentConfig;
+            if (config != null)
+            {
+                if (!config.canDoMMR)
+                {
+                    MmrModeToggle.IsChecked = false;
+                    MmrModeToggle.IsEnabled = false;
+                    NavMmrComments.Visibility = Visibility.Collapsed;
+                    if (s.MmrMode)
+                    {
+                        s.MmrMode = false;
+                        SettingsManager.Save();
+                    }
+                }
+                else
+                {
+                    MmrModeToggle.IsEnabled = true;
+                    NavMmrComments.Visibility = Visibility.Visible;
+                }
+
+                if (!config.canFlashSoftware)
+                {
+                    AutoWipeToggle.IsChecked = false;
+                    AutoWipeToggle.IsEnabled = false;
+                    if (s.AutoWipe)
+                    {
+                        s.AutoWipe = false;
+                        SettingsManager.Save();
+                    }
+                }
+                else
+                {
+                    AutoWipeToggle.IsEnabled = true;
+                }
+            }
         }
 
         private void FlowToggle_Click(object sender, RoutedEventArgs e)
@@ -589,6 +626,8 @@ namespace Phonova
             if (panelName == "MmrComments") LoadMmrCommentsTable();
             if (panelName == "Customers") LoadCustomersTable();
             if (panelName == "Reports") LoadReportsTable();
+            if (panelName == "License") LoadLicenseData();
+            if (panelName == "Dashboard") LoadDashboardStats();
         }
 
         private void NavDashboard_Click(object sender, RoutedEventArgs e) => ShowPanel("Dashboard", NavDashboard);
@@ -1244,61 +1283,32 @@ namespace Phonova
         }
         
         // Dashboard analytics
-        private void LoadDashboardStats()
+        private async void LoadDashboardStats()
         {
             try
             {
-                // Mock empty list until backend stats endpoint is implemented
-                var reports = new List<Phonova.Models.ProcessedDevice>();
-                int total = reports.Count;
-                int passed = 0;
-                int failed = 0;
-
-                foreach (var r in reports)
+                var response = await ApiService.GetKpiAsync();
+                if (response != null)
                 {
-                    bool isPass = true;
-                    // Check Kernel Tests
-                    foreach (var test in r.KernelTests.Values)
-                    {
-                        if (test == "Fail" || test == "1") { isPass = false; break; }
-                    }
-                    if (isPass)
-                    {
-                        // Check App Tests
-                        foreach (var test in r.AppTests.Values)
-                        {
-                            if (test == "Fail" || test == "1") { isPass = false; break; }
-                        }
-                    }
+                    StatTodayTests.Text = response.kpis.todayDevices.ToString();
+                    StatTotalTests.Text = response.kpis.totalDevices.ToString();
+                    StatPassRate.Text = response.kpis.passRate;
+                    StatFailRate.Text = response.kpis.failRate;
+                    StatMmrRate.Text = response.kpis.mmrRate;
 
-                    if (isPass) passed++;
-                    else failed++;
+                    DrawBarChart(response.Chart.TestsPerMonth);
+                    ChartEmptyState.Visibility = response.kpis.totalDevices > 0 ? Visibility.Collapsed : Visibility.Visible;
                 }
-
-                StatTotalTests.Text = total.ToString();
-                StatPassed.Text = passed.ToString();
-                StatFailed.Text = failed.ToString();
-                StatSuccessRate.Text = total > 0 ? $"{(int)((double)passed / total * 100)}%" : "0%";
-
-                // Prepare Chart Data (Top 5 Devices)
-                var chartData = reports.Take(5).Select(r => {
-                    int p = r.KernelTests.Values.Count(v => v == "Pass" || v == "0") + r.AppTests.Values.Count(v => v == "Pass" || v == "0" || v == "Yes");
-                    int f = r.KernelTests.Values.Count(v => v == "Fail" || v == "1") + r.AppTests.Values.Count(v => v == "Fail" || v == "1" || v == "No");
-                    return (r.DeviceName ?? "Device", p, f);
-                }).ToList();
-
-                DrawBarChart(chartData);
-
-                var lineData = reports.GroupBy(r => r.DateTime.Date)
-                    .OrderBy(g => g.Key)
-                    .Take(7)
-                    .Select(g => new KeyValuePair<DateTime, int>(g.Key, g.Count()))
-                    .ToList();
-                
-                DrawLineChart(lineData);
-
-                ChartEmptyState.Visibility = total > 0 ? Visibility.Collapsed : Visibility.Visible;
-                LineChartEmptyState.Visibility = total > 0 ? Visibility.Collapsed : Visibility.Visible;
+                else
+                {
+                    StatTodayTests.Text = "0";
+                    StatTotalTests.Text = "0";
+                    StatPassRate.Text = "0%";
+                    StatFailRate.Text = "0%";
+                    StatMmrRate.Text = "0%";
+                    ChartCanvas?.Children.Clear();
+                    if (ChartEmptyState != null) ChartEmptyState.Visibility = Visibility.Visible;
+                }
             }
             catch (Exception ex)
             {
@@ -1306,100 +1316,130 @@ namespace Phonova
             }
         }
 
-        private void DrawBarChart(List<(string Name, int Pass, int Fail)> data)
+        private void DrawBarChart(System.Collections.Generic.List<ApiService.MonthChartPoint> data)
         {
             if (ChartCanvas == null) return;
             ChartCanvas.Children.Clear();
-            if (data.Count == 0) return;
+            if (data == null || data.Count == 0) return;
 
             double width = ChartCanvas.ActualWidth > 0 ? ChartCanvas.ActualWidth : 500;
-            double height = 180; // Leave room for labels
+            double height = 150; // Leave room for labels
             double barWidth = (width / data.Count) * 0.5;
             double spacing = (width / data.Count) * 0.5;
-            double maxVal = data.Max(x => x.Pass + x.Fail);
+            double maxVal = data.Max(x => x.Count);
             if (maxVal == 0) maxVal = 1;
 
             for (int i = 0; i < data.Count; i++)
             {
                 double x = (i * (barWidth + spacing)) + (spacing / 2);
-                double pHeight = (data[i].Pass / maxVal) * height;
-                double fHeight = (data[i].Fail / maxVal) * height;
+                double bHeight = ((double)data[i].Count / maxVal) * height;
 
-                // Pass Bar
-                var rPass = new System.Windows.Shapes.Rectangle { Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981")), Width = barWidth, Height = pHeight, RadiusX = 2, RadiusY = 2 };
-                Canvas.SetLeft(rPass, x);
-                Canvas.SetBottom(rPass, 25); // Leave space for X-axis label
-                ChartCanvas.Children.Add(rPass);
+                // Month Bar
+                var rBar = new System.Windows.Shapes.Rectangle { 
+                    Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#027dfe")), 
+                    Width = barWidth, 
+                    Height = bHeight, 
+                    RadiusX = 4, 
+                    RadiusY = 4 
+                };
+                Canvas.SetLeft(rBar, x);
+                Canvas.SetBottom(rBar, 25); // Leave space for X-axis label
+                ChartCanvas.Children.Add(rBar);
 
-                // Fail Bar (Stacked)
-                var rFail = new System.Windows.Shapes.Rectangle { Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444")), Width = barWidth, Height = fHeight, RadiusX = 2, RadiusY = 2 };
-                Canvas.SetLeft(rFail, x);
-                Canvas.SetBottom(rFail, 25 + pHeight);
-                ChartCanvas.Children.Add(rFail);
+                // Month Name Label (Format: "2026-01" -> "Jan")
+                string monthLabel = data[i].Month;
+                try
+                {
+                    if (monthLabel.Length == 7)
+                    {
+                        var date = DateTime.ParseExact(monthLabel, "yyyy-MM", System.Globalization.CultureInfo.InvariantCulture);
+                        monthLabel = date.ToString("MMM");
+                    }
+                }
+                catch { }
 
-                // Device Name Label
-                var lbl = new TextBlock { Text = data[i].Name, FontSize = 10, Foreground = Brushes.Gray, Width = barWidth + spacing, TextAlignment = TextAlignment.Center };
+                var lbl = new TextBlock { Text = monthLabel, FontSize = 10, Foreground = Brushes.Gray, Width = barWidth + spacing, TextAlignment = TextAlignment.Center };
                 Canvas.SetLeft(lbl, x - (spacing / 4));
                 Canvas.SetBottom(lbl, 5);
                 ChartCanvas.Children.Add(lbl);
 
                 // Count Label (Top)
-                if (data[i].Pass + data[i].Fail > 0)
+                if (data[i].Count > 0)
                 {
-                    var countLbl = new TextBlock { Text = (data[i].Pass + data[i].Fail).ToString(), FontSize = 9, FontWeight = FontWeights.Bold, Foreground = Brushes.DimGray, Width = barWidth, TextAlignment = TextAlignment.Center };
+                    var countLbl = new TextBlock { Text = data[i].Count.ToString(), FontSize = 9, FontWeight = FontWeights.Bold, Foreground = Brushes.DimGray, Width = barWidth, TextAlignment = TextAlignment.Center };
                     Canvas.SetLeft(countLbl, x);
-                    Canvas.SetBottom(countLbl, 25 + pHeight + fHeight + 2);
+                    Canvas.SetBottom(countLbl, 25 + bHeight + 2);
                     ChartCanvas.Children.Add(countLbl);
                 }
             }
         }
 
-        private void DrawLineChart(List<KeyValuePair<DateTime, int>> data)
+
+        private async void LoadLicenseData()
         {
-            if (LineChartCanvas == null) return;
-            LineChartCanvas.Children.Clear();
-            if (data.Count == 0) return;
-
-            double width = LineChartCanvas.ActualWidth > 0 ? LineChartCanvas.ActualWidth : 500;
-            double height = 120;
-            double spacing = data.Count > 1 ? width / (data.Count - 1) : width;
-            double maxVal = data.Max(x => x.Value);
-            if (maxVal == 0) maxVal = 1;
-
-            if (data.Count > 1)
+            try
             {
-                var polyline = new System.Windows.Shapes.Polyline { Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#027dfe")), StrokeThickness = 2, StrokeLineJoin = PenLineJoin.Round };
-                for (int i = 0; i < data.Count; i++)
+                var config = await ApiService.GetConfigAsync();
+                if (config != null)
                 {
-                    double x = i * spacing;
-                    double y = height - ((data[i].Value / maxVal) * height);
-                    polyline.Points.Add(new Point(x, y + 10)); // +10 for padding
+                    ApiService.CurrentConfig = config.Client;
                 }
-                LineChartCanvas.Children.Add(polyline);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error reloading config in License tab: {ex.Message}");
             }
 
-            for (int i = 0; i < data.Count; i++)
+            UpdateLicenseUi();
+        }
+
+        private void UpdateLicenseUi()
+        {
+            var config = ApiService.CurrentConfig;
+            if (config != null)
             {
-                double x = i * spacing;
-                double y = height - ((data[i].Value / maxVal) * height) + 10;
+                LicenseCompanyNameText.Text = config.companyName;
+                LicenseCompanyStatusText.Text = config.isUnlimitedTesting ? "Premium Enterprise Partner" : "Verified Partner";
+                LicenseCompanyStatusText.Foreground = config.isUnlimitedTesting 
+                    ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#6366F1")) 
+                    : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981"));
 
-                // Point Circle
-                var dot = new System.Windows.Shapes.Ellipse { Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#027dfe")), Width = 6, Height = 6 };
-                Canvas.SetLeft(dot, x - 3);
-                Canvas.SetTop(dot, y - 3);
-                LineChartCanvas.Children.Add(dot);
+                FuelValueText.Text = config.isUnlimitedTesting ? "Unlimited" : config.fuel.ToString();
+                ConcurrentLimitValueText.Text = $"{config.maxConcurrentDevices} Devices";
+                
+                if (config.isUnlimitedTesting)
+                {
+                    ExpirationValueText.Text = !string.IsNullOrEmpty(config.unlimitedTestingEndDate) 
+                        ? DateTime.Parse(config.unlimitedTestingEndDate).ToString("MMM dd, yyyy") 
+                        : "Never";
+                }
+                else
+                {
+                    ExpirationValueText.Text = "N/A";
+                }
 
-                // Value Label
-                var valLbl = new TextBlock { Text = data[i].Value.ToString(), FontSize = 9, FontWeight = FontWeights.Bold, Foreground = Brushes.SlateGray };
-                Canvas.SetLeft(valLbl, x - 5);
-                Canvas.SetTop(valLbl, y - 18);
-                LineChartCanvas.Children.Add(valLbl);
+                DetailStatusText.Text = config.isUnlimitedTesting ? "Unlimited Plan" : "Fuel Plan";
+                DetailStatusBorder.Background = config.isUnlimitedTesting 
+                    ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E0E7FF")) 
+                    : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DEF7EC"));
+                DetailStatusText.Foreground = config.isUnlimitedTesting 
+                    ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#6366F1")) 
+                    : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981"));
 
-                // Date Label
-                var dateLbl = new TextBlock { Text = data[i].Key.ToString("MM/dd"), FontSize = 8, Foreground = Brushes.Gray };
-                Canvas.SetLeft(dateLbl, x - 10);
-                Canvas.SetBottom(dateLbl, -15);
-                LineChartCanvas.Children.Add(dateLbl);
+                DetailFuelText.Text = config.fuel.ToString();
+                DetailConcurrentText.Text = config.maxConcurrentDevices.ToString();
+            }
+            else
+            {
+                LicenseCompanyNameText.Text = "Unknown Client";
+                LicenseCompanyStatusText.Text = "No Connection";
+                LicenseCompanyStatusText.Foreground = Brushes.Red;
+                FuelValueText.Text = "--";
+                ConcurrentLimitValueText.Text = "--";
+                ExpirationValueText.Text = "--";
+                DetailStatusText.Text = "--";
+                DetailFuelText.Text = "--";
+                DetailConcurrentText.Text = "--";
             }
         }
     }

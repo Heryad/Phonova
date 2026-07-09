@@ -254,7 +254,7 @@ namespace Phonova
                 AppBtn.IsEnabled = enabled;
                 RebootBtn.IsEnabled = enabled;
                 ShutdownBtn.IsEnabled = enabled;
-                WipeBtn.IsEnabled = enabled;
+                WipeBtn.IsEnabled = enabled && (ApiService.CurrentConfig == null || ApiService.CurrentConfig.canFlashSoftware);
                 PrintBtn.IsEnabled = enabled;
             });
         }
@@ -377,8 +377,11 @@ namespace Phonova
                 if (s.FullTest)
                 {
                     // Step 4: MDM
-                    await RunWithRetryAsync("MDM", 1, 0, (token) => GetDeviceMDMStatusAsync(udid, token), ct);
-                    await Dispatcher.InvokeAsync(ApplyDeviceInfoToUi);
+                    if (ApiService.CurrentConfig == null || ApiService.CurrentConfig.canDoMDMCheck)
+                    {
+                        await RunWithRetryAsync("MDM", 1, 0, (token) => GetDeviceMDMStatusAsync(udid, token), ct);
+                        await Dispatcher.InvokeAsync(ApplyDeviceInfoToUi);
+                    }
 
                     // Step 5: Battery
                     await RunWithRetryAsync("Bat + Cycle", 2, 2000, (token) => GetBatteryInfoStepAsync(udid, token), ct);
@@ -1442,6 +1445,17 @@ namespace Phonova
                 FmiText.Foreground = (SolidColorBrush)FindResource("TextMuted");
             }
 
+            if (ApiService.CurrentConfig != null)
+            {
+                MdmPanel.Visibility = ApiService.CurrentConfig.canDoMDMCheck ? Visibility.Visible : Visibility.Collapsed;
+                SimPanel.Visibility = ApiService.CurrentConfig.canDoSimLockCheck ? Visibility.Visible : Visibility.Collapsed;
+            }
+            else
+            {
+                MdmPanel.Visibility = Visibility.Visible;
+                SimPanel.Visibility = Visibility.Visible;
+            }
+
             UpdatePassRateStatus();
         }
 
@@ -1474,7 +1488,7 @@ namespace Phonova
             }
 
             // MDM
-            if (MdmStatus == "OFF" || MdmStatus == "ON")
+            if ((ApiService.CurrentConfig == null || ApiService.CurrentConfig.canDoMDMCheck) && (MdmStatus == "OFF" || MdmStatus == "ON"))
             {
                 total++;
                 if (MdmStatus == "OFF") passed++;
@@ -1881,6 +1895,7 @@ namespace Phonova
 
         private async void WipeBtn_Click(object sender, RoutedEventArgs e)
         {
+            if (ApiService.CurrentConfig != null && !ApiService.CurrentConfig.canFlashSoftware) return;
             if (string.IsNullOrEmpty(DeviceId)) return;
             if (MessageBox.Show("Are you sure you want to WIPE this device? All data will be lost.", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
             {

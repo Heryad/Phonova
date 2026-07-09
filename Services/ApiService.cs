@@ -280,5 +280,43 @@ namespace Phonova.Services
         {
             return await GetAsync<ConfigResponse>("/desktop/sync/config");
         }
+
+        // --- KPI & Performance ---
+        public class KpiModel
+        {
+            public int todayDevices { get; set; }
+            public int totalDevices { get; set; }
+            public string passRate { get; set; } = "0%";
+            public string failRate { get; set; } = "0%";
+            public string mmrRate { get; set; } = "0%";
+        }
+
+        public class MonthChartPoint
+        {
+            [JsonProperty("month")]
+            public string Month { get; set; } = string.Empty;
+            [JsonProperty("count")]
+            public int Count { get; set; }
+        }
+
+        public class KpiChartModel
+        {
+            [JsonProperty("testsPerMonth")]
+            public System.Collections.Generic.List<MonthChartPoint> TestsPerMonth { get; set; } = new System.Collections.Generic.List<MonthChartPoint>();
+        }
+
+        public class KpiResponse
+        {
+            public string testerId { get; set; } = string.Empty;
+            public string username { get; set; } = string.Empty;
+            public KpiModel kpis { get; set; } = new KpiModel();
+            [JsonProperty("chart")]
+            public KpiChartModel Chart { get; set; } = new KpiChartModel();
+        }
+
+        public static async Task<KpiResponse?> GetKpiAsync()
+        {
+            return await GetAsync<KpiResponse>("/desktop/kpi");
+        }
     }
 }

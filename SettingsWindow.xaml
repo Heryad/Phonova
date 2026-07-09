@@ -252,67 +252,63 @@
                                 <TextBlock Text="Dashboard" Style="{StaticResource SectionTitle}"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,8,16">
+                                    
+                                    <!-- Today's Tests -->
+                                    <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,6,16">
                                         <StackPanel>
-                                            <TextBlock Text="Total Tests" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
-                                            <TextBlock x:Name="StatTotalTests" Text="0" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                            <TextBlock Text="Today's Tests" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="StatTodayTests" Text="0" FontSize="24" FontWeight="Bold" Foreground="{StaticResource BrandPrimary}" Margin="0,4,0,0"/>
                                         </StackPanel>
                                     </Border>
-                                    <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="8,0,8,16">
+                                    
+                                    <!-- Total Tests -->
+                                    <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="6,0,6,16">
                                         <StackPanel>
-                                            <TextBlock Text="Passed" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
-                                            <TextBlock x:Name="StatPassed" Text="0" FontSize="28" FontWeight="Bold" Foreground="#10B981"/>
+                                            <TextBlock Text="Total Tests" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="StatTotalTests" Text="0" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,4,0,0"/>
                                         </StackPanel>
                                     </Border>
-                                    <Border Grid.Column="2" Style="{StaticResource CardStyle}" Margin="8,0,8,16">
+                                    
+                                    <!-- Pass Rate -->
+                                    <Border Grid.Column="2" Style="{StaticResource CardStyle}" Margin="6,0,6,16">
                                         <StackPanel>
-                                            <TextBlock Text="Failed" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
-                                            <TextBlock x:Name="StatFailed" Text="0" FontSize="28" FontWeight="Bold" Foreground="#EF4444"/>
+                                            <TextBlock Text="Pass Rate" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="StatPassRate" Text="0%" FontSize="24" FontWeight="Bold" Foreground="#10B981" Margin="0,4,0,0"/>
                                         </StackPanel>
                                     </Border>
-                                    <Border Grid.Column="3" Style="{StaticResource CardStyle}" Margin="8,0,0,16">
+                                    
+                                    <!-- Fail Rate -->
+                                    <Border Grid.Column="3" Style="{StaticResource CardStyle}" Margin="6,0,6,16">
                                         <StackPanel>
-                                            <TextBlock Text="Success Rate" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
-                                            <TextBlock x:Name="StatSuccessRate" Text="0%" FontSize="28" FontWeight="Bold" Foreground="{StaticResource BrandPrimary}"/>
+                                            <TextBlock Text="Fail Rate" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="StatFailRate" Text="0%" FontSize="24" FontWeight="Bold" Foreground="#EF4444" Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                    <!-- MMR Rate -->
+                                    <Border Grid.Column="4" Style="{StaticResource CardStyle}" Margin="6,0,0,16">
+                                        <StackPanel>
+                                            <TextBlock Text="MMR Rate" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="StatMmrRate" Text="0%" FontSize="24" FontWeight="Bold" Foreground="#F59E0B" Margin="0,4,0,0"/>
                                         </StackPanel>
                                     </Border>
                                 </Grid>
+                                
                                 <!-- Chart Area -->
                                 <Border Style="{StaticResource CardStyle}">
                                     <StackPanel>
-                                        <TextBlock Text="Test Results by Device" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,16"/>
+                                        <TextBlock Text="Monthly Testing Volume" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,16"/>
                                         <Grid Height="200">
                                             <Canvas x:Name="ChartCanvas" Background="Transparent"/>
                                             <!-- Empty state overlay -->
                                             <StackPanel x:Name="ChartEmptyState" VerticalAlignment="Center" HorizontalAlignment="Center">
                                                 <materialDesign:PackIcon Kind="ChartBar" Width="48" Height="48" Foreground="#D1D5DB" HorizontalAlignment="Center"/>
-                                                <TextBlock Text="No data to display" Foreground="{StaticResource TextSecondary}" Margin="0,8,0,0"/>
-                                            </StackPanel>
-                                        </Grid>
-                                        <!-- Legend -->
-                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16,0,0">
-                                            <StackPanel Orientation="Horizontal" Margin="0,0,24,0">
-                                                <Border Width="16" Height="16" Background="#10B981" CornerRadius="2"/>
-                                                <TextBlock Text="Pass" Margin="8,0,0,0" VerticalAlignment="Center" FontSize="12"/>
-                                            </StackPanel>
-                                            <StackPanel Orientation="Horizontal">
-                                                <Border Width="16" Height="16" Background="#EF4444" CornerRadius="2"/>
-                                                <TextBlock Text="Fail" Margin="8,0,0,0" VerticalAlignment="Center" FontSize="12"/>
-                                            </StackPanel>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </Border>
-                                <!-- Line Chart - Devices by Date -->
-                                <Border Style="{StaticResource CardStyle}" Margin="0,16,0,0">
-                                    <StackPanel>
-                                        <TextBlock Text="Devices Tested by Day (Last 7 Days)" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,16"/>
-                                        <Grid Height="150">
-                                            <Canvas x:Name="LineChartCanvas" Background="Transparent"/>
-                                            <StackPanel x:Name="LineChartEmptyState" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                <materialDesign:PackIcon Kind="ChartLine" Width="48" Height="48" Foreground="#D1D5DB" HorizontalAlignment="Center"/>
                                                 <TextBlock Text="No data to display" Foreground="{StaticResource TextSecondary}" Margin="0,8,0,0"/>
                                             </StackPanel>
                                         </Grid>
@@ -778,69 +774,110 @@
                                 </Border></StackPanel>
 
                             <!-- License Panel -->
+                            <!-- License Panel -->
                             <StackPanel x:Name="PanelLicense" Visibility="Collapsed">
-                                <TextBlock Text="License" Style="{StaticResource SectionTitle}"/>
-                                <Grid Margin="0,0,0,16">
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                    <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,8,0">
-                                        <StackPanel>
-                                            <Border Background="#ECFDF5" CornerRadius="8" Padding="10" Width="44" Height="44" HorizontalAlignment="Left" Margin="0,0,0,12">
-                                                <materialDesign:PackIcon Kind="CheckCircle" Width="24" Height="24" Foreground="#10B981"/>
-                                            </Border>
-                                            <TextBlock Text="Total Licenses" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
-                                            <TextBlock Text="500" FontSize="32" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                <TextBlock Text="License &amp; Credits" Style="{StaticResource SectionTitle}"/>
+
+                                <!-- Company Card -->
+                                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="56" Height="56" Background="#F1F5F9" CornerRadius="8" Margin="0,0,16,0" Padding="8">
+                                            <materialDesign:PackIcon Kind="Domain" Width="36" Height="36" Foreground="{StaticResource BrandPrimary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock x:Name="LicenseCompanyNameText" Text="Company Name" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                                            <TextBlock x:Name="LicenseCompanyStatusText" Text="Verified Partner" FontSize="12" Foreground="#10B981" FontWeight="SemiBold" Margin="0,2,0,0"/>
                                         </StackPanel>
-                                    </Border>
-                                    <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="8,0,8,0">
+                                    </Grid>
+                                </Border>
+
+                                <!-- 3 Info Cards -->
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Fuel Balance -->
+                                    <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,8,0">
                                         <StackPanel>
                                             <Border Background="#FEF3C7" CornerRadius="8" Padding="10" Width="44" Height="44" HorizontalAlignment="Left" Margin="0,0,0,12">
                                                 <materialDesign:PackIcon Kind="Fire" Width="24" Height="24" Foreground="#F59E0B"/>
                                             </Border>
-                                            <TextBlock Text="Consumed" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
-                                            <TextBlock Text="347" FontSize="32" FontWeight="Bold" Foreground="#F59E0B"/>
+                                            <TextBlock Text="Fuel Balance" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="FuelValueText" Text="--" FontSize="28" FontWeight="Bold" Foreground="#F59E0B"/>
                                         </StackPanel>
                                     </Border>
-                                    <Border Grid.Column="2" Style="{StaticResource CardStyle}" Margin="8,0,0,0">
+                                    
+                                    <!-- Concurrent Limit -->
+                                    <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="8,0,8,0">
                                         <StackPanel>
                                             <Border Background="#EEF2FF" CornerRadius="8" Padding="10" Width="44" Height="44" HorizontalAlignment="Left" Margin="0,0,0,12">
-                                                <materialDesign:PackIcon Kind="Gift" Width="24" Height="24" Foreground="#6366F1"/>
+                                                <materialDesign:PackIcon Kind="CellphoneLink" Width="24" Height="24" Foreground="#6366F1"/>
                                             </Border>
-                                            <TextBlock Text="Remaining" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
-                                            <TextBlock Text="153" FontSize="32" FontWeight="Bold" Foreground="#6366F1"/>
+                                            <TextBlock Text="Device Capacity" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="ConcurrentLimitValueText" Text="--" FontSize="24" FontWeight="Bold" Foreground="#6366F1" Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                    <!-- Expiration Date -->
+                                    <Border Grid.Column="2" Style="{StaticResource CardStyle}" Margin="8,0,0,0">
+                                        <StackPanel>
+                                            <Border Background="#E0F2FE" CornerRadius="8" Padding="10" Width="44" Height="44" HorizontalAlignment="Left" Margin="0,0,0,12">
+                                                <materialDesign:PackIcon Kind="CalendarClock" Width="24" Height="24" Foreground="#0284C7"/>
+                                            </Border>
+                                            <TextBlock Text="Unlimited Expires" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="ExpirationValueText" Text="--" FontSize="24" FontWeight="Bold" Foreground="#0284C7" Margin="0,4,0,0"/>
                                         </StackPanel>
                                     </Border>
                                 </Grid>
+
+                                <!-- Details List -->
                                 <Grid>
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
                                     <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,8,0">
                                         <StackPanel>
-                                            <TextBlock Text="License Details" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
-                                            <Grid Margin="0,0,0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="100"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                                <TextBlock Text="Status" Foreground="{StaticResource TextSecondary}"/>
-                                                <Border Grid.Column="1" Background="#DEF7EC" CornerRadius="4" Padding="12,4" HorizontalAlignment="Left">
-                                                    <TextBlock Text="Active" Foreground="#10B981" FontWeight="SemiBold"/>
+                                            <TextBlock Text="License Information" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                                            
+                                            <Grid Margin="0,0,0,12">
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                                <TextBlock Text="Testing Status" Foreground="{StaticResource TextSecondary}"/>
+                                                <Border x:Name="DetailStatusBorder" Grid.Column="1" Background="#DEF7EC" CornerRadius="4" Padding="12,4" HorizontalAlignment="Left">
+                                                    <TextBlock x:Name="DetailStatusText" Text="Active" Foreground="#10B981" FontWeight="SemiBold"/>
                                                 </Border>
                                             </Grid>
-                                            <Grid Margin="0,0,0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="100"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                                <TextBlock Text="License Key" Foreground="{StaticResource TextSecondary}"/>
-                                                <TextBlock Grid.Column="1" Text="XXXX-XXXX-XXXX-XXXX" FontWeight="SemiBold"/>
+                                            
+                                            <Grid Margin="0,0,0,12">
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                                <TextBlock Text="Available Fuel Credits" Foreground="{StaticResource TextSecondary}"/>
+                                                <TextBlock x:Name="DetailFuelText" Grid.Column="1" Text="--" FontWeight="SemiBold"/>
                                             </Grid>
-                                            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="100"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                                <TextBlock Text="Expires" Foreground="{StaticResource TextSecondary}"/>
-                                                <TextBlock Grid.Column="1" Text="Dec 31, 2026" FontWeight="SemiBold"/>
+                                            
+                                            <Grid>
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                                <TextBlock Text="Concurrent Limit" Foreground="{StaticResource TextSecondary}"/>
+                                                <TextBlock x:Name="DetailConcurrentText" Grid.Column="1" Text="--" FontWeight="SemiBold"/>
                                             </Grid>
                                         </StackPanel>
                                     </Border>
+                                    
                                     <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="8,0,0,0">
                                         <StackPanel>
-                                            <TextBlock Text="Refill License" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
-                                            <TextBlock Text="Enter your refill code to add more licenses" Foreground="{StaticResource TextSecondary}" FontSize="12" Margin="0,0,0,16"/>
-                                            <TextBlock Text="Refill Code" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                                            <TextBox Padding="12" Margin="0,0,0,16"/>
+                                            <TextBlock Text="Refill Account" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                                            <TextBlock Text="To purchase additional testing credits or upgrade your concurrent device limit, please contact support or visit your customer dashboard." Foreground="{StaticResource TextSecondary}" FontSize="12" Margin="0,0,0,16" TextWrapping="Wrap"/>
+                                            
                                             <Button Style="{StaticResource ActionBtn}" HorizontalAlignment="Stretch">
                                                 <StackPanel Orientation="Horizontal">
-                                                    <materialDesign:PackIcon Kind="Plus" Width="18" Height="18" VerticalAlignment="Center"/>
-                                                    <TextBlock Text="Apply Refill Code" Margin="8,0,0,0"/>
+                                                    <materialDesign:PackIcon Kind="Web" Width="18" Height="18" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="Visit Customer Dashboard" Margin="8,0,0,0"/>
                                                 </StackPanel>
                                             </Button>
                                         </StackPanel>

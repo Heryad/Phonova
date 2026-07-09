@@ -137,12 +137,7 @@
 
                 <!-- Action Buttons -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <!-- Settings -->
-                    <Button x:Name="SettingsBtn2" Style="{StaticResource IconBtn}" ToolTip="Settings" Click="SettingsBtn_Click">
-                        <materialDesign:PackIcon Kind="Cog" Width="18" Height="18"/>
-                    </Button>
- 
-                    <Border Width="1" Background="#475569" Height="20" Margin="6,0"/>
+
  
                     <!-- Select / Deselect All -->
                     <Button x:Name="SelectAllBtn" Style="{StaticResource IconBtn}" ToolTip="Select All" Click="SelectAllBtn_Click">

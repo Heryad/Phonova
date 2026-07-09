@@ -171,7 +171,7 @@ namespace Phonova
                 // Enable/Disable buttons based on whether any real device is selected
                 RebootBatchBtn.IsEnabled = count > 0;
                 ShutdownBatchBtn.IsEnabled = count > 0;
-                WipeBatchBtn.IsEnabled = count > 0;
+                WipeBatchBtn.IsEnabled = count > 0 && (ApiService.CurrentConfig == null || ApiService.CurrentConfig.canFlashSoftware);
             }
             catch
             {
@@ -220,6 +220,8 @@ namespace Phonova
 
         private async void WipeAllBtn_Click(object sender, RoutedEventArgs e) 
         {
+            if (ApiService.CurrentConfig != null && !ApiService.CurrentConfig.canFlashSoftware) return;
+
             var selectedUdids = GetSelectedUdids();
             if (!selectedUdids.Any()) return;
 
