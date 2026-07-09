@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Text.Json;
+using Newtonsoft.Json;
 using System.Diagnostics;
 
 namespace Phonova.Services
@@ -50,7 +50,7 @@ namespace Phonova.Services
                 if (File.Exists(ConfigPath))
                 {
                     string json = File.ReadAllText(ConfigPath);
-                    _current = JsonSerializer.Deserialize<AppSettings>(json);
+                    _current = JsonConvert.DeserializeObject<AppSettings>(json);
                 }
             }
             catch (Exception ex)
@@ -68,7 +68,7 @@ namespace Phonova.Services
                 string dir = Path.GetDirectoryName(ConfigPath);
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
-                string json = JsonSerializer.Serialize(_current, new JsonSerializerOptions { WriteIndented = true });
+                string json = JsonConvert.SerializeObject(_current, Formatting.Indented);
                 File.WriteAllText(ConfigPath, json);
             }
             catch (Exception ex)

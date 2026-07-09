@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Text.Json;
+using Newtonsoft.Json;
 using System.Data.SQLite;
 
 namespace Phonova.Services
@@ -163,9 +163,9 @@ namespace Phonova.Services
                     command.Parameters.AddWithValue("@mdm", device.MdmStatus ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@battery_health", device.BatteryHealth ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@battery_cycles", device.BatteryCycles ?? (object)DBNull.Value);
-                    command.Parameters.AddWithValue("@kernel_tests", JsonSerializer.Serialize(device.KernelTests));
-                    command.Parameters.AddWithValue("@app_tests", JsonSerializer.Serialize(device.AppTests));
-                    command.Parameters.AddWithValue("@comments", JsonSerializer.Serialize(device.Comments));
+                    command.Parameters.AddWithValue("@kernel_tests", JsonConvert.SerializeObject(device.KernelTests));
+                    command.Parameters.AddWithValue("@app_tests", JsonConvert.SerializeObject(device.AppTests));
+                    command.Parameters.AddWithValue("@comments", JsonConvert.SerializeObject(device.Comments));
                     command.Parameters.AddWithValue("@ios_version", device.IosVersion ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@region", device.Region ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@customer", device.Customer ?? (object)DBNull.Value);
@@ -240,9 +240,9 @@ namespace Phonova.Services
                                 MdmStatus = reader.IsDBNull(reader.GetOrdinal("mdm")) ? null : reader.GetString(reader.GetOrdinal("mdm")),
                                 BatteryHealth = reader.IsDBNull(reader.GetOrdinal("battery_health")) ? null : reader.GetString(reader.GetOrdinal("battery_health")),
                                 BatteryCycles = reader.IsDBNull(reader.GetOrdinal("battery_cycles")) ? null : reader.GetString(reader.GetOrdinal("battery_cycles")),
-                                KernelTests = JsonSerializer.Deserialize<Dictionary<string, string>>(reader.GetString(reader.GetOrdinal("kernel_tests"))) ?? new(),
-                                AppTests = JsonSerializer.Deserialize<Dictionary<string, string>>(reader.GetString(reader.GetOrdinal("app_tests"))) ?? new(),
-                                Comments = JsonSerializer.Deserialize<List<string>>(reader.GetString(reader.GetOrdinal("comments"))) ?? new(),
+                                KernelTests = JsonConvert.DeserializeObject<Dictionary<string, string>>(reader.GetString(reader.GetOrdinal("kernel_tests"))) ?? new(),
+                                AppTests = JsonConvert.DeserializeObject<Dictionary<string, string>>(reader.GetString(reader.GetOrdinal("app_tests"))) ?? new(),
+                                Comments = JsonConvert.DeserializeObject<List<string>>(reader.GetString(reader.GetOrdinal("comments"))) ?? new(),
                                 IosVersion = reader.IsDBNull(reader.GetOrdinal("ios_version")) ? null : reader.GetString(reader.GetOrdinal("ios_version")),
                                 Region = reader.IsDBNull(reader.GetOrdinal("region")) ? null : reader.GetString(reader.GetOrdinal("region")),
                                 Customer = reader.IsDBNull(reader.GetOrdinal("customer")) ? null : reader.GetString(reader.GetOrdinal("customer")),

@@ -101,20 +101,27 @@ namespace Phonova
 
         private async void OnDeviceConnectedEvent(object? sender, AppleDeviceEventArgs e)
         {
-            // If we are learning, assign this new path to the next port
-            if (App.PortMapper.IsLearningMode)
+            try
             {
-                var assignedPort = await App.PortMapper.AssignPortAsync(e.Device.LocationPath);
-                if (assignedPort.HasValue)
+                // If we are learning, assign this new path to the next port
+                if (App.PortMapper.IsLearningMode)
                 {
-                    Dispatcher.Invoke(() => 
+                    var assignedPort = await App.PortMapper.AssignPortAsync(e.Device.LocationPath);
+                    if (assignedPort.HasValue)
                     {
-                        _mappingChangedSinceOpen = true;
-                        UpdateStatus($"Mapped Port {assignedPort} successfully!", true);
-                        // Force a refresh to ensure UI catches up
-                        RefreshPortStatus();
-                    });                    
+                        Dispatcher.Invoke(() => 
+                        {
+                            _mappingChangedSinceOpen = true;
+                            UpdateStatus($"Mapped Port {assignedPort} successfully!", true);
+                            // Force a refresh to ensure UI catches up
+                            RefreshPortStatus();
+                        });                    
+                    }
                 }
+            }
+            catch
+            {
+                // Ignore unexpected exceptions to prevent app crash in async void
             }
         }
 

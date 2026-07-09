@@ -1,7 +1,7 @@
 using Phonova.Services;
 using System;
 using System.Diagnostics;
-using System.Text.Json;
+using Newtonsoft.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -605,7 +605,7 @@ namespace Phonova
 
                         try
                         {
-                            var results = JsonSerializer.Deserialize<Dictionary<string, string>>(iosCommandResult.Result);
+                            var results = JsonConvert.DeserializeObject<Dictionary<string, string>>(iosCommandResult.Result);
                             if (results != null)
                             {
                                 foreach (var kv in results)
@@ -724,13 +724,12 @@ namespace Phonova
 
             try
             {
-                using var doc = JsonDocument.Parse(rawOemR);
-                var root = doc.RootElement;
-                if (root.TryGetProperty("PartHistory", out var history))
+                var root = Newtonsoft.Json.Linq.JObject.Parse(rawOemR);
+                if (root["PartHistory"] is Newtonsoft.Json.Linq.JObject history)
                 {
-                    if (history.TryGetProperty("Battery", out var batVal))
+                    if (history["Battery"] != null)
                     {
-                        bool original = IsPartOriginal(batVal.GetString());
+                        bool original = IsPartOriginal(history["Battery"].ToString());
                         if (!original)
                         {
                             _isBatteryOemrFail = true;
@@ -747,9 +746,23 @@ namespace Phonova
                         }
                     }
 
-                    if (history.TryGetProperty("Camera", out var camVal))
+                    if (history["Display"] != null)
                     {
-                        bool original = IsPartOriginal(camVal.GetString());
+                        bool original = IsPartOriginal(history["Display"].ToString());
+                        if (!original)
+                        {
+                            _isDisplayOemrFail = true;
+                            DisplayStatus = "Fail";
+                        }
+                        else
+                        {
+                            DisplayStatus = "Pass";
+                        }
+                    }
+
+                    if (history["Camera"] != null)
+                    {
+                        bool original = IsPartOriginal(history["Camera"].ToString());
                         if (!original)
                         {
                             _isCameraOemrFail = true;
@@ -910,7 +923,7 @@ namespace Phonova
                     notifyDisassociation = true,
                     sToken = VPP_STOKEN
                 };
-                string json = JsonSerializer.Serialize(requestBody);
+                string json = JsonConvert.SerializeObject(requestBody);
                 var content = new StringContent(json, Encoding.UTF8, "text/plain");
                 var request = new HttpRequestMessage(HttpMethod.Post, VPP_API_URL) { Content = content };
                 request.Headers.Add("Cookie", "POD=us~en");
@@ -1055,24 +1068,13 @@ namespace Phonova
             if (string.IsNullOrWhiteSpace(rawInfo))
                 return;
 
-            using var doc = JsonDocument.Parse(rawInfo);
-            var root = doc.RootElement;
-
-            if (root.ValueKind != JsonValueKind.Object)
-                return;
+            var root = Newtonsoft.Json.Linq.JObject.Parse(rawInfo);
 
             string GetString(string name)
             {
-                if (!root.TryGetProperty(name, out var prop))
-                    return string.Empty;
-
-                return prop.ValueKind switch
-                {
-                    JsonValueKind.String => prop.GetString() ?? string.Empty,
-                    JsonValueKind.Number => prop.GetRawText(),
-                    JsonValueKind.True or JsonValueKind.False => prop.GetBoolean().ToString(),
-                    _ => prop.GetRawText()
-                };
+                var prop = root[name];
+                if (prop == null) return string.Empty;
+                return prop.ToString();
             }
 
             ProductType = GetString("ProductType");

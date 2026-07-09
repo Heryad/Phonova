@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
+using Newtonsoft.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Phonova.Models;
@@ -105,7 +105,7 @@ namespace Phonova.Services
                     return false;
                 }
 
-                var config = JsonSerializer.Deserialize<PortMappingConfiguration>(json);
+                var config = JsonConvert.DeserializeObject<PortMappingConfiguration>(json);
                 if (config == null || !ValidateConfiguration(config))
                 {
                     RaiseError("Invalid mapping configuration");
@@ -164,8 +164,7 @@ namespace Phonova.Services
                     Mappings = _mappingsByLocation.Values.ToList()
                 };
 
-                var options = new JsonSerializerOptions { WriteIndented = true };
-                var json = JsonSerializer.Serialize(config, options);
+                var json = JsonConvert.SerializeObject(config, Formatting.Indented);
 
                 var tempPath = _mappingFilePath + ".tmp";
                 File.WriteAllText(tempPath, json);

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Text.Json;
+using Newtonsoft.Json;
 using Phonova.Services;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -55,14 +55,21 @@ namespace Phonova
         {
             Dispatcher.Invoke(async () =>
             {
-                var port = await App.PortMapper.GetPortNumberAsync(e.Device.LocationPath);
-                if (port.HasValue && _portCards.TryGetValue(port.Value, out var card))
+                try
                 {
-                    // Only assign UDID to the card – no extra details.
-                    card.setDevice(e.Device.Udid ?? "Unknown UDID", e.Device.LocationPath, port.Value);
-                }
+                    var port = await App.PortMapper.GetPortNumberAsync(e.Device.LocationPath);
+                    if (port.HasValue && _portCards.TryGetValue(port.Value, out var card))
+                    {
+                        // Only assign UDID to the card – no extra details.
+                        card.setDevice(e.Device.Udid ?? "Unknown UDID", e.Device.LocationPath, port.Value);
+                    }
 
-                UpdateDeviceCount();
+                    UpdateDeviceCount();
+                }
+                catch
+                {
+                    // Ignore unexpected exceptions to prevent app crash in async void
+                }
             });
         }
 
@@ -70,23 +77,33 @@ namespace Phonova
         {
             Dispatcher.Invoke(async () =>
             {
-                // Use port mapping (same as connect) so we always find the right slot,
-                // even if UDID is missing or has already been cleared.
-                var port = await App.PortMapper.GetPortNumberAsync(e.Device.LocationPath);
-                if (port.HasValue && _portCards.TryGetValue(port.Value, out var card))
+                try
                 {
-                    card.ClearDevice();
-                }
+                    // Use port mapping (same as connect) so we always find the right slot,
+                    // even if UDID is missing or has already been cleared.
+                    var port = await App.PortMapper.GetPortNumberAsync(e.Device.LocationPath);
+                    if (port.HasValue && _portCards.TryGetValue(port.Value, out var card))
+                    {
+                        card.ClearDevice();
+                    }
 
-                UpdateDeviceCount();
+                    UpdateDeviceCount();
+                }
+                catch
+                {
+                    // Ignore unexpected exceptions to prevent app crash in async void
+                }
             });
         }
 
         private void OnMappingUpdated(object? sender, EventArgs e)
         {
-            // Re-render to ensure we still have 20 slots after mapping changes.
-            EnsureDeviceCards(DashboardCardCount);
-            UpdateDeviceCount();
+            Dispatcher.Invoke(() => 
+            {
+                // Re-render to ensure we still have 20 slots after mapping changes.
+                EnsureDeviceCards(DashboardCardCount);
+                UpdateDeviceCount();
+            });
         }
 
         private void UpdateDeviceCount()

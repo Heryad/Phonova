@@ -269,17 +269,19 @@ namespace Phonova.Services
                 string locationPath;
                 if (isConnected)
                 {
+                    Thread.Sleep(1200); // Let Apple drivers initialize to avoid USBLib race condition
                     locationPath = GetPhysicalLocationPath(pnpDeviceId, udid);
                     if (string.IsNullOrWhiteSpace(locationPath)) return;
-                    _deviceLocationCache[pnpDeviceId] = locationPath;
+                    _deviceLocationCache[finalUdid] = locationPath;
                 }
                 else
                 {
-                    if (!_deviceLocationCache.TryGetValue(pnpDeviceId, out locationPath!))
+                    if (!_deviceLocationCache.TryGetValue(finalUdid, out locationPath!) && 
+                        !_deviceLocationCache.TryGetValue(pnpDeviceId, out locationPath!))
                     {
-                        locationPath = GetPhysicalLocationPath(pnpDeviceId, udid);
-                        if (string.IsNullOrWhiteSpace(locationPath)) return;
+                        return;
                     }
+                    _deviceLocationCache.TryRemove(finalUdid, out _);
                     _deviceLocationCache.TryRemove(pnpDeviceId, out _);
                 }
 

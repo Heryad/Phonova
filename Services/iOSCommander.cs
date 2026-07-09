@@ -231,7 +231,10 @@ namespace Phonova.Services
             }
 
             string jsonContent = File.ReadAllText(testConfigPath);
-            string base64Config = Convert.ToBase64String(Encoding.UTF8.GetBytes(jsonContent));
+            string base64Config = Convert.ToBase64String(Encoding.UTF8.GetBytes(jsonContent))
+                                    .Replace("+", "%2B")
+                                    .Replace("/", "%2F")
+                                    .Replace("=", "%3D");
 
             string result = LaunchExternalExecutable(toolboxPath + IDEVICE_INFO, $"--udid={deviceUDID} fsync --app={BUNDLE_ID} push --srcPath=\"{base64Config}\" --dstPath=\"/Documents/CustomTestList.json\"");
             Debug.WriteLine($"Push config output for device {deviceUDID}: {result}");

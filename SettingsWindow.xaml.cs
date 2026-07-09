@@ -7,6 +7,7 @@ using System.Windows.Media;
 using Phonova.Services;
 using MaterialDesignThemes.Wpf;
 using System.IO;
+using Newtonsoft.Json;
 using System.Text;
 using Microsoft.Win32;
 using DevExpress.XtraReports.UI;
@@ -171,22 +172,19 @@ namespace Phonova
                 if (System.IO.File.Exists(filePath))
                 {
                     string json = System.IO.File.ReadAllText(filePath);
-                    using (var doc = System.Text.Json.JsonDocument.Parse(json))
+                    var root = Newtonsoft.Json.Linq.JObject.Parse(json);
+                    if (root["Test"] != null)
                     {
-                        var root = doc.RootElement;
-                        if (root.TryGetProperty("Test", out var testProp))
-                        {
-                            var parts = testProp.GetString()?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                            if (parts != null) foreach (var p in parts) enabledTests.Add(p.Trim());
-                        }
+                        var parts = root["Test"].ToString().Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (parts != null) foreach (var p in parts) enabledTests.Add(p.Trim());
+                    }
 
-                        // Read Params
-                        foreach (var prop in root.EnumerateObject())
+                    // Read Params
+                    foreach (var prop in root.Properties())
+                    {
+                        if (prop.Name != "Test")
                         {
-                            if (prop.Name != "Test")
-                            {
-                                paramsValues[prop.Name] = prop.Value.ToString();
-                            }
+                            paramsValues[prop.Name] = prop.Value.ToString();
                         }
                     }
                 }
@@ -321,10 +319,10 @@ namespace Phonova
                 if (System.IO.File.Exists(filePath))
                 {
                     string json = System.IO.File.ReadAllText(filePath);
-                    using (var doc = System.Text.Json.JsonDocument.Parse(json))
+                    var root = Newtonsoft.Json.Linq.JObject.Parse(json);
+                    foreach (var prop in root.Properties())
                     {
-                        foreach (var prop in doc.RootElement.EnumerateObject())
-                            finalObj[prop.Name] = prop.Value.ToString();
+                        finalObj[prop.Name] = prop.Value.ToString();
                     }
                 }
             } catch {}
@@ -338,7 +336,7 @@ namespace Phonova
             try 
             {
                 string filePath = System.IO.Path.Combine(_configPath, "CustomTestList.json");
-                string outJson = System.Text.Json.JsonSerializer.Serialize(finalObj);
+                string outJson = JsonConvert.SerializeObject(finalObj, Formatting.Indented);
                 System.IO.File.WriteAllText(filePath, outJson, System.Text.Encoding.UTF8);
                 MessageBox.Show("Configuration Saved!", "Success");
             }
@@ -477,7 +475,7 @@ namespace Phonova
 				<key>CaptiveBypass</key>
 				<false/>
 				<key>EncryptionType</key>
-				<string>WPA</string>
+				<string>{ENCRYPTION_TYPE}</string>
 				<key>HIDDEN_NETWORK</key>
 				<false/>
 				<key>IsHotspot</key>
@@ -517,9 +515,11 @@ namespace Phonova
 	</dict>
 </plist>";
 
+                string encryptionType = string.IsNullOrEmpty(password) ? "None" : "WPA";
                 string xml = template
                     .Replace("{PASSWORD}", password)
                     .Replace("{SSID}", ssid)
+                    .Replace("{ENCRYPTION_TYPE}", encryptionType)
                     .Replace("{CLEAN_SSID}", cleanSsid)
                     .Replace("{CLEAN_SSID_UUID}", Guid.NewGuid().ToString())
                     .Replace("{UUID1}", payloadUuid1)
