@@ -11,6 +11,7 @@ namespace Phonova
         public LoginScreen()
         {
             InitializeComponent();
+            CompanyEmailBox.Text = Phonova.Services.SettingsManager.Current.SavedCompanyEmail;
         }
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
@@ -40,6 +41,9 @@ namespace Phonova
             if (!string.IsNullOrEmpty(response.Token))
             {
                 Phonova.Services.ApiService.Username = username;
+                Phonova.Services.SettingsManager.Current.SavedCompanyEmail = companyEmail;
+                Phonova.Services.SettingsManager.Save();
+                
                 var mainWindow = new MainWindow();
                 mainWindow.Show();
                 this.Close();

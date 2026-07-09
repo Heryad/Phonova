@@ -9,6 +9,7 @@ namespace Phonova.Services
     {
         // API Configuration
         public string ApiBaseUrl { get; set; } = "https://phonova-api.vercel.app";
+        public string SavedCompanyEmail { get; set; } = string.Empty;
 
         // Test Flow
         public bool FullTest { get; set; } = true;
