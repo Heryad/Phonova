@@ -746,20 +746,6 @@ namespace Phonova
                         }
                     }
 
-                    if (history["Display"] != null)
-                    {
-                        bool original = IsPartOriginal(history["Display"].ToString());
-                        if (!original)
-                        {
-                            _isDisplayOemrFail = true;
-                            DisplayStatus = "Fail";
-                        }
-                        else
-                        {
-                            DisplayStatus = "Pass";
-                        }
-                    }
-
                     if (history["Camera"] != null)
                     {
                         bool original = IsPartOriginal(history["Camera"].ToString());
