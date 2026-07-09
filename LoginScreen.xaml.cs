@@ -39,6 +39,7 @@ namespace Phonova
 
             if (!string.IsNullOrEmpty(response.Token))
             {
+                Phonova.Services.ApiService.Username = username;
                 var mainWindow = new MainWindow();
                 mainWindow.Show();
                 this.Close();

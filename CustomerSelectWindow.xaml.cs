@@ -21,6 +21,7 @@ namespace Phonova
         }
         
         private string? _editingCustomerId = null;
+        private string? _editingCustomer = null;
 
         private async void LoadCustomers(string? preselected = null)
         {

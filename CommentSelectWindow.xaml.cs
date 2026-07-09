@@ -131,17 +131,6 @@ namespace Phonova
             LoadComments();
         }
 
-        private async void AddCommentBtn_Click(object sender, RoutedEventArgs e)
-        {
-            string comment = NewCommentBox.Text?.Trim() ?? "";
-            if (string.IsNullOrWhiteSpace(comment)) return;
-            
-            await ApiService.AddCommentAsync(comment);
-            NewCommentBox.Text = "";
-            LoadComments();
-        }
-
-
         private void CloseBtn_Click(object sender, RoutedEventArgs e)
         {
             Confirmed = false;

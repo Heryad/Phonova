@@ -29,6 +29,7 @@ namespace Phonova.Services
     {
         private static readonly HttpClient _httpClient;
         public static string CurrentToken { get; private set; }
+        public static string Username { get; set; }
 
         static ApiService()
         {

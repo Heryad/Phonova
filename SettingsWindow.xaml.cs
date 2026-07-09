@@ -798,7 +798,7 @@ namespace Phonova
 
         private void EditMmrComment_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.Tag is ApiService.MmrCommentModel comment)
+            if (sender is Button btn && btn.Tag is ApiService.CommentModel comment)
             {
                 _editingMmrComment = comment.content;
                 _editingMmrCommentId = comment.id;
@@ -820,7 +820,7 @@ namespace Phonova
 
         private async void DeleteMmrComment_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.Tag is ApiService.MmrCommentModel comment)
+            if (sender is Button btn && btn.Tag is ApiService.CommentModel comment)
             {
                 if (MessageBox.Show($"Are you sure you want to delete '{comment.content}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
