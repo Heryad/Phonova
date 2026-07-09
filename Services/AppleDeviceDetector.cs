@@ -228,7 +228,7 @@ namespace Phonova.Services
                             string dbccName = Marshal.PtrToStringAuto(namePtr);
 
                             string[] parts = dbccName.Split('#');
-                            if (parts.Length > 1 && parts[1].Contains("vid_05ac", StringComparison.OrdinalIgnoreCase))
+                            if (parts.Length > 1 && parts[1].IndexOf("vid_05ac", StringComparison.OrdinalIgnoreCase) >= 0)
                             {
                                 bool isConnected = (eventType == DBT_DEVICEARRIVAL);
                                 ThreadPool.QueueUserWorkItem(_ => 
@@ -252,7 +252,7 @@ namespace Phonova.Services
                 if (parts.Length < 3) return;
 
                 // Ignore MI_ interfaces to avoid duplicate trigger
-                if (parts[1].Contains("&mi_", StringComparison.OrdinalIgnoreCase)) return;
+                if (parts[1].IndexOf("&mi_", StringComparison.OrdinalIgnoreCase) >= 0) return;
 
                 string prefix = parts[0].StartsWith(@"\\?\") ? parts[0].Substring(4) : parts[0];
                 string pnpDeviceId = $"{prefix}\\{parts[1]}\\{parts[2]}".ToUpperInvariant();

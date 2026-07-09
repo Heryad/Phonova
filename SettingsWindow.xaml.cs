@@ -336,7 +336,7 @@ namespace Phonova
             try 
             {
                 string filePath = System.IO.Path.Combine(_configPath, "CustomTestList.json");
-                string outJson = JsonConvert.SerializeObject(finalObj, Formatting.Indented);
+                string outJson = JsonConvert.SerializeObject(finalObj, Newtonsoft.Json.Formatting.Indented);
                 System.IO.File.WriteAllText(filePath, outJson, System.Text.Encoding.UTF8);
                 MessageBox.Show("Configuration Saved!", "Success");
             }

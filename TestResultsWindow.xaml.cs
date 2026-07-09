@@ -43,7 +43,7 @@ namespace Phonova
             // Process Kernel Tests
             foreach (var test in device.KernelTests)
             {
-                bool isComponent = componentKeys.Any(c => test.Key.Contains(c, StringComparison.OrdinalIgnoreCase));
+                bool isComponent = componentKeys.Any(c => test.Key.IndexOf(c, StringComparison.OrdinalIgnoreCase) >= 0);
                 bool passed = test.Value.Equals("Pass", StringComparison.OrdinalIgnoreCase) || 
                               test.Value.Equals("Original", StringComparison.OrdinalIgnoreCase);
 
@@ -132,7 +132,7 @@ namespace Phonova
 
             // SIM Status (special case for eSIM/Normal)
             SimText.Text = sim;
-            if (sim.Contains("eSIM", StringComparison.OrdinalIgnoreCase) || sim.Contains("Normal", StringComparison.OrdinalIgnoreCase))
+            if (sim.IndexOf("eSIM", StringComparison.OrdinalIgnoreCase) >= 0 || sim.IndexOf("Normal", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 SimBadge.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DBEAFE")); // Blue
                 SimText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E40AF"));
