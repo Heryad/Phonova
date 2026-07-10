@@ -57,7 +57,7 @@ namespace Phonova
         private const string VPP_API_URL = "https://vpp.itunes.apple.com/mdm/manageVPPLicensesByAdamIdSrv";
         private const string VPP_ADAM_ID = "1547404030";
         private const string VPP_PRICING_PARAM = "STDQ";
-        private const string VPP_STOKEN = "eyJleHBEYXRlIjoiMjAyNy0wMi0wMlQwODo0Njo1NiswMDAwIiwidG9rZW4iOiJRMDlxUGZKT3NSdmRUdDVLamFaMkRFZnBUOTdTRUgvMFJyOEVwVGpDTUdSUEVjZUw2b0RHOHJBNkZUQ3h4UlhyQTFCWm1TUWpHbys5ZzBVdzZCQnk3dE1nUUJya3B6L1dUdlRqbHIrbmZpMit5L2pIeWg4ZDhTU0pDcWFKMGpTOXdCaGMzNnQ3NGdpQ0t6eUgwOHJnTE9wZnZlblpGV2E4eVNNVVVUU2k2MEhXSVVzbVloQ0FzcDNVMHVQQkFOUDUiLCJvcmdOYW1lIjoiRFIgRk9ORVMgRlpDTyJ9";
+        private const string VPP_STOKEN = "eyJleHBEYXRlIjoiMjAyNy0wMy0xN1QxMzoyMDo1NiswMDAwIiwidG9rZW4iOiJRMDlxUGZKT3NSdmRUdDVLamFaMkREMXdrcFVjMXMrUkNJNEpKdUU2RSt4TXFZSU9QZ0NHcHBmWHgxYkN6Z0t3dk5JRXlwYzVTZHpNMThkNHdaN3pod21KOVRxVkJhMDlPOFJIeXR0OWF1ZjJ0QTVteWNIMzU2VHRpOGx6RXBpVyttejdKa1JtOVB0OW0rV3VqaWRQRFRTVHZwd2srZHQ5UWJIc1dWZERNbG1UTFB6Vjg5WjVSc2VCK2N5T2ZPZEwiLCJvcmdOYW1lIjoiRFIgRk9ORVMgRlpDTyJ9";
 
         private readonly iOSCommander _iosCommander = new iOSCommander();
 
@@ -151,11 +151,21 @@ namespace Phonova
             
             Debug.WriteLine($"Device {udidToCleanup} Disconnected from Port {PortNumber}");
 
-            // CRITICAL FIX: Stop processes for the device that's being cleared
+            // CRITICAL FIX: Stop processes in background to avoid blocking the UI thread on disconnect
             if (!string.IsNullOrEmpty(udidToCleanup))
             {
-                iOSCommander.StopProcessFor(udidToCleanup);
-                System.Threading.Thread.Sleep(100); // Let process cleanup complete
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        iOSCommander.StopProcessFor(udidToCleanup);
+                        System.Threading.Thread.Sleep(100); // Let process cleanup complete
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[ERROR] Background cleanup failed for {udidToCleanup}: {ex.Message}");
+                    }
+                });
             }
 
             CancelPipeline();

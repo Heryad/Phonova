@@ -203,9 +203,10 @@ namespace Phonova
 
                     UpdateDeviceCount();
                 }
-                catch
+                catch (Exception ex)
                 {
                     // Ignore unexpected exceptions to prevent app crash in async void
+                    System.Diagnostics.Debug.WriteLine($"[ERROR] OnDeviceDisconnected threw: {ex}");
                 }
             });
         }
