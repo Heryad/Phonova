@@ -1214,6 +1214,48 @@ namespace Phonova
             }
         }
 
+        public void AdjustBatteryHealth(int delta)
+        {
+            if (!BatteryHealth.HasValue) return;
+            
+            // Adjust and clamp between 0 and 100
+            int newHealth = BatteryHealth.Value + delta;
+            newHealth = Math.Max(0, Math.Min(100, newHealth));
+            
+            BatteryHealth = newHealth;
+            
+            // Update the UI
+            Dispatcher.Invoke(() =>
+            {
+                BatteryPercentText.Text = $"{BatteryHealth}%";
+                
+                // Re-evaluate threshold fail
+                if (BatteryHealth.Value < 80)
+                {
+                    _isBatteryThresholdFail = true;
+                    BatteryStatus = "Fail";
+                }
+                else if (!_isBatteryOemrFail)
+                {
+                    _isBatteryThresholdFail = false;
+                    BatteryStatus = "Pass";
+                }
+
+                // Update Icon Color
+                var valBatteryIcon = ValBattery.Child as materialDesign.PackIcon;
+                if (BatteryStatus == "Pass")
+                {
+                    ValBattery.Background = (System.Windows.Media.SolidColorBrush)FindResource("StatusOk");
+                    if (valBatteryIcon != null) valBatteryIcon.Foreground = System.Windows.Media.Brushes.White;
+                }
+                else if (BatteryStatus == "Fail")
+                {
+                    ValBattery.Background = (System.Windows.Media.SolidColorBrush)FindResource("StatusFail");
+                    if (valBatteryIcon != null) valBatteryIcon.Foreground = System.Windows.Media.Brushes.White;
+                }
+            });
+        }
+
         private int ExtractIntFromXml(string xml, string key)
         {
             string pattern = $"<key>{key}</key>";

@@ -264,6 +264,7 @@ namespace Phonova
                 RebootBatchBtn.IsEnabled = count > 0;
                 ShutdownBatchBtn.IsEnabled = count > 0;
                 WipeBatchBtn.IsEnabled = count > 0 && (ApiService.CurrentConfig == null || ApiService.CurrentConfig.canFlashSoftware);
+                BatteryBatchBtn.IsEnabled = count > 0;
             }
             catch
             {
@@ -300,6 +301,29 @@ namespace Phonova
             if (!selectedUdids.Any()) return;
 
             await ProcessInBatches(selectedUdids, udid => _iosCommander.RebootDevice(udid));
+        }
+
+        private void BatteryBatchBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedCards = _portCards.Values.Where(c => c.IsSelected).ToList();
+            if (!selectedCards.Any()) return;
+
+            var batteryWindow = new BatteryAdjustWindow();
+            batteryWindow.ShowDialog();
+
+            if (batteryWindow.ResultOK)
+            {
+                int delta = batteryWindow.AdjustmentValue;
+                if (!batteryWindow.IsAddAction)
+                {
+                    delta = -delta;
+                }
+
+                foreach (var card in selectedCards)
+                {
+                    card.AdjustBatteryHealth(delta);
+                }
+            }
         }
 
         private async void ShutdownAllBtn_Click(object sender, RoutedEventArgs e) 

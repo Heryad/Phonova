@@ -156,6 +156,9 @@
                     <Button x:Name="ShutdownBatchBtn" Style="{StaticResource IconBtn}" ToolTip="Shutdown Selected" Click="ShutdownAllBtn_Click" IsEnabled="False">
                         <materialDesign:PackIcon Kind="Power" Width="18" Height="18"/>
                     </Button>
+                    <Button x:Name="BatteryBatchBtn" Style="{StaticResource IconBtn}" ToolTip="Adjust Battery Selected" Click="BatteryBatchBtn_Click" IsEnabled="False">
+                        <materialDesign:PackIcon Kind="BatteryPlus" Width="18" Height="18"/>
+                    </Button>
                     <Button x:Name="WipeBatchBtn" Style="{StaticResource RedIconBtn}" ToolTip="Wipe Selected" Click="WipeAllBtn_Click" IsEnabled="False">
                         <materialDesign:PackIcon Kind="DeleteForever" Width="18" Height="18"/>
                     </Button>
