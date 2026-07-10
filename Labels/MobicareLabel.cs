@@ -14,7 +14,7 @@ using TextAlignment = DevExpress.XtraPrinting.TextAlignment;
  
 namespace Phonova
 {
-    public class HorizontalLabel : XtraReport
+    public class MobicareLabel : XtraReport
     {
         private IContainer components = null;
         private DetailBand Detail;
@@ -41,7 +41,7 @@ namespace Phonova
         private XRLabel lblNotes;
         private XRLabel lblPort;
  
-        public HorizontalLabel(
+        public MobicareLabel(
             string imei,
             string serial,
             string model,
@@ -267,10 +267,10 @@ namespace Phonova
             var sGlobal = Services.SettingsManager.Current;
             bool printLogo = sGlobal.PrintLogo;
  
-            string logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Company", "veron.png");
+            string logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Company", "mobicare.png");
             this.picLogo.ImageUrl = logoPath;
             this.picLogo.Sizing = ImageSizeMode.ZoomImage;
-            this.picLogo.LocationFloat = new PointFloat(2f, topRowY + 0f);
+            this.picLogo.LocationFloat = new PointFloat(2f, topRowY + 17f);
             this.picLogo.SizeF = new SizeF(logoW + 5f, topRowH);
             this.picLogo.Borders = BorderSide.None;
             this.picLogo.BackColor = Color.Transparent;
@@ -282,7 +282,7 @@ namespace Phonova
  
             this.barcodeIMEI.AutoModule = true;
             this.barcodeIMEI.Font = new Font("Tahoma", 7f);
-            this.barcodeIMEI.LocationFloat = new PointFloat(barcodeXFinal, topRowY);
+            this.barcodeIMEI.LocationFloat = new PointFloat(barcodeXFinal, topRowY + 13f);
             this.barcodeIMEI.Name = "barcodeIMEI";
             this.barcodeIMEI.Padding = new PaddingInfo(2, 2, 0, 0, 100f);
             this.barcodeIMEI.SizeF = new SizeF(barcodeWFinal, topRowH);
@@ -299,7 +299,7 @@ namespace Phonova
             // ── Product Info Box ─────────────────────────────────────────────────────
             float productY = topRowY + topRowH + 4f;  // below the top row
             this.lblProductInfo.Font = new Font("Tahoma", 6.6f, FontStyle.Bold);
-            this.lblProductInfo.LocationFloat = new PointFloat(5f, productY);
+            this.lblProductInfo.LocationFloat = new PointFloat(5f, productY + 10f);
             this.lblProductInfo.SizeF = new SizeF(205f, 23f);
             this.lblProductInfo.TextAlignment = TextAlignment.MiddleLeft;
             this.lblProductInfo.Padding = new PaddingInfo(10, 0, 0, 0, 100f);
@@ -309,14 +309,14 @@ namespace Phonova
             this.lblProductInfo.Multiline = false;
  
             this.lblPort.Font = new Font("Tahoma", 6.6f, FontStyle.Bold);
-            this.lblPort.LocationFloat = new PointFloat(212f, productY);
+            this.lblPort.LocationFloat = new PointFloat(212f, productY + 10f);
             this.lblPort.SizeF = new SizeF(28f, 23f);
             this.lblPort.TextAlignment = TextAlignment.MiddleRight;
             this.lblPort.Padding = new PaddingInfo(0, 0, 0, 0, 100f);
             this.lblPort.Borders = BorderSide.None;
             this.lblPort.BackColor = Color.Transparent;
  
-            this.picPortIcon.LocationFloat = new PointFloat(242f, productY + 3.5f);
+            this.picPortIcon.LocationFloat = new PointFloat(242f, productY + 13f);
             this.picPortIcon.SizeF = new SizeF(16f, 16f);
             this.picPortIcon.Sizing = ImageSizeMode.ZoomImage;
             this.picPortIcon.Borders = BorderSide.None;
@@ -326,19 +326,19 @@ namespace Phonova
             this.picPortIcon.ImageUrl = usbPath;
  
             XRShape shapeProductBox = new XRShape();
-            shapeProductBox.LocationFloat = new PointFloat(5f, productY);
+            shapeProductBox.LocationFloat = new PointFloat(0f, productY + 10);
             shapeProductBox.SizeF = new SizeF(266f, 23f);
             shapeProductBox.Shape = new ShapeRectangle() { Fillet = 40 };
             shapeProductBox.FillColor = Color.Transparent;
             shapeProductBox.ForeColor = Color.Black;
-            shapeProductBox.LineWidth = 2;
+            shapeProductBox.LineWidth = 1;
             shapeProductBox.Borders = BorderSide.None;
             shapeProductBox.BackColor = Color.Transparent;
             ((XRControl)this.Detail).Controls.Add(shapeProductBox);
  
             // ── Table geometry — positioned below product info ────────────────────────
-            float tableX = 5f;
-            float tableY = productY + 27f;   // below product info box
+            float tableX = 0f;
+            float tableY = productY + 35f;   // below product info box
             float col1W = 132.5f;
             float col2W = 132.5f;
             float rowH = 14f;
@@ -487,9 +487,9 @@ namespace Phonova
  
             this.Bands.AddRange(new Band[] { this.Detail, this.TopMargin, this.BottomMargin });
  
-            this.Margins = new Margins(0, 0, 0, 0);  // ~2.5mm left offset to correct print alignment
+            this.Margins = new Margins(22, 0, 2, 0);  // ~2.5mm left offset to correct print alignment
             this.PageHeight = 197;   // 50mm
-            this.PageWidth = 276;   // 70mm
+            this.PageWidth = 294;   // 70mm
             this.Landscape = false;
             this.PaperKind = PaperKind.Custom;
             this.PaperName = "User defined";

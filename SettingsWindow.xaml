@@ -758,6 +758,7 @@
                                             <ComboBox x:Name="LabelFormatComboBox" Grid.Column="1" Width="150" Height="28" SelectionChanged="SettingComboBox_SelectionChanged">
                                                 <ComboBoxItem Content="Standard"/>
                                                 <ComboBoxItem Content="Simple Label"/>
+                                                <ComboBoxItem Content="Mobicare Label"/>
                                             </ComboBox>
                                         </Grid>
                                         <Grid Margin="0,0,0,12">

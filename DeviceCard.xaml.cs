@@ -1760,7 +1760,28 @@ namespace Phonova
                 // Create the label report with merged data
                 DevExpress.XtraReports.UI.XtraReport report;
                 var sSet = Services.SettingsManager.Current;
-                if (sSet.LabelFormat == "Simple Label")
+                if (sSet.LabelFormat == "Mobicare Label")
+                {
+                    report = new MobicareLabel(
+                        InternationalMobileEquipmentIdentity,
+                        SerialNumber,
+                        ModelText.Text,
+                        productTitle,
+                        displayColor,
+                        ProductVersion,
+                        BatteryHealth?.ToString() + "%",
+                        ICloudStatus,
+                        FmiStatus,
+                        MdmStatus,
+                        displaySim,
+                        PortNumber.ToString(),
+                        notes,
+                        MainWindow.SelectedCustomer ?? "",
+                        ApiService.Username ?? "",
+                        isSynced
+                    );
+                }
+                else if (sSet.LabelFormat == "Simple Label")
                 {
                     report = new SimpleLabel(
                         InternationalMobileEquipmentIdentity,
