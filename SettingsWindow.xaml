@@ -179,22 +179,39 @@
                 <!-- Sidebar -->
                 <Border Grid.Column="0" Background="{StaticResource SidebarBg}">
                     <StackPanel Margin="0,16,0,0">
+                        <TextBlock Text="GENERAL" Foreground="{StaticResource TextSecondary}" FontSize="11" FontWeight="SemiBold" Margin="16,0,0,4"/>
                         <Button x:Name="NavDashboard" Style="{StaticResource NavBtnActive}" Click="NavDashboard_Click">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="ViewDashboard" Width="20" Height="20" VerticalAlignment="Center"/>
                                 <TextBlock Text="Dashboard" Margin="12,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
-                        <Button x:Name="NavReports" Style="{StaticResource NavBtn}" Click="NavReports_Click">
+
+                        <TextBlock Text="CONFIGURATION" Foreground="{StaticResource TextSecondary}" FontSize="11" FontWeight="SemiBold" Margin="16,16,0,4"/>
+                        <Button x:Name="NavTestFlow" Style="{StaticResource NavBtn}" Click="NavTestFlow_Click">
                             <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="FileDocument" Width="20" Height="20" VerticalAlignment="Center"/>
-                                <TextBlock Text="Reports" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                                <materialDesign:PackIcon Kind="PlayCircle" Width="20" Height="20" VerticalAlignment="Center"/>
+                                <TextBlock Text="Test Flow" Margin="12,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavTests" Style="{StaticResource NavBtn}" Click="NavTests_Click">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="ClipboardCheck" Width="20" Height="20" VerticalAlignment="Center"/>
-                                <TextBlock Text="Tests" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Test Settings" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="NavWifi" Style="{StaticResource NavBtn}" Click="NavWifi_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Wifi" Width="20" Height="20" VerticalAlignment="Center"/>
+                                <TextBlock Text="WiFi Settings" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <TextBlock Text="DATA &amp; LOGS" Foreground="{StaticResource TextSecondary}" FontSize="11" FontWeight="SemiBold" Margin="16,16,0,4"/>
+                        <Button x:Name="NavCustomers" Style="{StaticResource NavBtn}" Click="NavCustomers_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Account" Width="20" Height="20" VerticalAlignment="Center"/>
+                                <TextBlock Text="Customers" Margin="12,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavComments" Style="{StaticResource NavBtn}" Click="NavComments_Click">
@@ -209,25 +226,8 @@
                                 <TextBlock Text="MMR Comments" Margin="12,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
-                        <Button x:Name="NavCustomers" Style="{StaticResource NavBtn}" Click="NavCustomers_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="Account" Width="20" Height="20" VerticalAlignment="Center"/>
-                                <TextBlock Text="Customers" Margin="12,0,0,0" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
 
-                        <Button x:Name="NavWifi" Style="{StaticResource NavBtn}" Click="NavWifi_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="Wifi" Width="20" Height="20" VerticalAlignment="Center"/>
-                                <TextBlock Text="WiFi Settings" Margin="12,0,0,0" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
-                        <Button x:Name="NavTestFlow" Style="{StaticResource NavBtn}" Click="NavTestFlow_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="PlayCircle" Width="20" Height="20" VerticalAlignment="Center"/>
-                                <TextBlock Text="Test Flow" Margin="12,0,0,0" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
+                        <TextBlock Text="SYSTEM" Foreground="{StaticResource TextSecondary}" FontSize="11" FontWeight="SemiBold" Margin="16,16,0,4"/>
                         <Button x:Name="NavLicense" Style="{StaticResource NavBtn}" Click="NavLicense_Click">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="License" Width="20" Height="20" VerticalAlignment="Center"/>
@@ -316,119 +316,7 @@
                                 </Border>
                             </StackPanel>
 
-                            <!-- Reports Panel -->
-                            <StackPanel x:Name="PanelReports" Visibility="Collapsed">
-                                <TextBlock Text="Reports" Style="{StaticResource SectionTitle}"/>
-                                
-                                <!-- Reports Stats -->
-                                <Grid Margin="0,0,0,16">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,8,0">
-                                        <StackPanel>
-                                            <TextBlock Text="Total Matched" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
-                                            <TextBlock x:Name="ReportStatTotal" Text="0" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
-                                        </StackPanel>
-                                    </Border>
-                                    <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="8,0,8,0">
-                                        <StackPanel>
-                                            <TextBlock Text="Passed" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
-                                            <TextBlock x:Name="ReportStatPassed" Text="0" FontSize="20" FontWeight="Bold" Foreground="#10B981"/>
-                                        </StackPanel>
-                                    </Border>
-                                    <Border Grid.Column="2" Style="{StaticResource CardStyle}" Margin="8,0,8,0">
-                                        <StackPanel>
-                                            <TextBlock Text="Failed" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
-                                            <TextBlock x:Name="ReportStatFailed" Text="0" FontSize="20" FontWeight="Bold" Foreground="#EF4444"/>
-                                        </StackPanel>
-                                    </Border>
-                                    <Border Grid.Column="3" Style="{StaticResource CardStyle}" Margin="8,0,0,0">
-                                        <StackPanel>
-                                            <TextBlock Text="Pass Ratio" FontSize="11" Foreground="{StaticResource TextSecondary}"/>
-                                            <TextBlock x:Name="ReportStatRatio" Text="0%" FontSize="20" FontWeight="Bold" Foreground="{StaticResource BrandPrimary}"/>
-                                        </StackPanel>
-                                    </Border>
-                                </Grid>
 
-                                <Border Style="{StaticResource CardStyle}">
-                                    <StackPanel>
-                                        <!-- Search and Filter Bar -->
-                                        <Grid Margin="0,0,0,16">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="150"/>
-                                                <ColumnDefinition Width="150"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            
-                                            <Border Grid.Column="0" BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="6" Background="White" Margin="0,0,8,0">
-                                                <TextBox x:Name="ReportSearchBox" BorderThickness="0" Padding="12,10" FontSize="13" VerticalAlignment="Center" materialDesign:HintAssist.Hint="Search IMEI, Serial, or Name..." KeyDown="ReportSearchBox_KeyDown"/>
-                                            </Border>
-                                            
-                                            <DatePicker Grid.Column="1" x:Name="StartDatePicker" materialDesign:HintAssist.Hint="From Date" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                            <DatePicker Grid.Column="2" x:Name="EndDatePicker" materialDesign:HintAssist.Hint="To Date" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                            
-                                            <Button Grid.Column="3" Style="{StaticResource ActionBtn}" Margin="0,0,8,0" Click="SearchReports_Click">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <materialDesign:PackIcon Kind="Magnify" Width="16" Height="16" VerticalAlignment="Center"/>
-                                                    <TextBlock Text="Search" Margin="8,0,0,0"/>
-                                                </StackPanel>
-                                            </Button>
-                                            
-                                            <Button Grid.Column="4" Style="{StaticResource SecondaryBtn}" Margin="0,0,8,0" Click="ResetReportFilters_Click">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <materialDesign:PackIcon Kind="Refresh" Width="16" Height="16" VerticalAlignment="Center"/>
-                                                    <TextBlock Text="Reset" Margin="8,0,0,0"/>
-                                                </StackPanel>
-                                            </Button>
-
-                                            <Button Grid.Column="5" Style="{StaticResource ActionBtn}" Background="#334155" Click="ExportReports_Click">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <materialDesign:PackIcon Kind="FileExport" Width="16" Height="16" VerticalAlignment="Center"/>
-                                                    <TextBlock Text="Export" Margin="8,0,0,0"/>
-                                                </StackPanel>
-                                            </Button>
-                                        </Grid>
-
-                                        <!-- Reports Table -->
-                                        <Border BorderBrush="{StaticResource BorderColor}" BorderThickness="1" CornerRadius="6" Background="White">
-                                            <Grid>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto"/>
-                                                    <RowDefinition Height="*"/>
-                                                </Grid.RowDefinitions>
-                                                
-                                                <!-- Header -->
-                                                <Grid Grid.Row="0" Background="#F9FAFB">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>     <!-- Device / Model -->
-                                                        <ColumnDefinition Width="120"/>   <!-- IMEI -->
-                                                        <ColumnDefinition Width="120"/>   <!-- Serial -->
-                                                        <ColumnDefinition Width="140"/>   <!-- Date -->
-                                                        <ColumnDefinition Width="100"/>   <!-- Status -->
-                                                        <ColumnDefinition Width="80"/>    <!-- Actions -->
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Grid.Column="0" Text="Device Info" FontWeight="SemiBold" Padding="12,12" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
-                                                    <TextBlock Grid.Column="1" Text="IMEI" FontWeight="SemiBold" Padding="12,12" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
-                                                    <TextBlock Grid.Column="2" Text="Serial" FontWeight="SemiBold" Padding="12,12" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
-                                                    <TextBlock Grid.Column="3" Text="Date &amp; Time" FontWeight="SemiBold" Padding="12,12" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
-                                                    <TextBlock Grid.Column="4" Text="Result" FontWeight="SemiBold" Padding="12,12" FontSize="12" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center"/>
-                                                    <TextBlock Grid.Column="5" Text="Actions" FontWeight="SemiBold" Padding="12,12" FontSize="12" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center"/>
-                                                </Grid>
-                                                
-                                                <!-- Content -->
-                                                <ScrollViewer Grid.Row="1" MaxHeight="500" VerticalScrollBarVisibility="Auto">
-                                                    <StackPanel x:Name="ReportsTablePanel"/>
-                                                </ScrollViewer>
-                                            </Grid>
-                                        </Border>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
 
                             <!-- Tests Panel -->
                             <StackPanel x:Name="PanelTests" Visibility="Collapsed">
@@ -931,11 +819,11 @@
                                             </Grid>
                                             <Grid Margin="0,0,0,8"><Grid.ColumnDefinitions><ColumnDefinition Width="100"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                                 <TextBlock Text="Website" Foreground="{StaticResource TextSecondary}"/>
-                                                <TextBlock Grid.Column="1" Text="www.phonova.com" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimary}"/>
+                                                <TextBlock Grid.Column="1" Text="www.phonova.ae" FontWeight="SemiBold" Foreground="{StaticResource BrandPrimary}"/>
                                             </Grid>
                                             <Grid Margin="0,0,0,8"><Grid.ColumnDefinitions><ColumnDefinition Width="100"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                                 <TextBlock Text="Support" Foreground="{StaticResource TextSecondary}"/>
-                                                <TextBlock Grid.Column="1" Text="support@phonova.com" FontWeight="SemiBold"/>
+                                                <TextBlock Grid.Column="1" Text="info@phonova.ae" FontWeight="SemiBold"/>
                                             </Grid>
                                             <Border Height="1" Background="{StaticResource BorderColor}" Margin="0,12,0,12"/>
                                             <TextBlock Text="© 2026 Phonova. All rights reserved." Foreground="{StaticResource TextSecondary}" FontSize="11"/>

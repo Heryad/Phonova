@@ -20,7 +20,7 @@ namespace Phonova
     {
         private readonly string _configPath;
         private Button? _activeNavButton;
-        private List<ProcessedDevice> _lastFetchedReports = new();
+
         private string? _editingCustomerName = null;
         private string? _editingMmrComment = null;
 
@@ -594,7 +594,7 @@ namespace Phonova
         {
             // Hide all panels
             PanelDashboard.Visibility = Visibility.Collapsed;
-            PanelReports.Visibility = Visibility.Collapsed;
+
             PanelTests.Visibility = Visibility.Collapsed;
             PanelComments.Visibility = Visibility.Collapsed;
             PanelMmrComments.Visibility = Visibility.Collapsed;
@@ -607,7 +607,7 @@ namespace Phonova
 
             // Reset all nav buttons
             NavDashboard.Style = (Style)FindResource("NavBtn");
-            NavReports.Style = (Style)FindResource("NavBtn");
+
             NavTests.Style = (Style)FindResource("NavBtn");
             NavComments.Style = (Style)FindResource("NavBtn");
             NavMmrComments.Style = (Style)FindResource("NavBtn");
@@ -622,7 +622,7 @@ namespace Phonova
             switch (panelName)
             {
                 case "Dashboard": PanelDashboard.Visibility = Visibility.Visible; break;
-                case "Reports": PanelReports.Visibility = Visibility.Visible; break;
+
                 case "Tests": PanelTests.Visibility = Visibility.Visible; break;
                 case "Comments": PanelComments.Visibility = Visibility.Visible; break;
                 case "MmrComments": PanelMmrComments.Visibility = Visibility.Visible; break;
@@ -641,13 +641,13 @@ namespace Phonova
             if (panelName == "Comments") LoadCommentsTable();
             if (panelName == "MmrComments") LoadMmrCommentsTable();
             if (panelName == "Customers") LoadCustomersTable();
-            if (panelName == "Reports") LoadReportsTable();
+
             if (panelName == "License") LoadLicenseData();
             if (panelName == "Dashboard") LoadDashboardStats();
         }
 
         private void NavDashboard_Click(object sender, RoutedEventArgs e) => ShowPanel("Dashboard", NavDashboard);
-        private void NavReports_Click(object sender, RoutedEventArgs e) => ShowPanel("Reports", NavReports);
+
         private void NavTests_Click(object sender, RoutedEventArgs e) => ShowPanel("Tests", NavTests);
         private void NavComments_Click(object sender, RoutedEventArgs e) => ShowPanel("Comments", NavComments);
         private void NavMmrComments_Click(object sender, RoutedEventArgs e) => ShowPanel("MmrComments", NavMmrComments);
@@ -1103,222 +1103,7 @@ namespace Phonova
         // Testers CRUD
 
         
-        // Reports table loading
-        private void LoadReportsTable()
-        {
-            if (ReportsTablePanel == null) return;
-            ReportsTablePanel.Children.Clear();
 
-            string search = ReportSearchBox.Text;
-            DateTime? start = StartDatePicker.SelectedDate;
-            DateTime? end = EndDatePicker.SelectedDate;
-
-            // Adjust end date to include the whole day
-            if (end.HasValue) end = end.Value.Date.AddDays(1).AddTicks(-1);
-            
-            // Mock empty list instead of App.Database.GetProcessedDevices
-            _lastFetchedReports = new List<Phonova.Models.ProcessedDevice>();
-            var reports = _lastFetchedReports;
-
-            int total = reports.Count;
-            int passed = 0;
-            int failed = 0;
-
-            foreach (var report in reports)
-            {
-                // Calculate if device passed
-                bool isPass = true;
-                foreach (var test in report.KernelTests.Values)
-                {
-                    if (test == "Fail") { isPass = false; break; }
-                }
-                foreach (var test in report.AppTests.Values)
-                {
-                    if (test == "Fail") { isPass = false; break; }
-                }
-
-                if (isPass) passed++;
-                else failed++;
-
-                var grid = new Grid { Margin = new Thickness(0, 0, 0, 1) };
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(120) });
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(140) });
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(100) });
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) });
-
-                // Device Info
-                var deviceInfo = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-                deviceInfo.Children.Add(new TextBlock { Text = report.DeviceName ?? "Unknown Device", FontWeight = FontWeights.SemiBold, FontSize = 13 });
-                deviceInfo.Children.Add(new TextBlock { Text = $"{report.Model} · {report.Storage}", FontSize = 11, Foreground = Brushes.Gray });
-                var devBorder = new Border { Background = Brushes.White, Padding = new Thickness(12, 10, 0, 10) }; devBorder.Child = deviceInfo;
-                Grid.SetColumn(devBorder, 0); grid.Children.Add(devBorder);
-
-                // IMEI
-                var imeiBorder = new Border { Background = Brushes.White, Padding = new Thickness(12, 10, 12, 10) };
-                imeiBorder.Child = new TextBlock { Text = report.Imei ?? "-", VerticalAlignment = VerticalAlignment.Center, FontSize = 12 };
-                Grid.SetColumn(imeiBorder, 1); grid.Children.Add(imeiBorder);
-
-                // Serial
-                var serialBorder = new Border { Background = Brushes.White, Padding = new Thickness(12, 10, 12, 10) };
-                serialBorder.Child = new TextBlock { Text = report.Serial ?? "-", VerticalAlignment = VerticalAlignment.Center, FontSize = 12 };
-                Grid.SetColumn(serialBorder, 2); grid.Children.Add(serialBorder);
-
-                // Date
-                var dateBorder = new Border { Background = Brushes.White, Padding = new Thickness(12, 10, 12, 10) };
-                dateBorder.Child = new TextBlock { Text = report.DateTime.ToString("MMM dd, HH:mm"), VerticalAlignment = VerticalAlignment.Center, FontSize = 12 };
-                Grid.SetColumn(dateBorder, 3); grid.Children.Add(dateBorder);
-
-                // Status (Pass/Fail)
-                var badge = new Border { CornerRadius = new CornerRadius(4), Padding = new Thickness(8, 2, 8, 2), VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
-                var badgeText = new TextBlock { FontWeight = FontWeights.Bold, FontSize = 11 };
-                if (isPass) { badge.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DEF7EC")); badgeText.Text = "PASS"; badgeText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#03543F")); }
-                else { badge.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FDE8E8")); badgeText.Text = "FAIL"; badgeText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#9B1C1C")); }
-                badge.Child = badgeText;
-                var badgeContainer = new Border { Background = Brushes.White }; badgeContainer.Child = badge;
-                Grid.SetColumn(badgeContainer, 4); grid.Children.Add(badgeContainer);
-
-                // Action (View)
-                var actionBorder = new Border { Background = Brushes.White };
-                var viewBtn = new Button { 
-                    Content = new PackIcon { Kind = PackIconKind.Eye, Width = 18, Height = 18 }, 
-                    Background = Brushes.Transparent,
-                    BorderThickness = new Thickness(0),
-                    Width = 32, 
-                    Height = 32, 
-                    Tag = report,
-                    Cursor = System.Windows.Input.Cursors.Hand
-                };
-                viewBtn.Click += ViewReport_Click;
-                actionBorder.Child = viewBtn;
-                Grid.SetColumn(actionBorder, 5); grid.Children.Add(actionBorder);
-
-                ReportsTablePanel.Children.Add(grid);
-            }
-
-            // Update Report Stat Cards
-            ReportStatTotal.Text = total.ToString();
-            ReportStatPassed.Text = passed.ToString();
-            ReportStatFailed.Text = failed.ToString();
-            ReportStatRatio.Text = total > 0 ? $"{(int)((double)passed / total * 100)}%" : "0%";
-        }
-
-        private void ExportReports_Click(object sender, RoutedEventArgs e)
-        {
-            if (_lastFetchedReports == null || _lastFetchedReports.Count == 0)
-            {
-                MessageBox.Show("No data to export. Please search first.", "Information");
-                return;
-            }
-
-            var sfd = new SaveFileDialog
-            {
-                Filter = "Excel CSV (*.csv)|*.csv",
-                FileName = $"Phonova_Report_{DateTime.Now:yyyyMMdd_HHmm}.csv",
-                Title = "Export Detailed Reports to Excel"
-            };
-
-            if (sfd.ShowDialog() == true)
-            {
-                try
-                {
-                    var sb = new StringBuilder();
-                    // Professional Header
-                    sb.AppendLine("REPORT DATE,DEVICE NAME,MODEL,STORAGE,SERIAL NUMBER,IMEI,iOS,REGION,BATTERY %,CYCLES,OVERALL STATUS,KERNEL FAILURES,APP FAILURES,COMMENTS");
-
-                    foreach (var r in _lastFetchedReports)
-                    {
-                        var kernelFailures = new List<string>();
-                        var syslogFailures = new List<string>();
-                        bool isPass = true;
-
-                        // Check Kernel Tests
-                        foreach (var test in r.KernelTests)
-                        {
-                            bool failed = test.Value.Equals("Fail", StringComparison.OrdinalIgnoreCase) || 
-                                         test.Value.Equals("1") || 
-                                         test.Value.Equals("Replaced", StringComparison.OrdinalIgnoreCase);
-                            
-                            if (failed)
-                            {
-                                kernelFailures.Add(test.Key);
-                                isPass = false;
-                            }
-                        }
-
-                        // Check Syslog Tests
-                        foreach (var test in r.AppTests)
-                        {
-                            bool failed = test.Value.Equals("Fail", StringComparison.OrdinalIgnoreCase) || 
-                                         test.Value.Equals("1") || 
-                                         test.Value.Equals("No", StringComparison.OrdinalIgnoreCase);
-                            
-                            if (failed)
-                            {
-                                syslogFailures.Add(test.Key);
-                                isPass = false;
-                            }
-                        }
-
-                        string status = isPass ? "PASSED" : "FAILED";
-                        string kFailStr = kernelFailures.Count > 0 ? string.Join("; ", kernelFailures) : "None";
-                        string sFailStr = syslogFailures.Count > 0 ? string.Join("; ", syslogFailures) : "None";
-                        string comments = r.Comments != null ? string.Join(" | ", r.Comments).Replace(",", ";") : "";
-                        
-                        // Formatting CSV line
-                        sb.AppendLine($"{r.DateTime:yyyy-MM-dd HH:mm}," +
-                                      $"\"{r.DeviceName}\"," +
-                                      $"\"{r.Model}\"," +
-                                      $"\"{r.Storage}\"," +
-                                      $"\"{r.Serial}\"," +
-                                      $"\"{r.Imei}\"," +
-                                      $"\"{r.IosVersion}\"," +
-                                      $"\"{r.Region}\"," +
-                                      $"\"{r.BatteryHealth}%\"," +
-                                      $"\"{r.BatteryCycles}\"," +
-                                      $"\"{status}\"," +
-                                      $"\"{kFailStr}\"," +
-                                      $"\"{sFailStr}\"," +
-                                      $"\"{comments}\"");
-                    }
-
-                    // Write with UTF8 BOM
-                    File.WriteAllText(sfd.FileName, sb.ToString(), Encoding.UTF8);
-                    MessageBox.Show("Detailed report exported successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Export failed: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
-
-        private void SearchReports_Click(object sender, RoutedEventArgs e) => LoadReportsTable();
-
-        private void ResetReportFilters_Click(object sender, RoutedEventArgs e)
-        {
-            ReportSearchBox.Text = "";
-            StartDatePicker.SelectedDate = null;
-            EndDatePicker.SelectedDate = null;
-            LoadReportsTable();
-        }
-
-        private void ReportSearchBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            if (e.Key == System.Windows.Input.Key.Enter) LoadReportsTable();
-        }
-
-        private void ViewReport_Click(object sender, RoutedEventArgs e) 
-        {
-            if (sender is Button btn && btn.Tag is ProcessedDevice report)
-            {
-                var detailsWindow = new TestResultsWindow();
-                detailsWindow.PopulateFromProcessedDevice(report);
-                detailsWindow.Owner = this;
-                detailsWindow.ShowDialog();
-            }
-        }
         
         // Dashboard analytics
         private async void LoadDashboardStats()

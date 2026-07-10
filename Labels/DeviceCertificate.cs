@@ -135,9 +135,9 @@ namespace Phonova.Labels
 
             // Company Info
             XRLabel contactInfo = new XRLabel();
-            contactInfo.Text = "phonova.com | info@phonova.com";
+            contactInfo.Text = "phonova.ae | info@phonova.ae";
             contactInfo.Font = new Font("Segoe UI", 9, FontStyle.Bold);
-            contactInfo.ForeColor = Color.FromArgb(83, 66, 125);
+            contactInfo.ForeColor = Color.Black;
             contactInfo.SizeF = new SizeF(300f, 20f);
             contactInfo.LocationF = new PointF(0f, 60f);
             contactInfo.TextAlignment = TextAlignment.TopLeft;
@@ -169,7 +169,7 @@ namespace Phonova.Labels
             XRLabel section1 = new XRLabel();
             section1.Text = "DEVICE IDENTIFICATION";
             section1.Font = new Font("Segoe UI", 14, FontStyle.Bold);
-            section1.ForeColor = Color.FromArgb(83, 66, 125); // Brand Purple
+            section1.ForeColor = Color.Black;
             section1.SizeF = new SizeF(727f, 30f);
             section1.LocationF = new PointF(0f, currentY);
             this.Detail.Controls.Add(section1);
@@ -193,7 +193,7 @@ namespace Phonova.Labels
             XRLabel section2 = new XRLabel();
             section2.Text = "SECURITY & LOCK STATUS";
             section2.Font = new Font("Segoe UI", 14, FontStyle.Bold);
-            section2.ForeColor = Color.FromArgb(83, 66, 125);
+            section2.ForeColor = Color.Black;
             section2.SizeF = new SizeF(727f, 30f);
             section2.LocationF = new PointF(0f, currentY);
             this.Detail.Controls.Add(section2);
@@ -211,7 +211,7 @@ namespace Phonova.Labels
             XRLabel section3 = new XRLabel();
             section3.Text = "HARDWARE DIAGNOSTIC RESULTS";
             section3.Font = new Font("Segoe UI", 14, FontStyle.Bold);
-            section3.ForeColor = Color.FromArgb(83, 66, 125);
+            section3.ForeColor = Color.Black;
             section3.SizeF = new SizeF(727f, 30f);
             section3.LocationF = new PointF(0f, currentY);
             this.Detail.Controls.Add(section3);
