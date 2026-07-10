@@ -114,33 +114,40 @@ namespace Phonova.Services
 
             try
             {
-                if (_pendingQueue.IsEmpty) return;
-
-                // Take all currently pending items
-                var itemsToSync = _pendingQueue.ToList();
-
-                var response = await ApiService.SubmitResultsAsync(itemsToSync);
-                if (response == null) return;
-
-                if (response.HttpStatusCode == 402)
+                while (!_pendingQueue.IsEmpty)
                 {
-                    // Insufficient fuel — hold items, stop retrying, raise banner event
-                    IsFuelExhausted = true;
-                    FuelExhausted?.Invoke(response.required ?? itemsToSync.Count, response.available ?? 0);
-                    System.Diagnostics.Debug.WriteLine($"[OfflineSyncManager] Fuel exhausted. Required={response.required}, Available={response.available}. Holding {PendingCount} items.");
-                }
-                else if (string.IsNullOrEmpty(response.error))
-                {
-                    // Success! Clear fuel-exhausted state and dequeue synced items
-                    IsFuelExhausted = false;
-                    int syncedCount = itemsToSync.Count;
-                    for (int i = 0; i < syncedCount; i++)
+                    // Take all currently pending items
+                    var itemsToSync = _pendingQueue.ToList();
+
+                    var response = await ApiService.SubmitResultsAsync(itemsToSync);
+                    if (response == null) break;
+
+                    if (response.HttpStatusCode == 402)
                     {
-                        _pendingQueue.TryDequeue(out _);
+                        // Insufficient fuel — hold items, stop retrying, raise banner event
+                        IsFuelExhausted = true;
+                        FuelExhausted?.Invoke(response.required ?? itemsToSync.Count, response.available ?? 0);
+                        System.Diagnostics.Debug.WriteLine($"[OfflineSyncManager] Fuel exhausted. Required={response.required}, Available={response.available}. Holding {PendingCount} items.");
+                        break;
                     }
-                    SaveQueueToDisk();
-                    QueueChanged?.Invoke(PendingCount);
-                    SyncSucceeded?.Invoke(response.remainingFuel);
+                    else if (string.IsNullOrEmpty(response.error))
+                    {
+                        // Success! Clear fuel-exhausted state and dequeue synced items
+                        IsFuelExhausted = false;
+                        int syncedCount = itemsToSync.Count;
+                        for (int i = 0; i < syncedCount; i++)
+                        {
+                            _pendingQueue.TryDequeue(out _);
+                        }
+                        SaveQueueToDisk();
+                        QueueChanged?.Invoke(PendingCount);
+                        SyncSucceeded?.Invoke(response.remainingFuel);
+                    }
+                    else
+                    {
+                        // Stop trying if there's an API error
+                        break;
+                    }
                 }
             }
             catch (Exception ex)

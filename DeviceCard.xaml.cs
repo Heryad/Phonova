@@ -1062,7 +1062,7 @@ namespace Phonova
             var result = await Task.Run(() =>
             {
                 ct.ThrowIfCancellationRequested();
-                return _iosCommander.PushTestConfigurationProfileAsync(udid);
+                return _iosCommander.PushTestConfigurationProfileAsync(udid, ProductType);
             }, ct).ConfigureAwait(false);
 
             Debug.WriteLine($"[Port {PortNumber}] PushTestConfigurationProfile result for {udid}: {result}");

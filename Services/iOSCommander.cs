@@ -221,7 +221,7 @@ namespace Phonova.Services
                 return "Fail";
         }
 
-        public async Task<string> PushTestConfigurationProfileAsync(string deviceUDID)
+        public async Task<string> PushTestConfigurationProfileAsync(string deviceUDID, string productType)
         {
             string testConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Phonova", "CustomTestList.json");
             if (!File.Exists(testConfigPath))
@@ -231,6 +231,26 @@ namespace Phonova.Services
             }
 
             string jsonContent = File.ReadAllText(testConfigPath);
+            
+            // Dynamic Hardware and App Consistency Filters
+            jsonContent = jsonContent.Replace("TouchID", "Touch ID");
+            jsonContent = jsonContent.Replace("Pixels Test Color", "PixelsTestColor");
+            
+            if (HasTouchID(productType))
+            {
+                // Touch ID devices don't have Face ID
+                jsonContent = jsonContent.Replace(",Face ID Auto", "").Replace("Face ID Auto,", "");
+                jsonContent = jsonContent.Replace(",TrueDepthFaceID", "").Replace("TrueDepthFaceID,", "");
+            }
+            else
+            {
+                // Face ID devices don't have a physical Home Button (except maybe some iPads, but we'll stick to basic heuristic)
+                jsonContent = jsonContent.Replace(",Home Button", "").Replace("Home Button,", "");
+            }
+
+            // Remove all newlines to ensure a single-line JSON string before base64 encoding (crucial for iOS app parsing)
+            jsonContent = jsonContent.Replace("\r\n", "").Replace("\n", "");
+
             string base64Config = Convert.ToBase64String(Encoding.UTF8.GetBytes(jsonContent))
                                     .Replace("+", "%2B")
                                     .Replace("/", "%2F")
@@ -238,10 +258,38 @@ namespace Phonova.Services
 
             string result = LaunchExternalExecutable(toolboxPath + IDEVICE_INFO, $"--udid={deviceUDID} fsync --app={BUNDLE_ID} push --srcPath=\"{base64Config}\" --dstPath=\"/Documents/CustomTestList.json\"");
             Debug.WriteLine($"Push config output for device {deviceUDID}: {result}");
-            if (result.Contains("Push: Complete"))
+            if (result.Contains("Push: Complete") || result.Contains("SUCESSS", StringComparison.OrdinalIgnoreCase) || result.Contains("SUCCESS", StringComparison.OrdinalIgnoreCase))
                 return "Pass";
             else
                 return "Fail";
+        }
+
+        private bool HasTouchID(string productType)
+        {
+            if (string.IsNullOrEmpty(productType)) return true; // Default to safest subset
+            
+            // Known Face ID devices (iPhone X and newer, except SE)
+            if (productType.StartsWith("iPhone10,3") || productType.StartsWith("iPhone10,6")) return false; // iPhone X
+            if (productType.StartsWith("iPhone11,") || productType.StartsWith("iPhone12,") || 
+                productType.StartsWith("iPhone13,") || productType.StartsWith("iPhone14,") || 
+                productType.StartsWith("iPhone15,") || productType.StartsWith("iPhone16,") || productType.StartsWith("iPhone17,"))
+            {
+                // SE 2nd Gen and SE 3rd Gen have Touch ID
+                if (productType == "iPhone12,8" || productType == "iPhone14,6") return true;
+                return false;
+            }
+            
+            // iPad Pro with Face ID
+            if (productType.StartsWith("iPad8,") || productType.StartsWith("iPad13,") || productType.StartsWith("iPad14,") || productType.StartsWith("iPad16,"))
+            {
+                // Exceptions: iPad Air 4 (iPad13,1/2), iPad Air 5 (iPad13,16/17), iPad mini 6 (iPad14,1/2) have Touch ID
+                if (productType == "iPad13,1" || productType == "iPad13,2" || 
+                    productType == "iPad13,16" || productType == "iPad13,17" ||
+                    productType == "iPad14,1" || productType == "iPad14,2") return true;
+                return false;
+            }
+
+            return true;
         }
 
         public string RemoveWifi(string deviceUDID)

@@ -212,7 +212,8 @@ namespace Phonova
                 { "Sensors & Biometrics", new List<string> { "TouchID", "TrueDepthFaceID", "Accelerometer", "Proximity", "Device Vibration", "NFC" } },
                 { "Screen & Touch", new List<string> { "Digitizer", "LCDV" } },
                 { "Connectivity", new List<string> { "WiFi" } },
-                { "Other", new List<string> { "NumberDial", "BatteryDrain" } } 
+                { "Other", new List<string> { "NumberDial", "BatteryDrain" } },
+                { "AI Tests", new List<string> { "AILCD", "AICallTest", "AIMultiTouch", "AIButtons", "AIMicQuality", "AIDigitizer", "AIGrading", "Face ID Auto" } }
             };
 
             // 2. Parse Current Config
@@ -389,7 +390,7 @@ namespace Phonova
             try 
             {
                 string filePath = System.IO.Path.Combine(_configPath, "CustomTestList.json");
-                string outJson = JsonConvert.SerializeObject(finalObj, Newtonsoft.Json.Formatting.Indented);
+                string outJson = JsonConvert.SerializeObject(finalObj, Newtonsoft.Json.Formatting.None);
                 System.IO.File.WriteAllText(filePath, outJson, System.Text.Encoding.UTF8);
                 MessageBox.Show("Configuration Saved!", "Success");
             }
