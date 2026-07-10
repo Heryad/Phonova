@@ -33,7 +33,7 @@ namespace Phonova.Labels
             if (logo == null) return;
 
             string assetsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets");
-            string logoPath = Path.Combine(assetsPath, "certificate_logo.png");
+            string logoPath = Path.Combine(assetsPath, "logo_dark.png");
 
             try
             {

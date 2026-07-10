@@ -271,16 +271,22 @@ namespace Phonova.Services
                     return Task.FromResult<int?>(null);
                 }
 
-                if (_nextPortNumber > MAX_PORTS)
-                {
-                    RaiseError($"Cannot assign more than {MAX_PORTS} ports");
-                    return Task.FromResult<int?>(null);
-                }
-
                 // If already assigned, return existing
                 if (_mappingsByLocation.TryGetValue(usbLocationPath, out var existing))
                 {
                     return Task.FromResult<int?>(existing.LogicalPort);
+                }
+
+                int limit = MAX_PORTS;
+                if (ApiService.CurrentConfig != null && !ApiService.CurrentConfig.isUnlimitedTesting)
+                {
+                    limit = ApiService.CurrentConfig.maxConcurrentDevices;
+                }
+
+                if (_mappingsByLocation.Count >= limit || _nextPortNumber > limit)
+                {
+                    RaiseError($"Mapping Limit Reached! Your license only allows mapping up to {limit} concurrent devices.");
+                    return Task.FromResult<int?>(null);
                 }
 
                 var mapping = new PortMappingEntry

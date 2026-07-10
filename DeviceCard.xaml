@@ -17,7 +17,7 @@
         <SolidColorBrush x:Key="TextPrimary" Color="#1A1A2E"/>
         <SolidColorBrush x:Key="TextSecondary" Color="#6B7280"/>
         <SolidColorBrush x:Key="TextMuted" Color="#9CA3AF"/>
-        <SolidColorBrush x:Key="BrandPrimary" Color="#027dfe"/>
+        <SolidColorBrush x:Key="BrandPrimary" Color="#FBC101"/>
         <SolidColorBrush x:Key="StatusOk" Color="#10B981"/>
         <SolidColorBrush x:Key="StatusWarn" Color="#F59E0B"/>
         <SolidColorBrush x:Key="StatusBad" Color="#EF4444"/>

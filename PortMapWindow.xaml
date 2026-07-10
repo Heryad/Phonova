@@ -25,7 +25,7 @@
         <SolidColorBrush x:Key="ConnectedColor" Color="#10B981"/>
         <SolidColorBrush x:Key="MappedColor" Color="#3B82F6"/>
         <SolidColorBrush x:Key="UnmappedColor" Color="#9CA3AF"/>
-        <SolidColorBrush x:Key="BrandPrimary" Color="#027dfe"/>
+        <SolidColorBrush x:Key="BrandPrimary" Color="#FBC101"/>
 
         <!-- Port Tile Style -->
         <Style x:Key="PortTile" TargetType="Border">
@@ -57,7 +57,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#6BA366"/>
+                                <Setter TargetName="border" Property="Background" Value="#D5A300"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="border" Property="Background" Value="#9CA3AF"/>

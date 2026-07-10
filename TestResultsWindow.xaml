@@ -25,7 +25,7 @@
         <SolidColorBrush x:Key="GreenColor" Color="#10B981"/>
         <SolidColorBrush x:Key="RedColor" Color="#EF4444"/>
         <SolidColorBrush x:Key="YellowColor" Color="#F59E0B"/>
-        <SolidColorBrush x:Key="BrandPrimary" Color="#027dfe"/>
+        <SolidColorBrush x:Key="BrandPrimary" Color="#FBC101"/>
 
         <!-- Label Style -->
         <Style x:Key="LabelText" TargetType="TextBlock">
@@ -62,7 +62,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#6BA366"/>
+                                <Setter TargetName="border" Property="Background" Value="#D5A300"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>

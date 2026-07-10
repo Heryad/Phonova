@@ -17,7 +17,7 @@
     <Window.Resources>
         <!-- Matching Color Palette -->
         <Color x:Key="SidebarDark">#1E293B</Color>
-        <Color x:Key="BrandPrimary">#027dfe</Color>
+        <Color x:Key="BrandPrimary">#FBC101</Color>
         <Color x:Key="LightBackground">#F5F6F8</Color>
         <Color x:Key="TextPrimary">#1A1A2E</Color>
         <Color x:Key="TextSecondary">#6B7280</Color>
@@ -81,7 +81,7 @@
                     <Grid>
                         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="30">
                             <!-- Logo -->
-                            <Image Source="Assets/app_logo.png" 
+                            <Image Source="Assets/logo_main.png" 
                                    Height="56" Width="200" 
                                    Stretch="Uniform" 
                                    HorizontalAlignment="Center"/>
@@ -97,7 +97,7 @@
                             <Grid HorizontalAlignment="Center">
                                 <Ellipse Width="44" Height="44" 
                                          Stroke="#33FFFFFF" StrokeThickness="3"/>
-                                <Path Stroke="#027dfe" StrokeThickness="3"
+                                <Path Stroke="#FBC101" StrokeThickness="3"
                                       StrokeStartLineCap="Round"
                                       StrokeEndLineCap="Round"
                                       Data="M 22,0 A 22,22 0 0 1 44,22"
@@ -113,9 +113,9 @@
 
                             <!-- Loading Dots -->
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
-                                <Ellipse x:Name="Dot1" Width="6" Height="6" Fill="#027dfe" Margin="3,0" Opacity="0.3"/>
-                                <Ellipse x:Name="Dot2" Width="6" Height="6" Fill="#027dfe" Margin="3,0" Opacity="0.3"/>
-                                <Ellipse x:Name="Dot3" Width="6" Height="6" Fill="#027dfe" Margin="3,0" Opacity="0.3"/>
+                                <Ellipse x:Name="Dot1" Width="6" Height="6" Fill="#FBC101" Margin="3,0" Opacity="0.3"/>
+                                <Ellipse x:Name="Dot2" Width="6" Height="6" Fill="#FBC101" Margin="3,0" Opacity="0.3"/>
+                                <Ellipse x:Name="Dot3" Width="6" Height="6" Fill="#FBC101" Margin="3,0" Opacity="0.3"/>
                             </StackPanel>
                         </StackPanel>
 
@@ -168,7 +168,7 @@
                                             CornerRadius="3" 
                                             Width="0" 
                                             HorizontalAlignment="Left"
-                                            Background="#027dfe"/>
+                                            Background="#FBC101"/>
                                 </Grid>
 
                                 <!-- Status Text -->
@@ -187,7 +187,7 @@
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                         <Ellipse Width="6" Height="6" 
-                                                 Fill="#027dfe"
+                                                 Fill="#FBC101"
                                                  VerticalAlignment="Center"
                                                  Margin="0,0,10,0"/>
                                         <TextBlock Text="Core modules loaded" 
@@ -198,7 +198,7 @@
 
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                         <Ellipse Width="6" Height="6" 
-                                                 Fill="#027dfe"
+                                                 Fill="#FBC101"
                                                  VerticalAlignment="Center"
                                                  Margin="0,0,10,0"/>
                                         <TextBlock Text="Connecting to server" 

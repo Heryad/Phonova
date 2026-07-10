@@ -131,6 +131,20 @@ namespace Phonova
 
         }
 
+        public void SetLimitReached(string reason, int portNumber)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                StatusText.Text = reason;
+                StatusBadge.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444")); // Red
+                MainCardBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FEE2E2")); // Light red
+                SetCardTextColor(false);
+                DeviceNameText.Text = "Device Locked";
+                portNumberText.Text = $"Port: {portNumber}";
+                PortNumber = portNumber;
+            });
+        }
+
         public void ClearDevice()
         {
             string udidToCleanup = _lastKnownDeviceId; // Capture before clearing

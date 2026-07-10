@@ -133,7 +133,7 @@ namespace Phonova.Services
                 {
                     // Success! Clear fuel-exhausted state and dequeue synced items
                     IsFuelExhausted = false;
-                    int syncedCount = response.syncedCount;
+                    int syncedCount = itemsToSync.Count;
                     for (int i = 0; i < syncedCount; i++)
                     {
                         _pendingQueue.TryDequeue(out _);

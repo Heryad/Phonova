@@ -117,6 +117,17 @@ namespace Phonova
                             RefreshPortStatus();
                         });                    
                     }
+                    else
+                    {
+                        Dispatcher.Invoke(() => 
+                        {
+                            var limit = ApiService.CurrentConfig != null && !ApiService.CurrentConfig.isUnlimitedTesting
+                                ? ApiService.CurrentConfig.maxConcurrentDevices.ToString()
+                                : "127";
+                            UpdateStatus("Mapping Limit Reached!", false);
+                            MessageBox.Show($"Cannot map new port: Your license allows up to {limit} concurrent device mappings.", "License Capability Limit", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        });
+                    }
                 }
             }
             catch
@@ -154,7 +165,7 @@ namespace Phonova
                     if (icon != null) icon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Play;
                     
                     // Revert to original Green
-                    StartLearningBtn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#027dfe")); // BrandPrimary
+                    StartLearningBtn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FBC101")); // BrandPrimary
 
                     UpdateStatus("Ready", false);
                 }

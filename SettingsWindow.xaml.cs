@@ -1352,7 +1352,7 @@ namespace Phonova
 
                 // Month Bar
                 var rBar = new System.Windows.Shapes.Rectangle { 
-                    Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#027dfe")), 
+                    Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FBC101")), 
                     Width = barWidth, 
                     Height = bHeight, 
                     RadiusX = 4, 

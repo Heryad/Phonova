@@ -163,6 +163,17 @@ namespace Phonova
                     var port = await App.PortMapper.GetPortNumberAsync(e.Device.LocationPath);
                     if (port.HasValue && _portCards.TryGetValue(port.Value, out var card))
                     {
+                        var activeCount = _portCards.Values.Count(c => !string.IsNullOrEmpty(c.DeviceId));
+                        var limit = ApiService.CurrentConfig != null && !ApiService.CurrentConfig.isUnlimitedTesting
+                            ? ApiService.CurrentConfig.maxConcurrentDevices
+                            : DashboardCardCount;
+
+                        if (activeCount >= limit)
+                        {
+                            card.SetLimitReached("Capability Limit", port.Value);
+                            return;
+                        }
+
                         // Only assign UDID to the card – no extra details.
                         card.setDevice(e.Device.Udid ?? "Unknown UDID", e.Device.LocationPath, port.Value);
                     }
