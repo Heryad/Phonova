@@ -147,6 +147,11 @@ namespace Phonova
             else
             {
                 _selectedCustomer = preselected;
+                var preselectedItem = customers.FirstOrDefault(c => c.name == preselected);
+                if (preselectedItem != null)
+                {
+                    _selectedCustomerId = preselectedItem.id;
+                }
                 SelectedCustomerText.Text = $"Selected: {preselected}";
             }
         }
