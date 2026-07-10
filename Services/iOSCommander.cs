@@ -258,7 +258,7 @@ namespace Phonova.Services
 
             string result = LaunchExternalExecutable(toolboxPath + IDEVICE_INFO, $"--udid={deviceUDID} fsync --app={BUNDLE_ID} push --srcPath=\"{base64Config}\" --dstPath=\"/Documents/CustomTestList.json\"");
             Debug.WriteLine($"Push config output for device {deviceUDID}: {result}");
-            if (result.Contains("Push: Complete") || result.Contains("SUCESSS", StringComparison.OrdinalIgnoreCase) || result.Contains("SUCCESS", StringComparison.OrdinalIgnoreCase))
+            if (result.Contains("Push: Complete") || result.IndexOf("SUCESSS", StringComparison.OrdinalIgnoreCase) >= 0 || result.IndexOf("SUCCESS", StringComparison.OrdinalIgnoreCase) >= 0)
                 return "Pass";
             else
                 return "Fail";
