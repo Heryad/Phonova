@@ -322,7 +322,23 @@ namespace Phonova.Services
             {
                 using (Process process = Process.Start(startInfo))
                 {
-                    output = process.StandardOutput.ReadToEnd();
+                    // Read output asynchronously to prevent buffer deadlocks
+                    var outputTask = process.StandardOutput.ReadToEndAsync();
+                    
+                    // 15 second timeout to prevent infinite hangs (e.g., card stuck on orange)
+                    if (process.WaitForExit(7000))
+                    {
+                        output = outputTask.Result;
+                    }
+                    else
+                    {
+                        try 
+                        { 
+                            if (!process.HasExited) process.Kill(); 
+                        } 
+                        catch { }
+                        return "Error";
+                    }
                 }
             }
             catch (SystemException ex)

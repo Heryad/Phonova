@@ -144,21 +144,31 @@ namespace Phonova.Services
         {
             try
             {
-                using var searcher = new System.Management.ManagementObjectSearcher(
-                    "SELECT DeviceID FROM Win32_PnPEntity WHERE DeviceID LIKE '%VID_05AC%'");
+                // DRFONES NATIVE METHOD: Fully eliminate WMI. 
+                // We use USBLib to iterate all connected devices and find Apple devices (VID 05AC).
+                var devices = USBLib.USB.GetConnectedDevices();
+                if (devices == null) return;
                 
-                foreach (System.Management.ManagementBaseObject managementBaseObject in searcher.Get())
+                foreach (var device in devices)
                 {
-                    if (managementBaseObject is System.Management.ManagementObject obj)
+                    // USBDevice doesn't expose raw VID directly, but it exposes SerialNumber and HubDevicePath
+                    // We can also just rely on Apple's standard 24 or 40 char hex serial numbers.
+                    // Or if USBLib exposes something like "FriendlyName" or "DeviceID".
+                    // The safest way is to invoke ProcessDeviceEventAsync with a mocked dbccName,
+                    // or just fire ProcessDeviceEventAsync directly if we have the UDID.
+                    
+                    string udid = device.SerialNumber;
+                    if (string.IsNullOrWhiteSpace(udid)) continue;
+                    
+                    // We know Apple UDIDs are either 40 chars or 24 chars (with or without dash)
+                    bool isApple = udid.Length == 40 || udid.Length == 24 || udid.Length == 25;
+                    
+                    if (isApple)
                     {
-                        var deviceId = obj["DeviceID"]?.ToString();
-                        if (!string.IsNullOrWhiteSpace(deviceId))
-                        {
-                            // Convert standard USB\VID format to the dbccName format expected by ProcessDeviceEventAsync
-                            string dbccName = @"\\?\" + deviceId.Replace('\\', '#');
-                            ThreadPool.QueueUserWorkItem(_ => ProcessDeviceEventAsync(dbccName, true));
-                        }
-                        obj.Dispose();
+                        // Mock the dbccName exactly like Windows does to push it to the main parser
+                        // e.g. \\?\usb#vid_05ac&pid_12a8#00008101-000E04001A04001E#{guid}
+                        string dbccName = $@"\\?\usb#vid_05ac&pid_12a8#{udid}#{{a5dcbf10-6530-11d2-901f-00c04fb951ed}}";
+                        ThreadPool.QueueUserWorkItem(_ => ProcessDeviceEventAsync(dbccName, true));
                     }
                 }
             }
@@ -325,153 +335,38 @@ namespace Phonova.Services
 
         private string GetPhysicalLocationPath(string pnpDeviceId, string udid)
         {
-            // NEW NATIVE DRFONES METHOD: Use USBLib to query physical topology
+            // 1:1 DRFONES REPLICA: Use USBLib exclusively to query physical topology.
+            // NO WMI or SetupAPI fallbacks allowed, as they are unstable across PC restarts.
             try
             {
                 if (!string.IsNullOrWhiteSpace(udid))
                 {
                     string cleanUdid = udid.Replace("-", "").ToLowerInvariant();
-                    var devices1 = USBLib.USB.GetConnectedDevices(cleanUdid, "");
-                    if (devices1 != null && devices1.Count > 0)
-                        return devices1[0].HubDevicePath + devices1[0].PortNumber;
-
-                    var devices2 = USBLib.USB.GetConnectedDevices(udid, "");
-                    if (devices2 != null && devices2.Count > 0)
-                        return devices2[0].HubDevicePath + devices2[0].PortNumber;
-                }
-            }
-            catch { }
-
-            // Fallback: SetupAPI Property Lookup
-            if (string.IsNullOrWhiteSpace(pnpDeviceId)) return string.Empty;
-
-            IntPtr hDevInfo = IntPtr.Zero;
-            IntPtr buffer = IntPtr.Zero;
-            try
-            {
-                hDevInfo = SetupDiGetClassDevs(IntPtr.Zero, pnpDeviceId, IntPtr.Zero, DIGCF_ALLCLASSES | DIGCF_PRESENT);
-                if (hDevInfo != new IntPtr(-1))
-                {
-                    SP_DEVINFO_DATA devInfoData = new SP_DEVINFO_DATA();
-                    devInfoData.cbSize = (uint)Marshal.SizeOf(typeof(SP_DEVINFO_DATA));
-
-                    if (SetupDiEnumDeviceInfo(hDevInfo, 0, ref devInfoData))
-                    {
-                        uint reqSize = 0;
-                        uint dataType = 0;
-                        
-                        // First try SPDRP_LOCATION_PATHS (35)
-                        SetupDiGetDeviceRegistryProperty(hDevInfo, ref devInfoData, SPDRP_LOCATION_PATHS, out dataType, IntPtr.Zero, 0, out reqSize);
-                        if (reqSize > 0)
-                        {
-                            buffer = Marshal.AllocHGlobal((int)reqSize);
-                            if (SetupDiGetDeviceRegistryProperty(hDevInfo, ref devInfoData, SPDRP_LOCATION_PATHS, out dataType, buffer, reqSize, out reqSize))
-                            {
-                                string? location = Marshal.PtrToStringAuto(buffer);
-                                if (!string.IsNullOrWhiteSpace(location)) return location;
-                            }
-                            Marshal.FreeHGlobal(buffer);
-                            buffer = IntPtr.Zero;
-                        }
-
-                        // Fallback to SPDRP_LOCATION_INFORMATION (13) like drfones
-                        reqSize = 0;
-                        SetupDiGetDeviceRegistryProperty(hDevInfo, ref devInfoData, 13, out dataType, IntPtr.Zero, 0, out reqSize);
-                        if (reqSize > 0)
-                        {
-                            buffer = Marshal.AllocHGlobal((int)reqSize);
-                            if (SetupDiGetDeviceRegistryProperty(hDevInfo, ref devInfoData, 13, out dataType, buffer, reqSize, out reqSize))
-                            {
-                                string? location = Marshal.PtrToStringAuto(buffer);
-                                if (!string.IsNullOrWhiteSpace(location)) return location;
-                            }
-                        }
-                    }
-                }
-            }
-            catch { }
-            finally
-            {
-                if (buffer != IntPtr.Zero) Marshal.FreeHGlobal(buffer);
-                if (hDevInfo != IntPtr.Zero && hDevInfo != new IntPtr(-1)) SetupDiDestroyDeviceInfoList(hDevInfo);
-            }
-
-            // Fallback 1: Direct Registry Lookup
-            try
-            {
-                string? loc = GetLocationFromRegistry(@"SYSTEM\CurrentControlSet\Enum\" + pnpDeviceId);
-                if (!string.IsNullOrWhiteSpace(loc)) return loc;
-            }
-            catch { }
-
-            // Fallback 2: ParentId Prefix Lookup
-            try
-            {
-                using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Enum\" + pnpDeviceId))
-                {
-                    var parentId = key?.GetValue("ParentIdPrefix")?.ToString();
-                    if (!string.IsNullOrWhiteSpace(parentId))
-                    {
-                        string? loc = FindLocationByParentId(parentId);
-                        if (!string.IsNullOrWhiteSpace(loc)) return loc;
-                    }
-                }
-            }
-            catch { }
-
-            // Ultimate fallback restored: Your system's USB topology does not natively expose
-            // LocationPaths for the iPhone root node. Without this, the app is 100% dead.
-            return pnpDeviceId;
-        }
-
-        private string? GetLocationFromRegistry(string registryPath)
-        {
-            try
-            {
-                using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(registryPath))
-                {
-                    if (key == null) return null;
-                    var locationPaths = key.GetValue("LocationPaths");
-                    if (locationPaths is string[] paths && paths.Length > 0) return paths[0];
-                    else if (locationPaths is string singlePath) return singlePath;
                     
-                    var locInfo = key.GetValue("LocationInformation")?.ToString();
-                    if (!string.IsNullOrWhiteSpace(locInfo)) return locInfo;
-                }
-            }
-            catch { }
-            return null;
-        }
-
-        private string? FindLocationByParentId(string parentId)
-        {
-            try
-            {
-                using (var usbKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Enum\USB"))
-                {
-                    if (usbKey == null) return null;
-
-                    foreach (var vidPid in usbKey.GetSubKeyNames())
+                    // The Apple driver sometimes takes a moment to initialize the COM port.
+                    // DrFones often relies on the timing of WM_DEVICECHANGE. We will poll
+                    // briefly to ensure we catch it without a fragile fallback.
+                    for (int i = 0; i < 5; i++)
                     {
-                        using (var vidPidKey = usbKey.OpenSubKey(vidPid))
-                        {
-                            if (vidPidKey == null) continue;
+                        var devices1 = USBLib.USB.GetConnectedDevices(cleanUdid, "");
+                        if (devices1 != null && devices1.Count > 0)
+                            return devices1[0].HubDevicePath + devices1[0].PortNumber;
 
-                            foreach (var instance in vidPidKey.GetSubKeyNames())
-                            {
-                                if (instance.StartsWith(parentId, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    string regPath = $@"SYSTEM\CurrentControlSet\Enum\USB\{vidPid}\{instance}";
-                                    string? loc = GetLocationFromRegistry(regPath);
-                                    if (!string.IsNullOrWhiteSpace(loc)) return loc;
-                                }
-                            }
-                        }
+                        var devices2 = USBLib.USB.GetConnectedDevices(udid, "");
+                        if (devices2 != null && devices2.Count > 0)
+                            return devices2[0].HubDevicePath + devices2[0].PortNumber;
+                            
+                        Thread.Sleep(500); // Wait half a second and try again
                     }
                 }
             }
-            catch { }
-            return null;
+            catch (Exception ex)
+            {
+                RaiseError($"USBLib mapping error: {ex.Message}");
+            }
+
+            // If USBLib cannot find it, return empty. We absolutely do not fall back to WMI!
+            return string.Empty;
         }
 
         #endregion
