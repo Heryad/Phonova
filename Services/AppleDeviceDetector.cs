@@ -198,15 +198,20 @@ namespace Phonova.Services
         {
             List<USBLib.USB.USBDevice> usbDeviceList = new List<USBLib.USB.USBDevice>();
             
-            // EXACT MATCH to DrFones: USB.GetConnectedDevices(aSerialNumber, "")
-            var connectedDevices = USBLib.USB.GetConnectedDevices(aSerialNumber, "");
+            // Bypass USBLib's internal string filtering by passing empty strings.
+            // This guarantees it will return all devices, allowing us to manually filter
+            // case-insensitively and avoid the "empty locationPath" error.
+            var connectedDevices = USBLib.USB.GetConnectedDevices("", "");
             if (connectedDevices != null)
             {
                 foreach (USBLib.USB.USBDevice connectedDevice in connectedDevices)
                 {
-                    if (connectedDevice.Manufacturer != "Apple Inc.") continue;
-                    
+                    // Log to console for debugging!
+                    System.Diagnostics.Debug.WriteLine($"[USB Scan] Found Device: Serial={connectedDevice.SerialNumber}, Mfg={connectedDevice.Manufacturer}, Path={connectedDevice.HubDevicePath}{connectedDevice.PortNumber}");
+
                     string dfuSerial = connectedDevice.SerialNumber;
+                    if (string.IsNullOrEmpty(dfuSerial)) continue;
+
                     if (dfuSerial.Contains("ECID:"))
                     {
                         try
@@ -223,7 +228,8 @@ namespace Phonova.Services
                         catch { }
                     }
 
-                    if (dfuSerial == aSerialNumber)
+                    // Case-insensitive match to guarantee we don't miss it
+                    if (dfuSerial.Equals(aSerialNumber, StringComparison.OrdinalIgnoreCase))
                     {
                         usbDeviceList.Add(connectedDevice);
                     }
