@@ -2,12 +2,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Interop;
 using Phonova.Models;
-using System.Windows;
 
 namespace Phonova.Services
 {
@@ -26,13 +25,12 @@ namespace Phonova.Services
     public sealed class AppleDeviceDetector : IDisposable
     {
         private readonly ConcurrentDictionary<string, UsbDevice> _activeDevices;
-        private readonly SemaphoreSlim _watcherLock;
         private volatile bool _isRunning;
         private volatile bool _disposed;
-        
-        private HwndSource? _hwndSource;
-        private USBClass? _usbClass;
-        private object _scanLock = new object();
+        private CancellationTokenSource _cts;
+
+        private readonly string _toolboxPath;
+        private readonly string IDEVICE_ID = "idevice_id.exe";
 
         public event EventHandler<AppleDeviceEventArgs>? DeviceConnected;
         public event EventHandler<AppleDeviceEventArgs>? DeviceDisconnected;
@@ -44,150 +42,71 @@ namespace Phonova.Services
         public AppleDeviceDetector()
         {
             _activeDevices = new ConcurrentDictionary<string, UsbDevice>(StringComparer.OrdinalIgnoreCase);
-            _watcherLock = new SemaphoreSlim(1, 1);
+            _toolboxPath = Path.Combine(Environment.CurrentDirectory, "src_set");
         }
 
-        public async Task<bool> StartAsync(IntPtr mainWindowHandle)
+        public Task<bool> StartAsync(IntPtr mainWindowHandle)
         {
             ThrowIfDisposed();
 
-            await _watcherLock.WaitAsync();
-            try
-            {
-                if (_isRunning) return true;
+            if (_isRunning) return Task.FromResult(true);
 
-                bool success = false;
+            _isRunning = true;
+            _cts = new CancellationTokenSource();
 
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    _hwndSource = System.Windows.Interop.HwndSource.FromHwnd(mainWindowHandle);
-                    _hwndSource.AddHook(WndProc);
+            // TRUE DRFONES REPLICA: Infinite polling loop in background thread
+            Task.Run(() => ProcessAppleDeviceLoop(_cts.Token));
 
-                    _usbClass = new USBClass();
-                    _usbClass.USBDeviceAttached += OnUSBDeviceAttached;
-                    _usbClass.USBDeviceRemoved += OnUSBDeviceRemoved;
-                    
-                    // Register exactly like DrFones
-                    success = _usbClass.RegisterForDeviceChange(true, _hwndSource.Handle);
-                });
-
-                if (!success)
-                {
-                    RaiseError("Failed to register device notification using USBClass.");
-                    return false;
-                }
-
-                _isRunning = true;
-                
-                // DRFONES NATIVE: Perform an initial full scan
-                _ = Task.Run(() => PerformScan());
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                RaiseError($"Failed to start detector: {ex.Message}");
-                CleanupWatchers();
-                return false;
-            }
-            finally
-            {
-                _watcherLock.Release();
-            }
+            return Task.FromResult(true);
         }
 
-        public async Task StopAsync()
+        public Task StopAsync()
         {
-            await _watcherLock.WaitAsync();
-            try
-            {
-                if (!_isRunning) return;
+            if (!_isRunning) return Task.CompletedTask;
 
-                CleanupWatchers();
-                _activeDevices.Clear();
-                _isRunning = false;
-            }
-            catch (Exception ex)
-            {
-                RaiseError($"Error stopping detector: {ex.Message}");
-            }
-            finally
-            {
-                _watcherLock.Release();
-            }
+            _isRunning = false;
+            _cts?.Cancel();
+            _activeDevices.Clear();
+
+            return Task.CompletedTask;
         }
 
-        private void CleanupWatchers()
+        private void ProcessAppleDeviceLoop(CancellationToken token)
         {
-            Application.Current.Dispatcher.Invoke(() => 
-            {
-                if (_usbClass != null)
-                {
-                    _usbClass.RegisterForDeviceChange(false, IntPtr.Zero);
-                    _usbClass.USBDeviceAttached -= OnUSBDeviceAttached;
-                    _usbClass.USBDeviceRemoved -= OnUSBDeviceRemoved;
-                    _usbClass = null;
-                }
-                
-                if (_hwndSource != null)
-                {
-                    _hwndSource.RemoveHook(WndProc);
-                    _hwndSource = null;
-                }
-            });
-        }
-
-        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-        {
-            if (_usbClass != null)
-            {
-                // Feed messages straight to DrFones USBClass
-                _usbClass.ProcessWindowsMessage(msg, wParam, lParam, ref handled);
-            }
-            return IntPtr.Zero;
-        }
-
-        private void OnUSBDeviceAttached(object sender, USBClass.USBDeviceEventArgs e)
-        {
-            // Add a small 1-second delay so Apple mobile drivers initialize exactly like DrFones timing
-            Task.Run(() => 
-            {
-                Thread.Sleep(1000);
-                PerformScan();
-            });
-        }
-
-        private void OnUSBDeviceRemoved(object sender, USBClass.USBDeviceEventArgs e)
-        {
-            Task.Run(() => 
-            {
-                PerformScan();
-            });
-        }
-
-        private void PerformScan()
-        {
-            lock (_scanLock)
+            while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    // Full scan using USBLib precisely like DrFones RetailDashboard does
-                    var devices = USBLib.USB.GetConnectedDevices();
-                    if (devices == null) return;
+                    // 1. Get Connected Devices via idevice_id -l exactly like DrFones AppleInternals.GetConnectedDevices()
+                    var currentScannedUdids = GetConnectedDevicesCli();
                     
-                    var currentScannedUdids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    var currentScannedHashSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-                    foreach (var device in devices)
+                    // 2. Process Additions
+                    foreach (var udidRaw in currentScannedUdids)
                     {
-                        string udid = device.SerialNumber;
-                        if (string.IsNullOrWhiteSpace(udid)) continue;
+                        if (string.IsNullOrWhiteSpace(udidRaw)) continue;
+                        
+                        string udid = udidRaw.Trim();
+                        if (udid.Length == 24 && !udid.Contains("-"))
+                        {
+                            udid = udid.Insert(8, "-");
+                        }
                         
                         string finalUdid = udid.Length > 25 ? udid.ToLowerInvariant() : udid.ToUpperInvariant();
-                        currentScannedUdids.Add(finalUdid);
+                        currentScannedHashSet.Add(finalUdid);
 
                         if (!_activeDevices.ContainsKey(finalUdid))
                         {
-                            string locationPath = device.HubDevicePath + device.PortNumber;
+                            // 3. Port Map via USBLib exactly like DrFones PortMappList.getPortNumber() -> MatchListUSBDevice_SerialNumber
+                            string locationPath = GetUniqueUsbPath(udidRaw);
+
+                            if (string.IsNullOrEmpty(locationPath))
+                            {
+                                // Retry physical lookup
+                                Thread.Sleep(200);
+                                locationPath = GetUniqueUsbPath(udidRaw);
+                            }
 
                             var newDevice = new UsbDevice
                             {
@@ -208,11 +127,11 @@ namespace Phonova.Services
                         }
                     }
 
-                    // Diff removals
+                    // 4. Process Removals
                     var activeUdids = _activeDevices.Keys.ToList();
                     foreach (var activeUdid in activeUdids)
                     {
-                        if (!currentScannedUdids.Contains(activeUdid))
+                        if (!currentScannedHashSet.Contains(activeUdid))
                         {
                             if (_activeDevices.TryRemove(activeUdid, out var removedDevice))
                             {
@@ -224,6 +143,82 @@ namespace Phonova.Services
                 catch (Exception ex)
                 {
                     RaiseError($"Scan error: {ex.Message}");
+                }
+
+                // Sleep exactly 1.5s like DrFones Thread.Sleep(1500)
+                Thread.Sleep(1500);
+            }
+        }
+
+        private List<string> GetConnectedDevicesCli()
+        {
+            try
+            {
+                string exePath = Path.Combine(_toolboxPath, IDEVICE_ID);
+                if (!File.Exists(exePath)) return new List<string>();
+
+                string output = LaunchExternalExecutable(exePath, "-l");
+                if (string.IsNullOrWhiteSpace(output)) return new List<string>();
+
+                return output.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            }
+            catch
+            {
+                return new List<string>();
+            }
+        }
+
+        private string GetUniqueUsbPath(string serial)
+        {
+            try
+            {
+                // DRFONES NATIVE METHOD for physical port mapping string:
+                // USBLib.USB.GetConnectedDevices(aSerialNumber, "") returns a list of matched physical devices.
+                string cleanSerial = serial.Replace("-", "").ToLowerInvariant();
+                
+                var usbDeviceList = USBLib.USB.GetConnectedDevices(cleanSerial, "");
+                if (usbDeviceList != null && usbDeviceList.Count > 0)
+                {
+                    return usbDeviceList[0].HubDevicePath + usbDeviceList[0].PortNumber;
+                }
+                
+                // Fallback attempt without stripping hyphen just in case
+                usbDeviceList = USBLib.USB.GetConnectedDevices(serial, "");
+                if (usbDeviceList != null && usbDeviceList.Count > 0)
+                {
+                    return usbDeviceList[0].HubDevicePath + usbDeviceList[0].PortNumber;
+                }
+            }
+            catch (Exception ex)
+            {
+                RaiseError($"USBLib mapping error: {ex.Message}");
+            }
+            return "";
+        }
+
+        private string LaunchExternalExecutable(string executablePath, string arguments)
+        {
+            ProcessStartInfo startInfo = new ProcessStartInfo()
+            {
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                FileName = executablePath,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                Arguments = arguments,
+                RedirectStandardOutput = true
+            };
+
+            using (Process process = Process.Start(startInfo))
+            {
+                var outputTask = process.StandardOutput.ReadToEndAsync();
+                if (process.WaitForExit(5000))
+                {
+                    return outputTask.Result;
+                }
+                else
+                {
+                    try { if (!process.HasExited) process.Kill(); } catch { }
+                    return "";
                 }
             }
         }
@@ -243,7 +238,7 @@ namespace Phonova.Services
             if (_disposed) return;
             _disposed = true;
             try { StopAsync().Wait(TimeSpan.FromSeconds(5)); } catch { }
-            _watcherLock.Dispose();
+            _cts?.Dispose();
             GC.SuppressFinalize(this);
         }
     }
