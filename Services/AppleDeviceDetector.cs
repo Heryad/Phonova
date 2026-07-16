@@ -172,42 +172,64 @@ namespace Phonova.Services
         {
             try
             {
-                string cleanSerialLower = serial.Replace("-", "").ToLowerInvariant();
-                string serialLower = serial.ToLowerInvariant();
-                
-                // DRFONES NATIVE METHOD for physical port mapping string:
-                // We use USBLib.USB.GetConnectedDevices() to get all devices, and manually filter
-                // to ensure we catch it even if USBLib's built-in filter string matching is finicky.
-                var allDevices = USBLib.USB.GetConnectedDevices();
-                if (allDevices != null)
-                {
-                    foreach (var device in allDevices)
-                    {
-                        if (string.IsNullOrEmpty(device.SerialNumber)) continue;
-                        
-                        string dfuSerial = device.SerialNumber.ToLowerInvariant();
-                        if (dfuSerial.Contains("ecid:"))
-                        {
-                            // Basic parse just in case
-                            string[] parts = dfuSerial.Split(' ');
-                            foreach (var p in parts)
-                            {
-                                if (p.StartsWith("srnm:")) dfuSerial = p.Replace("srnm:", "").Replace("[", "").Replace("]", "").Trim();
-                            }
-                        }
+                string udid = serial;
+                if (udid.Contains("-"))
+                    udid = udid.Replace("-", "");
 
-                        if (dfuSerial == cleanSerialLower || dfuSerial == serialLower || dfuSerial == serial)
-                        {
-                            return device.HubDevicePath + device.PortNumber;
-                        }
-                    }
-                }
+                // Exactly mirroring DrFones PortMapping.getUsbPath
+                List<USBLib.USB.USBDevice> list1 = MatchListUSBDevice_SerialNumber(udid.ToLower());
+                if (list1.Count > 0)
+                    return list1[0].HubDevicePath + list1[0].PortNumber;
+
+                List<USBLib.USB.USBDevice> list2 = MatchListUSBDevice_SerialNumber(udid);
+                if (list2.Count > 0)
+                    return list2[0].HubDevicePath + list2[0].PortNumber;
+                
+                return "";
             }
             catch (Exception ex)
             {
                 RaiseError($"USBLib mapping error: {ex.Message}");
+                return "";
             }
-            return "";
+        }
+
+        private List<USBLib.USB.USBDevice> MatchListUSBDevice_SerialNumber(string aSerialNumber)
+        {
+            List<USBLib.USB.USBDevice> usbDeviceList = new List<USBLib.USB.USBDevice>();
+            
+            // EXACT MATCH to DrFones: USB.GetConnectedDevices(aSerialNumber, "")
+            var connectedDevices = USBLib.USB.GetConnectedDevices(aSerialNumber, "");
+            if (connectedDevices != null)
+            {
+                foreach (USBLib.USB.USBDevice connectedDevice in connectedDevices)
+                {
+                    if (connectedDevice.Manufacturer != "Apple Inc.") continue;
+                    
+                    string dfuSerial = connectedDevice.SerialNumber;
+                    if (dfuSerial.Contains("ECID:"))
+                    {
+                        try
+                        {
+                            string[] parts = dfuSerial.Split(' ');
+                            foreach (string p in parts)
+                            {
+                                if (p.StartsWith("SRNM:"))
+                                {
+                                    dfuSerial = p.Replace("SRNM:", "").Replace("]", "").Replace("[", "").Trim();
+                                }
+                            }
+                        }
+                        catch { }
+                    }
+
+                    if (dfuSerial == aSerialNumber)
+                    {
+                        usbDeviceList.Add(connectedDevice);
+                    }
+                }
+            }
+            return usbDeviceList;
         }
 
         private string LaunchExternalExecutable(string executablePath, string arguments)

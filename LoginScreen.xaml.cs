@@ -11,7 +11,13 @@ namespace Phonova
         public LoginScreen()
         {
             InitializeComponent();
-            CompanyEmailBox.Text = Phonova.Services.SettingsManager.Current.SavedCompanyEmail;
+            if (!string.IsNullOrEmpty(Phonova.Services.SettingsManager.Current.SavedCompanyEmail))
+            {
+                CompanyEmailBox.Text = Phonova.Services.SettingsManager.Current.SavedCompanyEmail;
+                UsernameBox.Text = Phonova.Services.SettingsManager.Current.SavedUsername;
+                PasswordBox.Password = Phonova.Services.SettingsManager.Current.SavedPassword;
+                RememberEmailCheckBox.IsChecked = true;
+            }
         }
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
@@ -41,7 +47,19 @@ namespace Phonova
             if (!string.IsNullOrEmpty(response.Token))
             {
                 Phonova.Services.ApiService.Username = username;
-                Phonova.Services.SettingsManager.Current.SavedCompanyEmail = companyEmail;
+                
+                if (RememberEmailCheckBox.IsChecked == true)
+                {
+                    Phonova.Services.SettingsManager.Current.SavedCompanyEmail = companyEmail;
+                    Phonova.Services.SettingsManager.Current.SavedUsername = username;
+                    Phonova.Services.SettingsManager.Current.SavedPassword = password;
+                }
+                else
+                {
+                    Phonova.Services.SettingsManager.Current.SavedCompanyEmail = "";
+                    Phonova.Services.SettingsManager.Current.SavedUsername = "";
+                    Phonova.Services.SettingsManager.Current.SavedPassword = "";
+                }
                 Phonova.Services.SettingsManager.Save();
                 
                 try

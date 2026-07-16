@@ -411,7 +411,7 @@
                                    Foreground="{StaticResource TextSecondaryBrush}"
                                    FontFamily="Segoe UI"
                                    Margin="0,0,0,6"/>
-                        <Grid Margin="0,0,0,24">
+                        <Grid Margin="0,0,0,12">
                             <TextBox x:Name="CompanyEmailBox" Style="{StaticResource CleanInput}"/>
                             <materialDesign:PackIcon Kind="EmailOutline" 
                                                    Width="18" Height="18"
@@ -420,6 +420,13 @@
                                                    Margin="12,0,0,0"
                                                    IsHitTestVisible="False"/>
                         </Grid>
+
+                        <CheckBox x:Name="RememberEmailCheckBox" 
+                                  Content="Remember Me" 
+                                  Foreground="{StaticResource TextSecondaryBrush}"
+                                  FontFamily="Segoe UI"
+                                  FontSize="12"
+                                  Margin="0,0,0,24"/>
 
                         <!-- Sign In Button -->
                         <Button Style="{StaticResource PrimaryButton}" Click="LoginButton_Click">
