@@ -106,6 +106,15 @@ namespace Phonova
                 // If we are learning, assign this new path to the next port
                 if (App.PortMapper.IsLearningMode)
                 {
+                    if (string.IsNullOrEmpty(e.Device.LocationPath))
+                    {
+                        Dispatcher.Invoke(() => 
+                        {
+                            UpdateStatus("Error: Could not retrieve USB hardware path.", false);
+                        });
+                        return;
+                    }
+
                     var assignedPort = await App.PortMapper.AssignPortAsync(e.Device.LocationPath);
                     if (assignedPort.HasValue)
                     {

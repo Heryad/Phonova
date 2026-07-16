@@ -172,21 +172,35 @@ namespace Phonova.Services
         {
             try
             {
+                string cleanSerialLower = serial.Replace("-", "").ToLowerInvariant();
+                string serialLower = serial.ToLowerInvariant();
+                
                 // DRFONES NATIVE METHOD for physical port mapping string:
-                // USBLib.USB.GetConnectedDevices(aSerialNumber, "") returns a list of matched physical devices.
-                string cleanSerial = serial.Replace("-", "").ToLowerInvariant();
-                
-                var usbDeviceList = USBLib.USB.GetConnectedDevices(cleanSerial, "");
-                if (usbDeviceList != null && usbDeviceList.Count > 0)
+                // We use USBLib.USB.GetConnectedDevices() to get all devices, and manually filter
+                // to ensure we catch it even if USBLib's built-in filter string matching is finicky.
+                var allDevices = USBLib.USB.GetConnectedDevices();
+                if (allDevices != null)
                 {
-                    return usbDeviceList[0].HubDevicePath + usbDeviceList[0].PortNumber;
-                }
-                
-                // Fallback attempt without stripping hyphen just in case
-                usbDeviceList = USBLib.USB.GetConnectedDevices(serial, "");
-                if (usbDeviceList != null && usbDeviceList.Count > 0)
-                {
-                    return usbDeviceList[0].HubDevicePath + usbDeviceList[0].PortNumber;
+                    foreach (var device in allDevices)
+                    {
+                        if (string.IsNullOrEmpty(device.SerialNumber)) continue;
+                        
+                        string dfuSerial = device.SerialNumber.ToLowerInvariant();
+                        if (dfuSerial.Contains("ecid:"))
+                        {
+                            // Basic parse just in case
+                            string[] parts = dfuSerial.Split(' ');
+                            foreach (var p in parts)
+                            {
+                                if (p.StartsWith("srnm:")) dfuSerial = p.Replace("srnm:", "").Replace("[", "").Replace("]", "").Trim();
+                            }
+                        }
+
+                        if (dfuSerial == cleanSerialLower || dfuSerial == serialLower || dfuSerial == serial)
+                        {
+                            return device.HubDevicePath + device.PortNumber;
+                        }
+                    }
                 }
             }
             catch (Exception ex)
