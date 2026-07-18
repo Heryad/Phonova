@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Phonova.Models;
+using USBLib;
 
 namespace Phonova.Services
 {
@@ -177,11 +178,11 @@ namespace Phonova.Services
                     udid = udid.Replace("-", "");
 
                 // Exactly mirroring DrFones PortMapping.getUsbPath
-                List<USBLib.USB.USBDevice> list1 = MatchListUSBDevice_SerialNumber(udid.ToLower());
+                List<USB.USBDevice> list1 = MatchListUSBDevice_SerialNumber(udid.ToLower());
                 if (list1.Count > 0)
                     return list1[0].HubDevicePath + list1[0].PortNumber;
 
-                List<USBLib.USB.USBDevice> list2 = MatchListUSBDevice_SerialNumber(udid);
+                List<USB.USBDevice> list2 = MatchListUSBDevice_SerialNumber(udid);
                 if (list2.Count > 0)
                     return list2[0].HubDevicePath + list2[0].PortNumber;
                 
@@ -194,17 +195,15 @@ namespace Phonova.Services
             }
         }
 
-        private List<USBLib.USB.USBDevice> MatchListUSBDevice_SerialNumber(string aSerialNumber)
+        private List<USB.USBDevice> MatchListUSBDevice_SerialNumber(string aSerialNumber)
         {
-            List<USBLib.USB.USBDevice> usbDeviceList = new List<USBLib.USB.USBDevice>();
+            List<USB.USBDevice> usbDeviceList = new List<USB.USBDevice>();
             
-            // Bypass USBLib's internal string filtering by passing empty strings.
-            // This guarantees it will return all devices, allowing us to manually filter
-            // case-insensitively and avoid the "empty locationPath" error.
-            var connectedDevices = USBLib.USB.GetConnectedDevices("", "");
+            // EXACT replica of DrFones logic using the correct DLL
+            var connectedDevices = USB.GetConnectedDevices(aSerialNumber, "");
             if (connectedDevices != null)
             {
-                foreach (USBLib.USB.USBDevice connectedDevice in connectedDevices)
+                foreach (USB.USBDevice connectedDevice in connectedDevices)
                 {
                     // Log to console for debugging!
                     System.Diagnostics.Debug.WriteLine($"[USB Scan] Found Device: Serial={connectedDevice.SerialNumber}, Mfg={connectedDevice.Manufacturer}, Path={connectedDevice.HubDevicePath}{connectedDevice.PortNumber}");

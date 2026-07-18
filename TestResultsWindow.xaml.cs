@@ -131,9 +131,11 @@ namespace Phonova
             SetStatusBadge(FmiBadge, FmiText, fmi, f);
             SetStatusBadge(MdmBadge, MdmText, mdm, m);
 
-            // SIM Status (special case for eSIM/Normal)
+            // SIM Status (special case for eSIM/Normal/Physical)
             SimText.Text = sim;
-            if (sim.IndexOf("eSIM", StringComparison.OrdinalIgnoreCase) >= 0 || sim.IndexOf("Normal", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (sim.IndexOf("eSIM", StringComparison.OrdinalIgnoreCase) >= 0 || 
+                sim.IndexOf("Normal", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                sim.IndexOf("Physical", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 SimBadge.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DBEAFE")); // Blue
                 SimText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E40AF"));

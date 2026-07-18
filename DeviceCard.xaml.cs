@@ -29,8 +29,9 @@ namespace Phonova
         public string ProductType { get; set; } = string.Empty;
         public string DeviceEnclosureColor { get; set; } = string.Empty;
         public string TotalDiskCapacity { get; set; } = string.Empty;
-        public string SIMStatus { get; set; } = string.Empty;
+         public string SIMStatus { get; set; } = string.Empty;
         public string SIMTrayStatus { get; set; } = string.Empty;
+        public string SimType { get; set; } = "Physical";
         public string RegionInfo { get; set; } = string.Empty;
         public string ModelNumber { get; set; } = string.Empty;
         public string InternationalMobileEquipmentIdentity { get; set; } = string.Empty;
@@ -179,6 +180,7 @@ namespace Phonova
             TotalDiskCapacity = string.Empty;
             SIMStatus = string.Empty;
             SIMTrayStatus = string.Empty;
+            SimType = "Physical";
             RegionInfo = string.Empty;
             ModelNumber = string.Empty;
             InternationalMobileEquipmentIdentity = string.Empty;
@@ -1103,9 +1105,32 @@ namespace Phonova
             BasebandStatus = GetString("BasebandStatus");
             ActivationState = GetString("ActivationState");
             ActivationStateAcknowledged = GetString("ActivationStateAcknowledged");
-            SerialNumber = GetString("SerialNumber");
+             SerialNumber = GetString("SerialNumber");
             SetupDone = GetString("SetupDone");
             ProductVersion = GetString("ProductVersion");
+            
+            // eSIM Determination Logic matching DrFones
+            string preflight = GetString("FirmwarePreflightInfo");
+            bool hasEsimChip = preflight.Contains("EUICCChipID") || 
+                               preflight.Contains("EUICCCSN") || 
+                               preflight.Contains("EUICCMainNonce");
+
+            if (SIMTrayStatus.Contains("kCTSIMSupportSIMTrayAbsent") || 
+                SIMTrayStatus.Contains("kCTSIMSupportSIMTrayStatusUnknown"))
+            {
+                SimType = "ESIM Only";
+            }
+            else if (SIMTrayStatus.Contains("kCTSIMSupportSIMTrayInsertedNoSIM") || 
+                     SIMTrayStatus.Contains("kCTSIMSupportSIMTrayInsertedWithSIM"))
+            {
+                SimType = hasEsimChip ? "Physical + ESIM" : "Physical";
+            }
+            else
+            {
+                // Fallback to basic model detection
+                SimType = iPhone14AndAbove(ProductType) ? "ESIM Only" : "Physical";
+            }
+
             string fmip = GetString("FMIP");
             if (!string.IsNullOrEmpty(fmip))
             {
@@ -1367,9 +1392,8 @@ namespace Phonova
             if (!string.IsNullOrWhiteSpace(InternationalMobileEquipmentIdentity2))
                 Imei2Text.Text = InternationalMobileEquipmentIdentity2;
 
-            String simInfo = iPhone14AndAbove(ProductType) ? "ESIM" : "Normal";
-            if (!string.IsNullOrWhiteSpace(SIMStatus))
-                SimlockText.Text = simInfo;
+            if (!string.IsNullOrWhiteSpace(SimType))
+                SimlockText.Text = SimType;
 
             if (!string.IsNullOrWhiteSpace(ProductVersion))
                 IosVersionText.Text = $"iOS {ProductVersion}";
