@@ -55,7 +55,7 @@ namespace Phonova
             PrintTesterNameToggle.IsChecked = s.PrintTesterName;
             PrintPortNumberToggle.IsChecked = s.PrintPortNumber;
             PrintLogoToggle.IsChecked = s.PrintLogo;
-            LabelFormatComboBox.SelectedIndex = s.LabelFormat == "Mobicare Label" ? 2 : (s.LabelFormat == "Simple Label" ? 1 : 0);
+            LabelFormatComboBox.SelectedIndex = s.LabelFormat == "Elmougy Label" ? 3 : (s.LabelFormat == "Mobicare Label" ? 2 : (s.LabelFormat == "Simple Label" ? 1 : 0));
             WarrantyTextBox.Text = s.WarrantyText;
 
             // Enforce Permissions from ApiService.CurrentConfig
@@ -167,7 +167,7 @@ namespace Phonova
         {
             if (!IsLoaded) return;
             var s = SettingsManager.Current;
-            s.LabelFormat = LabelFormatComboBox.SelectedIndex == 2 ? "Mobicare Label" : (LabelFormatComboBox.SelectedIndex == 1 ? "Simple Label" : "Standard");
+            s.LabelFormat = LabelFormatComboBox.SelectedIndex == 3 ? "Elmougy Label" : (LabelFormatComboBox.SelectedIndex == 2 ? "Mobicare Label" : (LabelFormatComboBox.SelectedIndex == 1 ? "Simple Label" : "Standard"));
             SettingsManager.Save();
         }
 
@@ -670,6 +670,27 @@ namespace Phonova
                 if (s.LabelFormat == "Mobicare Label")
                 {
                     label = new MobicareLabel(
+                        imei:         "353456789012345",
+                        serial:       "C8QKF2ABCD12",
+                        model:        "iPhone 14 Pro",
+                        product:      "iPhone 14 Pro 256GB",
+                        color:        "Deep Purple",
+                        version:      "16.7.2",
+                        battery:      "94%",
+                        icloud:       "Off",
+                        fmi:          "Off",
+                        mdm:          "Off",
+                        sim:          "Unlocked",
+                        port:         "1",
+                        notes:        "Test Print",
+                        customerName: "Sample Customer",
+                        testerName: "Sample Tester",
+                        isSynced: true
+                    );
+                }
+                else if (s.LabelFormat == "Elmougy Label")
+                {
+                    label = new ElmougyLabel(
                         imei:         "353456789012345",
                         serial:       "C8QKF2ABCD12",
                         model:        "iPhone 14 Pro",

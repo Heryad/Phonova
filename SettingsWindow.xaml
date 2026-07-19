@@ -647,6 +647,7 @@
                                                 <ComboBoxItem Content="Standard"/>
                                                 <ComboBoxItem Content="Simple Label"/>
                                                 <ComboBoxItem Content="Mobicare Label"/>
+                                                <ComboBoxItem Content="Elmougy Label"/>
                                             </ComboBox>
                                         </Grid>
                                         <Grid Margin="0,0,0,12">

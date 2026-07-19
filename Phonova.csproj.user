@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup />
   <ItemGroup>
@@ -6,6 +6,12 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Update="Labels\HorizontalLabel.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Labels\MobicareLabel.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Labels\ElmougyLabel.cs">
       <SubType>Component</SubType>
     </Compile>
   </ItemGroup>
